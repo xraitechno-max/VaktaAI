@@ -1,0 +1,268 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vaktaai.com/schemas/FinalAnswer.schema.json",
+  "title": "FinalAnswer",
+  "description": "Final verified answer for generic modes (explain, solve, derive, revise, docchat, strategy). Passed all acceptance gates with citations and metadata.",
+  "type": "object",
+  "properties": {
+    "answer_text": {
+      "type": "string",
+      "description": "Final verified answer text",
+      "minLength": 1
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["explain", "solve", "derive", "revise", "docchat", "strategy"],
+      "description": "Task mode for this answer"
+    },
+    "language": {
+      "type": "string",
+      "enum": ["english", "hindi", "hinglish"],
+      "description": "Output language"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.82,
+      "maximum": 1.0,
+      "description": "Final confidence score (passed threshold of 0.82)"
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "citation_id": {
+            "type": "string",
+            "pattern": "^(NCERT:[a-zA-Z0-9_-]+:[a-zA-Z0-9._-]+|PYQ:[A-Z-]+:[0-9]{4}:(JAN|APR|MAY|JUN|SEP|OCT):[0-9]+)$"
+          },
+          "doc_title": {
+            "type": "string"
+          },
+          "page": {
+            "type": "integer"
+          },
+          "excerpt": {
+            "type": "string",
+            "maxLength": 200,
+            "description": "Short excerpt from the cited source"
+          }
+        },
+        "required": ["citation_id"]
+      },
+      "description": "All citations used in the answer"
+    },
+    "formulas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Mathematical formulas used (all in English)"
+    },
+    "key_concepts": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Main concepts covered in the answer",
+      "maxItems": 10
+    },
+    "verification_summary": {
+      "type": "object",
+      "description": "Summary of verification gates passed",
+      "properties": {
+        "fact_check_passed": {
+          "type": "boolean"
+        },
+        "math_check_passed": {
+          "type": "boolean"
+        },
+        "language_check_passed": {
+          "type": "boolean"
+        },
+        "regeneration_count": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 2,
+          "description": "Number of regenerations needed (0-2)"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "model_used": {
+          "type": "string"
+        },
+        "total_tokens": {
+          "type": "integer"
+        },
+        "total_latency_ms": {
+          "type": "integer",
+          "description": "Total time including generation and verification"
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "context": {
+          "type": "object",
+          "properties": {
+            "board": {
+              "type": "string"
+            },
+            "class": {
+              "type": "integer"
+            },
+            "subject": {
+              "type": "string"
+            },
+            "chapter": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["answer_text", "mode", "language", "confidence", "citations"],
+  "examples": [
+    {
+      "answer_text": "Dekho, Newton's second law bahut important hai physics me. Basically, yeh kehta hai ki force aur acceleration ke beech ek direct relationship hota hai [NCERT:phy_11_ch2:2.3.1].\n\n**Formula:** F = ma\n\nJahan:\n- F = Force (Newtons me)\n- m = Mass (kg me)\n- a = Acceleration (m/s² me)\n\nMatlb agar tum kisi object par zyada force lagaoge, toh uska acceleration bhi zyada hoga. Aur agar object ka mass zyada hai, toh same force se kam acceleration milega [NCERT:phy_11_ch2:2.3.1].\n\n**Real example:** Jab tum bicycle ko push karte ho, toh zyada force se push karoge toh bicycle faster accelerate karegi [NCERT:phy_11_ch2:example_2.1].\n\nSamajh me aaya?",
+      "mode": "explain",
+      "language": "hinglish",
+      "confidence": 0.88,
+      "citations": [
+        {
+          "citation_id": "NCERT:phy_11_ch2:2.3.1",
+          "doc_title": "NCERT Physics Class 11 - Laws of Motion",
+          "page": 42,
+          "excerpt": "Newton's second law of motion states that the rate of change of momentum of an object is directly proportional to the applied force..."
+        },
+        {
+          "citation_id": "NCERT:phy_11_ch2:example_2.1",
+          "doc_title": "NCERT Physics Class 11 - Laws of Motion",
+          "page": 43,
+          "excerpt": "Example 2.1: A force of 10 N acts on a body of mass 2 kg. Find the acceleration. Solution: Using F = ma..."
+        }
+      ],
+      "formulas": [
+        "F = ma"
+      ],
+      "key_concepts": [
+        "Newton's Second Law",
+        "Force",
+        "Mass",
+        "Acceleration",
+        "F=ma relationship"
+      ],
+      "verification_summary": {
+        "fact_check_passed": true,
+        "math_check_passed": true,
+        "language_check_passed": true,
+        "regeneration_count": 0
+      },
+      "metadata": {
+        "model_used": "claude-3.5-sonnet",
+        "total_tokens": 700,
+        "total_latency_ms": 2300,
+        "generated_at": "2025-01-15T10:30:20Z",
+        "context": {
+          "board": "CBSE",
+          "class": 11,
+          "subject": "Physics",
+          "chapter": "Laws of Motion"
+        }
+      }
+    },
+    {
+      "answer_text": "**Given:**\n- Initial velocity (u) = 0 m/s (starts from rest)\n- Acceleration (a) = 2 m/s²\n- Time (t) = 10 s\n\n**Find:**\n1. Final velocity (v)\n2. Distance covered (s)\n\n**Formulas:**\n1. v = u + at\n2. s = ut + ½at²\n\n**Solution:**\n\n**Step 1: Find final velocity**\nv = u + at\nv = 0 + (2)(10)\nv = 20 m/s\n\n**Step 2: Find distance**\ns = ut + ½at²\ns = (0)(10) + ½(2)(10)²\ns = 0 + ½(2)(100)\ns = 100 m\n\n**Unit Verification:**\n- Velocity: m/s ✓\n- Acceleration: m/s² ✓\n- Time: s ✓\n- Distance: m ✓\n\n**Answer:**\n- Final velocity = 20 m/s\n- Distance covered = 100 m",
+      "mode": "solve",
+      "language": "english",
+      "confidence": 0.92,
+      "citations": [],
+      "formulas": [
+        "v = u + at",
+        "s = ut + ½at²"
+      ],
+      "key_concepts": [
+        "Kinematics",
+        "Constant acceleration",
+        "Equations of motion",
+        "Velocity-time relation",
+        "Distance calculation"
+      ],
+      "verification_summary": {
+        "fact_check_passed": true,
+        "math_check_passed": true,
+        "language_check_passed": true,
+        "regeneration_count": 0
+      },
+      "metadata": {
+        "model_used": "grok-2-math",
+        "total_tokens": 570,
+        "total_latency_ms": 3000,
+        "generated_at": "2025-01-15T10:32:00Z",
+        "context": {
+          "board": "CBSE",
+          "class": 11,
+          "subject": "Physics"
+        }
+      }
+    },
+    {
+      "answer_text": "Photosynthesis ek biological process hai jisme plants light energy ko chemical energy me convert karte hain [NCERT:bio_9_ch5:5.2.1].\n\n**Process:** 6CO₂ + 6H₂O + Light Energy → C₆H₁₂O₆ + 6O₂\n\nYeh process chloroplasts me hota hai, specifically chlorophyll pigment ki help se [NCERT:bio_9_ch5:5.2.2].\n\n**Do main stages:**\n1. Light-dependent reactions (thylakoids me)\n2. Light-independent reactions / Calvin cycle (stroma me) [NCERT:bio_9_ch5:5.3.1]\n\nIs process se plants apna food banate hain aur oxygen release karte hain jo hum breathe karte hain.",
+      "mode": "docchat",
+      "language": "hinglish",
+      "confidence": 0.86,
+      "citations": [
+        {
+          "citation_id": "NCERT:bio_9_ch5:5.2.1",
+          "doc_title": "NCERT Biology Class 9 - Life Processes",
+          "page": 95,
+          "excerpt": "Photosynthesis is the process by which green plants convert light energy into chemical energy..."
+        },
+        {
+          "citation_id": "NCERT:bio_9_ch5:5.2.2",
+          "doc_title": "NCERT Biology Class 9 - Life Processes",
+          "page": 96,
+          "excerpt": "Chlorophyll, present in chloroplasts, is the pigment that captures light energy..."
+        },
+        {
+          "citation_id": "NCERT:bio_9_ch5:5.3.1",
+          "doc_title": "NCERT Biology Class 9 - Life Processes",
+          "page": 98,
+          "excerpt": "The Calvin cycle, or light-independent reactions, occur in the stroma of chloroplasts..."
+        }
+      ],
+      "formulas": [
+        "6CO₂ + 6H₂O + Light Energy → C₆H₁₂O₆ + 6O₂"
+      ],
+      "key_concepts": [
+        "Photosynthesis",
+        "Chloroplasts",
+        "Chlorophyll",
+        "Light-dependent reactions",
+        "Calvin cycle",
+        "Chemical energy conversion"
+      ],
+      "verification_summary": {
+        "fact_check_passed": true,
+        "math_check_passed": true,
+        "language_check_passed": true,
+        "regeneration_count": 1
+      },
+      "metadata": {
+        "model_used": "gemini-1.5-flash",
+        "total_tokens": 520,
+        "total_latency_ms": 1800,
+        "generated_at": "2025-01-15T10:35:00Z",
+        "context": {
+          "board": "CBSE",
+          "class": 9,
+          "subject": "Biology",
+          "chapter": "Life Processes"
+        }
+      }
+    }
+  ]
+}

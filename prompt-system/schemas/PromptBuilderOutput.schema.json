@@ -1,0 +1,192 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vaktaai.com/schemas/PromptBuilderOutput.schema.json",
+  "title": "PromptBuilderOutput",
+  "description": "Final assembled prompt with system instructions, user context, and evidence. Ready to send to LLM provider.",
+  "type": "object",
+  "properties": {
+    "system_prompt": {
+      "type": "string",
+      "description": "Complete system prompt including mode-specific template, language instructions, and tool usage guidelines",
+      "minLength": 100
+    },
+    "user_prompt": {
+      "type": "string",
+      "description": "User-facing prompt with question, evidence context, and formatting instructions",
+      "minLength": 10
+    },
+    "messages": {
+      "type": "array",
+      "description": "Full message array for chat completion API",
+      "items": {
+        "type": "object",
+        "properties": {
+          "role": {
+            "type": "string",
+            "enum": ["system", "user", "assistant"]
+          },
+          "content": {
+            "type": "string"
+          }
+        },
+        "required": ["role", "content"]
+      },
+      "minItems": 1
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["explain", "solve", "derive", "revise", "docchat", "strategy", "plan"],
+      "description": "The mode this prompt was built for"
+    },
+    "language": {
+      "type": "string",
+      "enum": ["english", "hindi", "hinglish"],
+      "description": "Target output language"
+    },
+    "evidence_included": {
+      "type": "boolean",
+      "description": "Whether evidence chunks were included in the prompt"
+    },
+    "evidence_summary": {
+      "type": "object",
+      "description": "Summary of included evidence",
+      "properties": {
+        "chunk_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "citation_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "sources": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "List of unique citation sources"
+        }
+      }
+    },
+    "tools_declared": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": ["calculator", "unit_checker", "latex_formatter", "citation_lookup", "rag_search", "citation_check", "pyq_analyzer", "weightage_calc", "date_calculator", "revision_cycler"]
+      },
+      "description": "Tools mentioned in the system prompt for this mode"
+    },
+    "constraints": {
+      "type": "object",
+      "description": "Constraints declared in the prompt",
+      "properties": {
+        "formulas_in_english": {
+          "type": "boolean",
+          "description": "Formulas must remain in English regardless of output language"
+        },
+        "require_citations": {
+          "type": "boolean",
+          "description": "All factual claims must have citations"
+        },
+        "no_cot_leakage": {
+          "type": "boolean",
+          "description": "No chain-of-thought reasoning in output"
+        },
+        "verify_units": {
+          "type": "boolean",
+          "description": "Math problems must verify unit consistency"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "template_file": {
+          "type": "string",
+          "description": "Template file used (e.g., 'explain.system.txt')"
+        },
+        "prompt_tokens_estimate": {
+          "type": "integer",
+          "description": "Estimated token count for the prompt"
+        },
+        "built_at": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "required": ["system_prompt", "user_prompt", "messages", "mode", "language", "evidence_included"],
+  "examples": [
+    {
+      "system_prompt": "You are VaktaAI, an expert Indian EdTech tutor for CBSE Class 11 Physics.\n\nMODE: explain\nLANGUAGE: hinglish\n\nRESPONSE RULES:\n- Respond in NATURAL CONVERSATIONAL HINGLISH (mix Hindi and English naturally)\n- Use Hindi verbs: hai, hota hai, karta hai, karte hain, kehlaata hai\n- Keep ALL formulas, units, and technical terms in English\n- NO formal Hindi translations (no Vidhut Avesh, no Urja)\n- Start with conversational markers: Dekho, Basically, Toh\n- Give real-life examples with Hinglish explanations\n\nCITATION REQUIREMENTS:\n- All factual claims MUST have citations in format [NCERT:doc_id:section] or [PYQ:exam:year:slot:qid]\n- Example: \"Force equals mass times acceleration [NCERT:phy_11_ch2:2.3.1]\"\n\nCONSTRAINTS:\n- Formulas ALWAYS in English: F = ma (NOT F = द्रव्यमान × त्वरण)\n- Units ALWAYS in English: kg, m/s², N\n- NO chain-of-thought in output\n\nTOOLS AVAILABLE:\n- rag_search: Search documents for evidence\n- citation_lookup: Find NCERT references\n\nFOLLOW THESE RULES STRICTLY.",
+      "user_prompt": "QUESTION: What is Newton's second law?\n\nEVIDENCE FROM DOCUMENTS:\n\n[1] NCERT:phy_11_ch2:2.3.1\nNewton's second law of motion states that the rate of change of momentum of an object is directly proportional to the applied force and takes place in the direction of the force. Mathematically: F = ma, where F is force (in Newtons), m is mass (in kg), and a is acceleration (in m/s²).\n\n[2] NCERT:phy_11_ch2:example_2.1\nExample 2.1: A force of 10 N acts on a body of mass 2 kg. Find the acceleration. Solution: Using F = ma, we get a = F/m = 10/2 = 5 m/s².\n\nProvide a comprehensive explanation with proper citations.",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are VaktaAI, an expert Indian EdTech tutor for CBSE Class 11 Physics.\n\nMODE: explain\nLANGUAGE: hinglish..."
+        },
+        {
+          "role": "user",
+          "content": "QUESTION: What is Newton's second law?\n\nEVIDENCE FROM DOCUMENTS:\n\n[1] NCERT:phy_11_ch2:2.3.1..."
+        }
+      ],
+      "mode": "explain",
+      "language": "hinglish",
+      "evidence_included": true,
+      "evidence_summary": {
+        "chunk_count": 2,
+        "citation_count": 2,
+        "sources": [
+          "NCERT:phy_11_ch2:2.3.1",
+          "NCERT:phy_11_ch2:example_2.1"
+        ]
+      },
+      "tools_declared": ["rag_search", "citation_lookup"],
+      "constraints": {
+        "formulas_in_english": true,
+        "require_citations": true,
+        "no_cot_leakage": true,
+        "verify_units": false
+      },
+      "metadata": {
+        "template_file": "explain.system.txt",
+        "prompt_tokens_estimate": 480,
+        "built_at": "2025-01-15T10:30:00Z"
+      }
+    },
+    {
+      "system_prompt": "You are VaktaAI, a mathematics problem-solving tutor for CBSE students.\n\nMODE: solve\nLANGUAGE: english\n\nRESPONSE FORMAT:\nGiven: [List knowns with units]\nFind: [What to calculate]\nFormulas: [Relevant equations]\nSolution: [Step-by-step with unit verification]\nAnswer: [Final answer with units]\n\nTOOLS REQUIRED:\n- calculator: For numerical computation\n- unit_checker: Verify unit consistency\n- latex_formatter: Format equations\n\nCONSTRAINTS:\n- Temperature = 0.0 (deterministic)\n- Show ALL units in every step\n- Verify dimensional analysis\n- Check significant figures\n- ALL factual claims need citations",
+      "user_prompt": "QUESTION: A car accelerates from rest at 2 m/s² for 10 seconds. Find final velocity and distance covered.\n\nEVIDENCE: [No document evidence needed for standard kinematics]\n\nSolve step-by-step with unit verification.",
+      "messages": [
+        {
+          "role": "system",
+          "content": "You are VaktaAI, a mathematics problem-solving tutor..."
+        },
+        {
+          "role": "user",
+          "content": "QUESTION: A car accelerates from rest at 2 m/s² for 10 seconds..."
+        }
+      ],
+      "mode": "solve",
+      "language": "english",
+      "evidence_included": false,
+      "evidence_summary": {
+        "chunk_count": 0,
+        "citation_count": 0,
+        "sources": []
+      },
+      "tools_declared": ["calculator", "unit_checker", "latex_formatter"],
+      "constraints": {
+        "formulas_in_english": true,
+        "require_citations": false,
+        "no_cot_leakage": true,
+        "verify_units": true
+      },
+      "metadata": {
+        "template_file": "solve.system.txt",
+        "prompt_tokens_estimate": 320
+      }
+    }
+  ]
+}

@@ -1,0 +1,561 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vaktaai.com/schemas/PlanAnswer.schema.json",
+  "title": "PlanAnswer",
+  "description": "Structured study plan output for 'plan' mode. Includes timeline, topics, revision cycles, and resource allocation with spaced repetition.",
+  "type": "object",
+  "properties": {
+    "plan_title": {
+      "type": "string",
+      "description": "Title of the study plan",
+      "examples": ["30-Day JEE Physics Revision Plan", "CBSE Class 10 Math Final Exam Strategy"]
+    },
+    "mode": {
+      "type": "string",
+      "const": "plan",
+      "description": "This schema is specific to plan mode"
+    },
+    "language": {
+      "type": "string",
+      "enum": ["english", "hindi", "hinglish"],
+      "description": "Output language"
+    },
+    "duration": {
+      "type": "object",
+      "description": "Plan duration and timeline",
+      "properties": {
+        "total_days": {
+          "type": "integer",
+          "minimum": 1,
+          "description": "Total duration in days"
+        },
+        "start_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Recommended start date"
+        },
+        "end_date": {
+          "type": "string",
+          "format": "date",
+          "description": "Target completion date"
+        },
+        "daily_study_hours": {
+          "type": "number",
+          "minimum": 0.5,
+          "maximum": 12,
+          "description": "Recommended daily study hours"
+        }
+      },
+      "required": ["total_days", "daily_study_hours"]
+    },
+    "phases": {
+      "type": "array",
+      "description": "Study plan broken into phases",
+      "items": {
+        "type": "object",
+        "properties": {
+          "phase_number": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "phase_name": {
+            "type": "string",
+            "examples": ["Foundation Building", "Advanced Topics", "Revision & Practice", "Mock Tests"]
+          },
+          "duration_days": {
+            "type": "integer",
+            "minimum": 1
+          },
+          "goals": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Learning objectives for this phase"
+          },
+          "topics": {
+            "type": "array",
+            "items": {
+              "type": "object",
+              "properties": {
+                "topic_name": {
+                  "type": "string"
+                },
+                "chapter": {
+                  "type": "string"
+                },
+                "estimated_hours": {
+                  "type": "number",
+                  "minimum": 0.5
+                },
+                "priority": {
+                  "type": "string",
+                  "enum": ["high", "medium", "low"]
+                },
+                "weightage": {
+                  "type": "number",
+                  "description": "Topic weightage in exam (percentage)",
+                  "minimum": 0,
+                  "maximum": 100
+                },
+                "resources": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "type": {
+                        "type": "string",
+                        "enum": ["NCERT", "PYQ", "Reference Book", "Video", "Notes"]
+                      },
+                      "reference": {
+                        "type": "string",
+                        "description": "Citation or link to resource"
+                      }
+                    }
+                  }
+                },
+                "practice_problems": {
+                  "type": "integer",
+                  "minimum": 0,
+                  "description": "Recommended number of practice problems"
+                }
+              },
+              "required": ["topic_name", "estimated_hours", "priority"]
+            }
+          },
+          "milestones": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Checkpoints to verify progress"
+          }
+        },
+        "required": ["phase_number", "phase_name", "duration_days", "topics"]
+      },
+      "minItems": 1
+    },
+    "revision_schedule": {
+      "type": "object",
+      "description": "Spaced repetition revision cycles",
+      "properties": {
+        "cycles": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "cycle_number": {
+                "type": "integer",
+                "minimum": 1
+              },
+              "timing": {
+                "type": "string",
+                "description": "When to revise (e.g., 'Day 1', 'Day 3', 'Day 7', 'Day 15')"
+              },
+              "duration_hours": {
+                "type": "number",
+                "minimum": 0.5
+              },
+              "focus": {
+                "type": "string",
+                "description": "What to focus on in this cycle"
+              }
+            },
+            "required": ["cycle_number", "timing"]
+          }
+        },
+        "strategy": {
+          "type": "string",
+          "description": "Overall revision strategy explanation"
+        }
+      }
+    },
+    "daily_schedule_template": {
+      "type": "object",
+      "description": "Sample daily schedule breakdown",
+      "properties": {
+        "morning": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "time_slot": {
+                "type": "string",
+                "pattern": "^([0-1]?[0-9]|2[0-3]):[0-5][0-9]-([0-1]?[0-9]|2[0-3]):[0-5][0-9]$",
+                "examples": ["06:00-07:00", "07:30-09:00"]
+              },
+              "activity": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "afternoon": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "time_slot": {
+                "type": "string"
+              },
+              "activity": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "evening": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "time_slot": {
+                "type": "string"
+              },
+              "activity": {
+                "type": "string"
+              }
+            }
+          }
+        }
+      }
+    },
+    "assessment_strategy": {
+      "type": "object",
+      "description": "Testing and self-assessment approach",
+      "properties": {
+        "weekly_tests": {
+          "type": "boolean"
+        },
+        "mock_tests": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "day": {
+                "type": "integer"
+              },
+              "type": {
+                "type": "string",
+                "examples": ["Full Syllabus", "Chapter-wise", "Topic-wise"]
+              },
+              "duration_hours": {
+                "type": "number"
+              }
+            }
+          }
+        },
+        "self_evaluation_frequency": {
+          "type": "string",
+          "examples": ["Daily", "Every 3 days", "Weekly"]
+        }
+      }
+    },
+    "tips_and_strategy": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Study tips and strategies specific to this plan",
+      "maxItems": 10
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.82,
+      "maximum": 1.0,
+      "description": "Plan quality confidence score"
+    },
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(NCERT:[a-zA-Z0-9_-]+:[a-zA-Z0-9._-]+|PYQ:[A-Z-]+:[0-9]{4}:(JAN|APR|MAY|JUN|SEP|OCT):[0-9]+)$"
+      },
+      "description": "Citations for weightage data, syllabus references, etc."
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "model_used": {
+          "type": "string"
+        },
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "context": {
+          "type": "object",
+          "properties": {
+            "board": {
+              "type": "string"
+            },
+            "class": {
+              "type": "integer"
+            },
+            "subject": {
+              "type": "string"
+            },
+            "exam": {
+              "type": "string"
+            }
+          }
+        }
+      }
+    }
+  },
+  "required": ["plan_title", "mode", "language", "duration", "phases", "confidence"],
+  "examples": [
+    {
+      "plan_title": "15-Day CBSE Class 11 Physics Laws of Motion Mastery Plan",
+      "mode": "plan",
+      "language": "hinglish",
+      "duration": {
+        "total_days": 15,
+        "start_date": "2025-01-20",
+        "end_date": "2025-02-03",
+        "daily_study_hours": 3
+      },
+      "phases": [
+        {
+          "phase_number": 1,
+          "phase_name": "Foundation Building (Concepts)",
+          "duration_days": 6,
+          "goals": [
+            "Understand Newton's three laws thoroughly",
+            "Master force, mass, acceleration relationships",
+            "Learn to draw free-body diagrams"
+          ],
+          "topics": [
+            {
+              "topic_name": "Newton's First Law & Inertia",
+              "chapter": "Chapter 2: Laws of Motion",
+              "estimated_hours": 4,
+              "priority": "high",
+              "weightage": 15,
+              "resources": [
+                {
+                  "type": "NCERT",
+                  "reference": "NCERT:phy_11_ch2:2.1-2.2"
+                },
+                {
+                  "type": "PYQ",
+                  "reference": "PYQ:JEE-Main:2023:APR:15"
+                }
+              ],
+              "practice_problems": 20
+            },
+            {
+              "topic_name": "Newton's Second Law (F=ma)",
+              "chapter": "Chapter 2: Laws of Motion",
+              "estimated_hours": 5,
+              "priority": "high",
+              "weightage": 25,
+              "resources": [
+                {
+                  "type": "NCERT",
+                  "reference": "NCERT:phy_11_ch2:2.3"
+                }
+              ],
+              "practice_problems": 30
+            },
+            {
+              "topic_name": "Newton's Third Law & Applications",
+              "chapter": "Chapter 2: Laws of Motion",
+              "estimated_hours": 4,
+              "priority": "medium",
+              "weightage": 20,
+              "resources": [
+                {
+                  "type": "NCERT",
+                  "reference": "NCERT:phy_11_ch2:2.4-2.5"
+                }
+              ],
+              "practice_problems": 25
+            }
+          ],
+          "milestones": [
+            "Can explain all three laws with examples",
+            "Solved 75 basic problems with 80% accuracy"
+          ]
+        },
+        {
+          "phase_number": 2,
+          "phase_name": "Advanced Problem Solving",
+          "duration_days": 5,
+          "goals": [
+            "Master connected bodies problems",
+            "Solve pulley and incline problems",
+            "Apply laws to complex scenarios"
+          ],
+          "topics": [
+            {
+              "topic_name": "Connected Bodies & Pulleys",
+              "chapter": "Chapter 2: Laws of Motion",
+              "estimated_hours": 6,
+              "priority": "high",
+              "weightage": 20,
+              "resources": [
+                {
+                  "type": "NCERT",
+                  "reference": "NCERT:phy_11_ch2:2.6-2.7"
+                },
+                {
+                  "type": "PYQ",
+                  "reference": "PYQ:JEE-Main:2022:JUN:28"
+                }
+              ],
+              "practice_problems": 40
+            },
+            {
+              "topic_name": "Friction & Inclined Planes",
+              "chapter": "Chapter 2: Laws of Motion",
+              "estimated_hours": 6,
+              "priority": "high",
+              "weightage": 20,
+              "resources": [
+                {
+                  "type": "NCERT",
+                  "reference": "NCERT:phy_11_ch2:2.8-2.9"
+                }
+              ],
+              "practice_problems": 35
+            }
+          ],
+          "milestones": [
+            "Can solve multi-body problems confidently",
+            "90% accuracy on medium difficulty problems"
+          ]
+        },
+        {
+          "phase_number": 3,
+          "phase_name": "Revision & Mock Tests",
+          "duration_days": 4,
+          "goals": [
+            "Complete full chapter revision",
+            "Achieve 95%+ accuracy on all problem types",
+            "Time management for exam"
+          ],
+          "topics": [
+            {
+              "topic_name": "Full Chapter Revision",
+              "chapter": "Chapter 2: Laws of Motion",
+              "estimated_hours": 8,
+              "priority": "high",
+              "weightage": 100,
+              "resources": [
+                {
+                  "type": "NCERT",
+                  "reference": "NCERT:phy_11_ch2:summary"
+                }
+              ],
+              "practice_problems": 50
+            }
+          ],
+          "milestones": [
+            "Completed 2 full chapter mock tests",
+            "95%+ score on final assessment"
+          ]
+        }
+      ],
+      "revision_schedule": {
+        "cycles": [
+          {
+            "cycle_number": 1,
+            "timing": "Day 1-6 (during Phase 1)",
+            "duration_hours": 1,
+            "focus": "Review concepts learned same day"
+          },
+          {
+            "cycle_number": 2,
+            "timing": "Day 7",
+            "duration_hours": 2,
+            "focus": "Revise all Phase 1 topics"
+          },
+          {
+            "cycle_number": 3,
+            "timing": "Day 11",
+            "duration_hours": 2,
+            "focus": "Quick revision of Phase 1 + Phase 2"
+          },
+          {
+            "cycle_number": 4,
+            "timing": "Day 12-15",
+            "duration_hours": 3,
+            "focus": "Full chapter intensive revision"
+          }
+        ],
+        "strategy": "Spaced repetition with increasing intervals. Review same day, then after 1 week, then before final tests."
+      },
+      "daily_schedule_template": {
+        "morning": [
+          {
+            "time_slot": "06:00-07:00",
+            "activity": "Previous day's concept revision (quick 15-min review + problems)"
+          },
+          {
+            "time_slot": "07:00-08:30",
+            "activity": "New topic study from NCERT (deep reading + notes)"
+          }
+        ],
+        "afternoon": [
+          {
+            "time_slot": "16:00-17:30",
+            "activity": "Problem solving practice (20-30 problems)"
+          }
+        ],
+        "evening": [
+          {
+            "time_slot": "20:00-20:30",
+            "activity": "Day review + mark difficult problems for revision"
+          }
+        ]
+      },
+      "assessment_strategy": {
+        "weekly_tests": true,
+        "mock_tests": [
+          {
+            "day": 7,
+            "type": "Phase 1 Assessment",
+            "duration_hours": 1.5
+          },
+          {
+            "day": 12,
+            "type": "Full Chapter Mock Test 1",
+            "duration_hours": 2
+          },
+          {
+            "day": 14,
+            "type": "Full Chapter Mock Test 2",
+            "duration_hours": 2
+          }
+        ],
+        "self_evaluation_frequency": "Daily"
+      },
+      "tips_and_strategy": [
+        "Har din free-body diagrams banao, yeh bahut important hai problem solving ke liye",
+        "NCERT examples ko baar baar solve karo, exam me similar questions aate hain",
+        "Friction problems me always normal force pehle calculate karo",
+        "Connected bodies me individual free-body diagrams separately banao",
+        "Practice time management: 2-3 minutes per numerical problem",
+        "Formulas ko derive karna seekho, rote learning nahi",
+        "PYQs me jo patterns dikhe unhe note kar lo"
+      ],
+      "confidence": 0.89,
+      "citations": [
+        "NCERT:phy_11_ch2:2.1-2.9",
+        "PYQ:JEE-Main:2023:APR:15",
+        "PYQ:JEE-Main:2022:JUN:28"
+      ],
+      "metadata": {
+        "model_used": "claude-3.5-sonnet",
+        "generated_at": "2025-01-15T11:00:00Z",
+        "context": {
+          "board": "CBSE",
+          "class": 11,
+          "subject": "Physics",
+          "exam": "Term Exam"
+        }
+      }
+    }
+  ]
+}

@@ -1,0 +1,207 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vaktaai.com/schemas/DraftAnswer.schema.json",
+  "title": "DraftAnswer",
+  "description": "Initial LLM response before verification gates. Contains raw output, metadata, and preliminary quality assessment.",
+  "type": "object",
+  "properties": {
+    "raw_text": {
+      "type": "string",
+      "description": "Complete raw text output from the LLM",
+      "minLength": 1
+    },
+    "model_used": {
+      "type": "string",
+      "description": "The model that generated this draft"
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["explain", "solve", "derive", "revise", "docchat", "strategy", "plan"]
+    },
+    "language_detected": {
+      "type": "string",
+      "enum": ["english", "hindi", "hinglish", "mixed"],
+      "description": "Language detected in the output"
+    },
+    "usage": {
+      "type": "object",
+      "description": "Token usage statistics",
+      "properties": {
+        "prompt_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "completion_tokens": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total_tokens": {
+          "type": "integer",
+          "minimum": 0
+        }
+      },
+      "required": ["prompt_tokens", "completion_tokens", "total_tokens"]
+    },
+    "latency_ms": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Time taken to generate response in milliseconds"
+    },
+    "preliminary_checks": {
+      "type": "object",
+      "description": "Quick pre-verification checks",
+      "properties": {
+        "has_citations": {
+          "type": "boolean",
+          "description": "Whether output contains citation patterns"
+        },
+        "citation_count": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "has_formulas": {
+          "type": "boolean",
+          "description": "Whether output contains mathematical formulas"
+        },
+        "has_cot_leakage": {
+          "type": "boolean",
+          "description": "Whether chain-of-thought markers detected (e.g., 'Let me think', 'First I will')"
+        },
+        "estimated_quality_score": {
+          "type": "number",
+          "minimum": 0.0,
+          "maximum": 1.0,
+          "description": "Preliminary quality estimate before full verification"
+        }
+      }
+    },
+    "extracted_citations": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "pattern": "^(NCERT:[a-zA-Z0-9_-]+:[a-zA-Z0-9._-]+|PYQ:[A-Z-]+:[0-9]{4}:(JAN|APR|MAY|JUN|SEP|OCT):[0-9]+)$"
+      },
+      "description": "List of all citations extracted from the draft"
+    },
+    "extracted_formulas": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Mathematical formulas extracted from the output"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "generated_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "temperature": {
+          "type": "number"
+        },
+        "max_tokens": {
+          "type": "integer"
+        },
+        "stop_reason": {
+          "type": "string",
+          "enum": ["stop", "length", "content_filter", "error"]
+        }
+      }
+    }
+  },
+  "required": ["raw_text", "model_used", "mode", "usage"],
+  "examples": [
+    {
+      "raw_text": "Dekho, Newton's second law bahut important hai physics me. Basically, yeh kehta hai ki force aur acceleration ke beech ek direct relationship hota hai [NCERT:phy_11_ch2:2.3.1].\n\n**Formula:** F = ma\n\nJahan:\n- F = Force (Newtons me)\n- m = Mass (kg me)\n- a = Acceleration (m/s² me)\n\nMatlb agar tum kisi object par zyada force lagaoge, toh uska acceleration bhi zyada hoga. Aur agar object ka mass zyada hai, toh same force se kam acceleration milega.\n\n**Real example:** Jab tum bicycle ko push karte ho, toh zyada force se push karoge toh bicycle faster accelerate karegi [NCERT:phy_11_ch2:example_2.1].\n\nSamajh me aaya?",
+      "model_used": "claude-3.5-sonnet",
+      "mode": "explain",
+      "language_detected": "hinglish",
+      "usage": {
+        "prompt_tokens": 485,
+        "completion_tokens": 215,
+        "total_tokens": 700
+      },
+      "latency_ms": 2150,
+      "preliminary_checks": {
+        "has_citations": true,
+        "citation_count": 2,
+        "has_formulas": true,
+        "has_cot_leakage": false,
+        "estimated_quality_score": 0.88
+      },
+      "extracted_citations": [
+        "NCERT:phy_11_ch2:2.3.1",
+        "NCERT:phy_11_ch2:example_2.1"
+      ],
+      "extracted_formulas": [
+        "F = ma"
+      ],
+      "metadata": {
+        "generated_at": "2025-01-15T10:30:15Z",
+        "temperature": 0.15,
+        "max_tokens": 2500,
+        "stop_reason": "stop"
+      }
+    },
+    {
+      "raw_text": "**Given:**\n- Initial velocity (u) = 0 m/s (starts from rest)\n- Acceleration (a) = 2 m/s²\n- Time (t) = 10 s\n\n**Find:**\n1. Final velocity (v)\n2. Distance covered (s)\n\n**Formulas:**\n1. v = u + at\n2. s = ut + ½at²\n\n**Solution:**\n\n**Step 1: Find final velocity**\nv = u + at\nv = 0 + (2)(10)\nv = 20 m/s\n\n**Step 2: Find distance**\ns = ut + ½at²\ns = (0)(10) + ½(2)(10)²\ns = 0 + ½(2)(100)\ns = 100 m\n\n**Unit Verification:**\n- Velocity: m/s ✓\n- Acceleration: m/s² ✓\n- Time: s ✓\n- Distance: m ✓\n\n**Answer:**\n- Final velocity = 20 m/s\n- Distance covered = 100 m",
+      "model_used": "grok-2-math",
+      "mode": "solve",
+      "language_detected": "english",
+      "usage": {
+        "prompt_tokens": 325,
+        "completion_tokens": 245,
+        "total_tokens": 570
+      },
+      "latency_ms": 2850,
+      "preliminary_checks": {
+        "has_citations": false,
+        "citation_count": 0,
+        "has_formulas": true,
+        "has_cot_leakage": false,
+        "estimated_quality_score": 0.92
+      },
+      "extracted_citations": [],
+      "extracted_formulas": [
+        "v = u + at",
+        "s = ut + ½at²",
+        "v = 0 + (2)(10)",
+        "s = 0 + ½(2)(100)"
+      ],
+      "metadata": {
+        "generated_at": "2025-01-15T10:32:00Z",
+        "temperature": 0.0,
+        "max_tokens": 1500,
+        "stop_reason": "stop"
+      }
+    },
+    {
+      "raw_text": "Let me think through this step by step. First, I need to understand what electric charge really means...",
+      "model_used": "gpt-4o",
+      "mode": "explain",
+      "language_detected": "english",
+      "usage": {
+        "prompt_tokens": 450,
+        "completion_tokens": 25,
+        "total_tokens": 475
+      },
+      "latency_ms": 800,
+      "preliminary_checks": {
+        "has_citations": false,
+        "citation_count": 0,
+        "has_formulas": false,
+        "has_cot_leakage": true,
+        "estimated_quality_score": 0.35
+      },
+      "extracted_citations": [],
+      "extracted_formulas": [],
+      "metadata": {
+        "generated_at": "2025-01-15T10:33:00Z",
+        "temperature": 0.15,
+        "max_tokens": 2500,
+        "stop_reason": "length"
+      }
+    }
+  ]
+}

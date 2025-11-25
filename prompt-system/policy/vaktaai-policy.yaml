@@ -1,0 +1,330 @@
+# VaktaAI Dynamic Prompt System Policy
+# Production-grade configuration for Indian EdTech (CBSE 6-12 + JEE/NEET)
+# Version: 1.0.0
+
+# ============================================================================
+# LANGUAGE POLICY
+# ============================================================================
+language:
+  # Default output language for all interactions
+  default: english
+
+  # Supported languages
+  allowed:
+    - english
+    - hindi
+    - hinglish
+
+  # Automatic language switching based on user input detection
+  auto_switch: true
+
+  # Language detection thresholds
+  detection:
+    # Minimum confidence score to trigger language switch (0.0 - 1.0)
+    confidence_threshold: 0.75
+
+    # Minimum character count in user message to attempt detection
+    min_chars: 6
+
+    # Hysteresis: stick to last detected language if new confidence below this
+    hysteresis_threshold: 0.65
+
+  # Language-specific rules
+  constraints:
+    # CRITICAL: All formulas, units, and technical terms MUST remain in English
+    # regardless of output language
+    formulas_in_english: true
+    units_in_english: true
+    technical_terms_in_english: true
+
+    # For Hindi/Hinglish outputs, mix ratio
+    hinglish_english_ratio: 0.4  # 40% English for technical clarity
+
+# ============================================================================
+# RETRIEVAL (RAG) POLICY
+# ============================================================================
+retrieval:
+  # Number of chunks to retrieve from vector store
+  top_k: 6
+
+  # Embedding model configuration
+  embeddings:
+    # Use bilingual embeddings for Hindi/English queries
+    bilingual: true
+    model: "text-embedding-3-small"
+    dimension: 1536
+
+  # Strict syllabus filtering
+  filters:
+    # Only retrieve from user's board/class/subject/chapter
+    enforce_syllabus: true
+
+    # Filter hierarchy (all must match)
+    required_fields:
+      - board      # CBSE, ICSE, State boards
+      - class      # 6-12
+      - subject    # Physics, Chemistry, Biology, Maths
+      - chapter    # Optional but recommended
+
+  # Rejection policy
+  reject_if_no_evidence: true
+
+  # Fallback behavior when no evidence found
+  fallback_action: "suggest_broader_search"
+
+# ============================================================================
+# MODEL ROUTING POLICY
+# ============================================================================
+routing:
+  # Primary routing rules (evaluated in order)
+  rules:
+    # Rule 1: Numeric-heavy problems (solving, calculations)
+    - name: numeric_heavy
+      conditions:
+        - signals.numeric: true
+        - mode: ["solve", "derive"]
+      priority_order:
+        - grok-2-math         # Best for math reasoning
+        - claude-3.5-sonnet   # Strong backup
+        - gpt-4o              # Reliable fallback
+      rationale: "Mathematical computation requires specialized reasoning"
+
+    # Rule 2: Pedagogy and safety-critical content
+    - name: pedagogy_safety
+      conditions:
+        - mode: ["explain", "revise", "strategy"]
+        - OR:
+          - signals.safety_critical: true
+          - subject: ["Biology", "Chemistry"]  # Lab safety, concepts
+      priority_order:
+        - claude-3.5-sonnet   # Best for nuanced teaching
+        - gpt-4o              # Strong pedagogy
+        - gemini-1.5-pro      # Good general knowledge
+      rationale: "Pedagogical content requires careful, safe explanations"
+
+    # Rule 3: Fast document chat (docchat mode)
+    - name: fast_docchat
+      conditions:
+        - mode: ["docchat"]
+        - sla.latency_ms: < 2000  # Need fast response
+      priority_order:
+        - gemini-1.5-flash    # Fastest, good quality
+        - gpt-4o-mini         # Fast and cheap
+        - gpt-4o              # If quality needed
+      rationale: "Document chat prioritizes speed and cost-effectiveness"
+
+    # Rule 4: Planning and strategy
+    - name: planning
+      conditions:
+        - mode: ["plan", "strategy"]
+      priority_order:
+        - claude-3.5-sonnet   # Best for structured planning
+        - gpt-4o              # Good reasoning
+        - gemini-1.5-pro      # Adequate
+      rationale: "Planning requires structured, logical thinking"
+
+  # Default fallback if no rule matches
+  default_model: gpt-4o
+
+  # Temperature settings per mode
+  temperature:
+    solve: 0.0      # Deterministic math solutions
+    derive: 0.0     # Deterministic derivations
+    explain: 0.15   # Slight creativity for analogies
+    revise: 0.15    # Slight variation for revision sheets
+    docchat: 0.1    # Mostly factual, minimal creativity
+    strategy: 0.2   # Creative study strategies
+    plan: 0.15      # Structured but adaptive plans
+
+  # Max tokens per mode
+  max_tokens:
+    solve: 1500
+    derive: 2000
+    explain: 2500
+    revise: 2000
+    docchat: 1200
+    strategy: 2500
+    plan: 3000
+
+# ============================================================================
+# ACCEPTANCE GATE POLICY
+# ============================================================================
+acceptance:
+  # Minimum confidence score to accept draft (0.0 - 1.0)
+  confidence_min: 0.82
+
+  # Confidence threshold to trigger automatic regeneration
+  auto_regenerate_below: 0.72
+
+  # Maximum number of regeneration attempts
+  max_regenerations: 2
+
+  # Verification gates (all must pass)
+  gates:
+    # Fact verification: check citations and evidence support
+    fact_check:
+      enabled: true
+      # Require at least one citation per factual claim
+      require_citations: true
+      # Reject if ANY sentence lacks evidence support
+      reject_unsupported: true
+      # Citation formats accepted
+      citation_patterns:
+        - "NCERT:{doc_id}:{section}"
+        - "PYQ:{exam}:{year}:{slot}:{qid}"
+
+    # Math verification: validate calculations and units
+    math_check:
+      enabled: true
+      # Verify units match throughout calculation
+      verify_units: true
+      # Check significant figures consistency
+      verify_sig_figs: true
+      # Validate formula applications
+      verify_formulas: true
+
+    # Language verification: ensure constraints met
+    language_check:
+      enabled: true
+      # Verify formulas remain in English even for Hindi/Hinglish output
+      formulas_in_english: true
+      # No chain-of-thought leakage
+      no_cot_leakage: true
+
+  # Regeneration strategy
+  regeneration:
+    # On first failure: tighten constraints, same model
+    attempt_1:
+      action: tighten_constraints
+      model_change: false
+
+    # On second failure: switch to fallback model
+    attempt_2:
+      action: switch_model_and_tighten
+      model_change: true
+
+    # On third failure: escalate to human review
+    attempt_3:
+      action: escalate
+      error_code: "MAX_REGENERATIONS_EXCEEDED"
+
+# ============================================================================
+# TOOL REQUIREMENTS BY TASK MODE
+# ============================================================================
+tools:
+  # Tools required for each mode
+  required_by_mode:
+    solve:
+      - calculator       # Numerical computation
+      - unit_checker     # Unit validation
+      - latex_formatter  # Equation formatting
+
+    derive:
+      - latex_formatter  # Mathematical notation
+      - citation_lookup  # Reference formulas
+
+    explain:
+      - rag_search       # Retrieve analogies, examples
+      - citation_lookup  # NCERT references
+
+    docchat:
+      - rag_search       # Document retrieval
+      - citation_check   # Verify all claims cited
+
+    revise:
+      - rag_search       # Gather key concepts
+      - citation_lookup  # Reference materials
+
+    strategy:
+      - pyq_analyzer     # Analyze past year questions
+      - weightage_calc   # Topic weightage calculator
+
+    plan:
+      - date_calculator  # Schedule planning
+      - revision_cycler  # Spaced repetition planner
+
+  # Tool configurations
+  configs:
+    calculator:
+      precision: 4       # Significant figures
+      scientific: true   # Use scientific notation when appropriate
+
+    unit_checker:
+      system: SI         # Enforce SI units
+      strict: true       # Reject unit mismatches
+
+    rag_search:
+      top_k: 6           # Match retrieval.top_k
+      rerank: true       # Re-rank by relevance
+
+    citation_check:
+      strict: true       # All facts must be cited
+      formats: ["NCERT", "PYQ"]
+
+# ============================================================================
+# SAFETY AND COMPLIANCE
+# ============================================================================
+safety:
+  # Content safety checks
+  content_filters:
+    - inappropriate_language
+    - harmful_instructions
+    - medical_advice       # Flag but don't block biology content
+    - legal_advice
+
+  # Exam integrity
+  exam_integrity:
+    # Don't provide direct answers to ongoing exams
+    block_live_exam_answers: true
+
+    # PYQ solutions are OK (past papers)
+    allow_pyq_solutions: true
+
+  # Citation transparency
+  citations:
+    # Always show sources
+    always_visible: true
+
+    # Format: inline citations
+    style: "inline"
+
+    # Require source attribution for all factual claims
+    mandatory_for_facts: true
+
+# ============================================================================
+# PERFORMANCE AND SLA
+# ============================================================================
+performance:
+  # Target latency per mode (milliseconds)
+  target_latency:
+    solve: 3000
+    derive: 4000
+    explain: 2500
+    revise: 2000
+    docchat: 1500
+    strategy: 3500
+    plan: 4000
+
+  # Cost optimization
+  cost_optimization:
+    # Prefer cheaper models when quality delta is small
+    prefer_cheap_if_quality_close: true
+    quality_delta_threshold: 0.05
+
+  # Caching
+  cache:
+    # Cache template renders
+    enable_template_cache: true
+
+    # Cache RAG results (same query, same filters)
+    enable_rag_cache: true
+    ttl_seconds: 3600
+
+# ============================================================================
+# METADATA
+# ============================================================================
+metadata:
+  version: "1.0.0"
+  last_updated: "2025-01-15"
+  maintained_by: "VaktaAI Platform Engineering"
+  schema_version: "2025-01"

@@ -1,0 +1,439 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vaktaai.com/schemas/VerifierReport.schema.json",
+  "title": "VerifierReport",
+  "description": "Comprehensive verification report from acceptance gates. Includes fact-checking, math verification, language compliance, and final confidence score.",
+  "type": "object",
+  "properties": {
+    "overall_pass": {
+      "type": "boolean",
+      "description": "Whether the draft passed all verification gates"
+    },
+    "confidence_score": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Overall confidence score (must be >= 0.82 to pass)"
+    },
+    "should_regenerate": {
+      "type": "boolean",
+      "description": "Whether to trigger regeneration (confidence < 0.72)"
+    },
+    "gates": {
+      "type": "object",
+      "description": "Individual gate verification results",
+      "properties": {
+        "fact_check": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "passed": {
+              "type": "boolean"
+            },
+            "score": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "details": {
+              "type": "object",
+              "properties": {
+                "total_claims": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "cited_claims": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "uncited_claims": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "invalid_citations": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "unsupported_sentences": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Sentences lacking evidence support"
+                }
+              }
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["enabled", "passed", "score"]
+        },
+        "math_check": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "passed": {
+              "type": "boolean"
+            },
+            "score": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "details": {
+              "type": "object",
+              "properties": {
+                "formulas_found": {
+                  "type": "integer",
+                  "minimum": 0
+                },
+                "unit_consistency": {
+                  "type": "boolean",
+                  "description": "All units consistent throughout calculation"
+                },
+                "sig_figs_consistent": {
+                  "type": "boolean",
+                  "description": "Significant figures maintained properly"
+                },
+                "dimensional_analysis": {
+                  "type": "boolean",
+                  "description": "Dimensional analysis is correct"
+                },
+                "unit_errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                },
+                "calculation_errors": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["enabled", "passed", "score"]
+        },
+        "language_check": {
+          "type": "object",
+          "properties": {
+            "enabled": {
+              "type": "boolean"
+            },
+            "passed": {
+              "type": "boolean"
+            },
+            "score": {
+              "type": "number",
+              "minimum": 0.0,
+              "maximum": 1.0
+            },
+            "details": {
+              "type": "object",
+              "properties": {
+                "target_language": {
+                  "type": "string",
+                  "enum": ["english", "hindi", "hinglish"]
+                },
+                "detected_language": {
+                  "type": "string",
+                  "enum": ["english", "hindi", "hinglish", "mixed"]
+                },
+                "language_match": {
+                  "type": "boolean"
+                },
+                "formulas_in_english": {
+                  "type": "boolean",
+                  "description": "All formulas remain in English as required"
+                },
+                "units_in_english": {
+                  "type": "boolean",
+                  "description": "All units remain in English as required"
+                },
+                "has_cot_leakage": {
+                  "type": "boolean",
+                  "description": "Chain-of-thought markers detected in output"
+                },
+                "cot_markers_found": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Specific COT markers found (e.g., 'Let me think', 'First I will')"
+                },
+                "non_english_formulas": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  },
+                  "description": "Formulas that violated English-only constraint"
+                }
+              }
+            },
+            "errors": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          },
+          "required": ["enabled", "passed", "score"]
+        }
+      },
+      "required": ["fact_check", "math_check", "language_check"]
+    },
+    "regeneration_strategy": {
+      "type": "object",
+      "description": "Recommended regeneration strategy if failed",
+      "properties": {
+        "attempt_number": {
+          "type": "integer",
+          "minimum": 0,
+          "maximum": 3
+        },
+        "action": {
+          "type": "string",
+          "enum": ["none", "tighten_constraints", "switch_model_and_tighten", "escalate"],
+          "description": "Action to take based on attempt number"
+        },
+        "switch_model": {
+          "type": "boolean",
+          "description": "Whether to switch to fallback model"
+        },
+        "suggested_model": {
+          "type": "string",
+          "description": "Suggested fallback model if switching"
+        },
+        "tightened_instructions": {
+          "type": "string",
+          "description": "Additional constraints to add to prompt"
+        }
+      }
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "verified_at": {
+          "type": "string",
+          "format": "date-time"
+        },
+        "verification_latency_ms": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  },
+  "required": ["overall_pass", "confidence_score", "should_regenerate", "gates"],
+  "examples": [
+    {
+      "overall_pass": true,
+      "confidence_score": 0.88,
+      "should_regenerate": false,
+      "gates": {
+        "fact_check": {
+          "enabled": true,
+          "passed": true,
+          "score": 0.90,
+          "details": {
+            "total_claims": 5,
+            "cited_claims": 5,
+            "uncited_claims": 0,
+            "invalid_citations": [],
+            "unsupported_sentences": []
+          },
+          "errors": []
+        },
+        "math_check": {
+          "enabled": false,
+          "passed": true,
+          "score": 1.0,
+          "details": {
+            "formulas_found": 1,
+            "unit_consistency": true,
+            "sig_figs_consistent": true,
+            "dimensional_analysis": true,
+            "unit_errors": [],
+            "calculation_errors": []
+          },
+          "errors": []
+        },
+        "language_check": {
+          "enabled": true,
+          "passed": true,
+          "score": 0.85,
+          "details": {
+            "target_language": "hinglish",
+            "detected_language": "hinglish",
+            "language_match": true,
+            "formulas_in_english": true,
+            "units_in_english": true,
+            "has_cot_leakage": false,
+            "cot_markers_found": [],
+            "non_english_formulas": []
+          },
+          "errors": []
+        }
+      },
+      "regeneration_strategy": {
+        "attempt_number": 0,
+        "action": "none",
+        "switch_model": false
+      },
+      "metadata": {
+        "verified_at": "2025-01-15T10:30:20Z",
+        "verification_latency_ms": 150
+      }
+    },
+    {
+      "overall_pass": false,
+      "confidence_score": 0.68,
+      "should_regenerate": true,
+      "gates": {
+        "fact_check": {
+          "enabled": true,
+          "passed": false,
+          "score": 0.45,
+          "details": {
+            "total_claims": 8,
+            "cited_claims": 3,
+            "uncited_claims": 5,
+            "invalid_citations": [],
+            "unsupported_sentences": [
+              "Electric charge is the most important concept in physics.",
+              "All materials conduct electricity equally.",
+              "Electrons are always negative and protons are always positive.",
+              "Current flows from positive to negative terminal.",
+              "Resistance depends only on material type."
+            ]
+          },
+          "errors": [
+            "5 factual claims lack citation support",
+            "Claim 'All materials conduct electricity equally' is factually incorrect"
+          ]
+        },
+        "math_check": {
+          "enabled": false,
+          "passed": true,
+          "score": 1.0,
+          "details": {
+            "formulas_found": 0
+          },
+          "errors": []
+        },
+        "language_check": {
+          "enabled": true,
+          "passed": true,
+          "score": 0.92,
+          "details": {
+            "target_language": "english",
+            "detected_language": "english",
+            "language_match": true,
+            "formulas_in_english": true,
+            "units_in_english": true,
+            "has_cot_leakage": false,
+            "cot_markers_found": [],
+            "non_english_formulas": []
+          },
+          "errors": []
+        }
+      },
+      "regeneration_strategy": {
+        "attempt_number": 1,
+        "action": "tighten_constraints",
+        "switch_model": false,
+        "tightened_instructions": "CRITICAL: Every factual claim MUST have a citation in format [NCERT:doc_id:section] or [PYQ:exam:year:slot:qid]. If you cannot find supporting evidence, do not make the claim. Use only information from provided evidence chunks."
+      },
+      "metadata": {
+        "verified_at": "2025-01-15T10:31:00Z",
+        "verification_latency_ms": 180
+      }
+    },
+    {
+      "overall_pass": false,
+      "confidence_score": 0.35,
+      "should_regenerate": true,
+      "gates": {
+        "fact_check": {
+          "enabled": true,
+          "passed": false,
+          "score": 0.20,
+          "details": {
+            "total_claims": 3,
+            "cited_claims": 0,
+            "uncited_claims": 3,
+            "invalid_citations": [],
+            "unsupported_sentences": [
+              "Let me think through this step by step.",
+              "First, I need to understand what electric charge really means.",
+              "Electric charge is a fundamental property."
+            ]
+          },
+          "errors": [
+            "No citations found in response",
+            "All factual claims lack evidence support"
+          ]
+        },
+        "math_check": {
+          "enabled": false,
+          "passed": true,
+          "score": 1.0,
+          "details": {
+            "formulas_found": 0
+          },
+          "errors": []
+        },
+        "language_check": {
+          "enabled": true,
+          "passed": false,
+          "score": 0.50,
+          "details": {
+            "target_language": "english",
+            "detected_language": "english",
+            "language_match": true,
+            "formulas_in_english": true,
+            "units_in_english": true,
+            "has_cot_leakage": true,
+            "cot_markers_found": [
+              "Let me think",
+              "First, I need to"
+            ],
+            "non_english_formulas": []
+          },
+          "errors": [
+            "Chain-of-thought leakage detected: 'Let me think', 'First, I need to'"
+          ]
+        }
+      },
+      "regeneration_strategy": {
+        "attempt_number": 2,
+        "action": "switch_model_and_tighten",
+        "switch_model": true,
+        "suggested_model": "claude-3.5-sonnet",
+        "tightened_instructions": "CRITICAL RULES:\n1. NO chain-of-thought in output. Never say 'Let me think', 'First I will', etc.\n2. Every factual claim MUST have [NCERT:doc_id:section] or [PYQ:exam:year:slot:qid] citation.\n3. Output ONLY the final answer, no reasoning process.\n4. If no evidence available, say 'I don't have enough information to answer this based on the provided documents.'"
+      },
+      "metadata": {
+        "verified_at": "2025-01-15T10:33:05Z",
+        "verification_latency_ms": 125
+      }
+    }
+  ]
+}

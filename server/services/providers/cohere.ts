@@ -1,0 +1,270 @@
+import { CohereClientV2 } from "cohere-ai";
+import { AIProvider, Summary, Quiz, Note } from "../aiProvider";
+
+// Lazy initialization of Cohere client
+let cohere: CohereClientV2 | null = null;
+
+function getCohere(): CohereClientV2 {
+  if (!cohere) {
+    const apiKey = process.env.COHERE_API_KEY;
+    if (!apiKey) {
+      throw new Error('COHERE_API_KEY is not configured. Please add your Cohere API key to use this feature.');
+    }
+    cohere = new CohereClientV2({ token: apiKey });
+  }
+  return cohere;
+}
+
+export class CohereProvider implements AIProvider {
+  async generateSummary(content: string, options?: {
+    language?: string;
+    maxLength?: number;
+  }): Promise<Summary> {
+    const language = options?.language || 'en';
+    const maxLength = options?.maxLength || 200;
+
+    const prompt = `Generate a concise summary in ${language}.
+Structure: 
+- Title (short, descriptive)
+- Summary (${maxLength} words max)
+- 5-8 key points as bullets
+
+Content:
+${content}
+
+Return valid JSON: {"title": "...", "summary": "...", "keyPoints": ["...", "..."]}`;
+
+    const response = await getCohere().chat({
+      model: 'command-a-03-2025',
+      messages: [
+        { role: 'user', content: prompt }
+      ]
+    });
+
+    const contentItem = response.message?.content?.[0];
+    let text = contentItem && 'text' in contentItem ? contentItem.text : '{}';
+    
+    // Strip markdown code blocks if present
+    text = text.replace(/^```json?\s*/i, '').replace(/\s*```$/i, '').trim();
+    
+    try {
+      const result = JSON.parse(text);
+      return result as Summary;
+    } catch (error) {
+      console.error('Failed to parse Cohere summary response:', error);
+      throw new Error(`Invalid JSON response from Cohere: ${text.substring(0, 200)}`);
+    }
+  }
+
+  async generateHighlights(content: string, options?: {
+    language?: string;
+    count?: number;
+  }): Promise<string[]> {
+    const language = options?.language || 'en';
+    const count = options?.count || 5;
+
+    const prompt = `Extract ${count} most important highlights from the content in ${language}.
+Return valid JSON: {"highlights": ["highlight 1", "highlight 2", ...]}
+
+Content:
+${content}`;
+
+    const response = await getCohere().chat({
+      model: 'command-a-03-2025',
+      messages: [
+        { role: 'user', content: prompt }
+      ]
+    });
+
+    const contentItem = response.message?.content?.[0];
+    let text = contentItem && 'text' in contentItem ? contentItem.text : '{}';
+    
+    // Strip markdown code blocks if present
+    text = text.replace(/^```json?\s*/i, '').replace(/\s*```$/i, '').trim();
+    
+    try {
+      const result = JSON.parse(text);
+      return result.highlights || [];
+    } catch (error) {
+      console.error('Failed to parse Cohere highlights response:', error);
+      throw new Error(`Invalid JSON response from Cohere: ${text.substring(0, 200)}`);
+    }
+  }
+
+  async generateQuiz(content: string, options?: {
+    subject?: string;
+    difficulty?: string;
+    language?: string;
+    questionCount?: number;
+  }): Promise<Quiz> {
+    const subject = options?.subject || 'General';
+    const difficulty = options?.difficulty || 'medium';
+    const language = options?.language || 'en';
+    const questionCount = options?.questionCount || 5;
+
+    const prompt = `Create ${questionCount} high-quality exam questions.
+Subject: ${subject}. Difficulty: ${difficulty}. Language: ${language}.
+
+Content:
+${content}
+
+Return valid JSON: {
+  "title": "...",
+  "subject": "${subject}",
+  "difficulty": "${difficulty}",
+  "questions": [
+    {
+      "question": "...",
+      "options": ["A", "B", "C", "D"],
+      "correctAnswer": "A",
+      "rationale": "Why this is correct..."
+    }
+  ]
+}`;
+
+    const response = await getCohere().chat({
+      model: 'command-a-03-2025',
+      messages: [
+        { role: 'user', content: prompt }
+      ]
+    });
+
+    const contentItem = response.message?.content?.[0];
+    let text = contentItem && 'text' in contentItem ? contentItem.text : '{}';
+    
+    // Strip markdown code blocks if present
+    text = text.replace(/^```json?\s*/i, '').replace(/\s*```$/i, '').trim();
+    
+    try {
+      const result = JSON.parse(text);
+      return result as Quiz;
+    } catch (error) {
+      console.error('Failed to parse Cohere quiz response:', error);
+      throw new Error(`Invalid JSON response from Cohere: ${text.substring(0, 200)}`);
+    }
+  }
+
+  async generateFlashcards(content: string, options?: {
+    language?: string;
+    count?: number;
+  }): Promise<Array<{ front: string; back: string }>> {
+    const language = options?.language || 'en';
+    const count = options?.count || 10;
+
+    const prompt = `Create ${count} flashcards from the content in ${language}.
+Return valid JSON: {"flashcards": [{"front": "...", "back": "..."}, ...]}
+
+Content:
+${content}`;
+
+    const response = await getCohere().chat({
+      model: 'command-a-03-2025',
+      messages: [
+        { role: 'user', content: prompt }
+      ]
+    });
+
+    const contentItem = response.message?.content?.[0];
+    let text = contentItem && 'text' in contentItem ? contentItem.text : '{}';
+    
+    // Strip markdown code blocks if present
+    text = text.replace(/^```json?\s*/i, '').replace(/\s*```$/i, '').trim();
+    
+    try {
+      const result = JSON.parse(text);
+      return result.flashcards || [];
+    } catch (error) {
+      console.error('Failed to parse Cohere flashcards response:', error);
+      throw new Error(`Invalid JSON response from Cohere: ${text.substring(0, 200)}`);
+    }
+  }
+
+  async generateNotes(content: string, options?: {
+    language?: string;
+    includeFlashcards?: boolean;
+  }): Promise<Note> {
+    const language = options?.language || 'en';
+
+    const prompt = `Generate student notes in ${language}.
+Structure:
+- Title (short, descriptive)
+- Content (main notes with key concepts)
+- Key points (5-8 bullets)
+- Flashcards (8-12 pairs)
+
+Content:
+${content}
+
+Return valid JSON: {
+  "title": "...",
+  "content": "...",
+  "keyPoints": ["...", "..."],
+  "flashcards": [{"front": "...", "back": "..."}, ...]
+}`;
+
+    const response = await getCohere().chat({
+      model: 'command-a-03-2025',
+      messages: [
+        { role: 'user', content: prompt }
+      ]
+    });
+
+    const contentItem = response.message?.content?.[0];
+    let text = contentItem && 'text' in contentItem ? contentItem.text : '{}';
+    
+    // Strip markdown code blocks if present
+    text = text.replace(/^```json?\s*/i, '').replace(/\s*```$/i, '').trim();
+    
+    try {
+      const result = JSON.parse(text);
+      return result as Note;
+    } catch (error) {
+      console.error('Failed to parse Cohere notes response:', error);
+      throw new Error(`Invalid JSON response from Cohere: ${text.substring(0, 200)}`);
+    }
+  }
+
+  async chat(messages: Array<{ role: string; content: string }>, options?: {
+    stream?: boolean;
+    temperature?: number;
+    maxTokens?: number;
+  }): Promise<ReadableStream | string> {
+    const temperature = options?.temperature || 0.7;
+    const maxTokens = options?.maxTokens || 2048;
+
+    if (options?.stream) {
+      const stream = await getCohere().chatStream({
+        model: 'command-a-03-2025',
+        messages: messages.map(m => ({ role: m.role as any, content: m.content })),
+        temperature,
+        maxTokens,
+      });
+
+      return new ReadableStream({
+        async start(controller) {
+          for await (const event of stream) {
+            if (event.type === 'content-delta') {
+              const content = event.delta?.message?.content?.text || '';
+              if (content) {
+                controller.enqueue(new TextEncoder().encode(content));
+              }
+            }
+          }
+          controller.close();
+        },
+      });
+    } else {
+      const response = await getCohere().chat({
+        model: 'command-a-03-2025',
+        messages: messages.map(m => ({ role: m.role as any, content: m.content })),
+        temperature,
+        maxTokens,
+      });
+
+      const contentItem = response.message?.content?.[0];
+      return contentItem && 'text' in contentItem ? contentItem.text : '';
+    }
+  }
+}
+
+export const cohereProvider = new CohereProvider();

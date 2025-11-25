@@ -1,0 +1,105 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vaktaai.com/schemas/LanguageDetectionResult.schema.json",
+  "title": "LanguageDetectionResult",
+  "description": "Result of language detection with confidence score. Used for auto-switching between English, Hindi, and Hinglish.",
+  "type": "object",
+  "properties": {
+    "label": {
+      "type": "string",
+      "enum": ["english", "hindi", "hinglish"],
+      "description": "Detected language label"
+    },
+    "confidence": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Confidence score for the detection (0.0 to 1.0)"
+    },
+    "detected_from": {
+      "type": "string",
+      "description": "The text that was analyzed for language detection"
+    },
+    "script": {
+      "type": "string",
+      "enum": ["latin", "devanagari", "mixed"],
+      "description": "Script type detected in the input"
+    },
+    "char_count": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Character count of the analyzed text"
+    },
+    "should_switch": {
+      "type": "boolean",
+      "description": "Whether to switch language based on policy thresholds (confidence >= 0.75 && char_count >= 6)"
+    },
+    "metadata": {
+      "type": "object",
+      "properties": {
+        "hindi_char_ratio": {
+          "type": "number",
+          "description": "Ratio of Devanagari characters (0.0-1.0)"
+        },
+        "english_word_count": {
+          "type": "integer",
+          "description": "Count of English words detected"
+        },
+        "hindi_word_count": {
+          "type": "integer",
+          "description": "Count of Hindi words detected"
+        }
+      }
+    }
+  },
+  "required": ["label", "confidence", "should_switch"],
+  "examples": [
+    {
+      "label": "hinglish",
+      "confidence": 0.89,
+      "detected_from": "Electric charge kya hota hai?",
+      "script": "mixed",
+      "char_count": 28,
+      "should_switch": true,
+      "metadata": {
+        "hindi_char_ratio": 0.0,
+        "english_word_count": 2,
+        "hindi_word_count": 3
+      }
+    },
+    {
+      "label": "english",
+      "confidence": 0.98,
+      "detected_from": "What is the formula for Newton's second law?",
+      "script": "latin",
+      "char_count": 46,
+      "should_switch": true,
+      "metadata": {
+        "hindi_char_ratio": 0.0,
+        "english_word_count": 9,
+        "hindi_word_count": 0
+      }
+    },
+    {
+      "label": "hindi",
+      "confidence": 0.95,
+      "detected_from": "विद्युत आवेश क्या है?",
+      "script": "devanagari",
+      "char_count": 20,
+      "should_switch": true,
+      "metadata": {
+        "hindi_char_ratio": 0.85,
+        "english_word_count": 0,
+        "hindi_word_count": 4
+      }
+    },
+    {
+      "label": "english",
+      "confidence": 0.62,
+      "detected_from": "Hi",
+      "script": "latin",
+      "char_count": 2,
+      "should_switch": false
+    }
+  ]
+}

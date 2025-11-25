@@ -1,0 +1,196 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vaktaai.com/schemas/EvidencePack.schema.json",
+  "title": "EvidencePack",
+  "description": "Retrieved evidence from RAG system with strict citation format. Used for fact-checking and grounding LLM responses in source material.",
+  "type": "object",
+  "properties": {
+    "chunks": {
+      "type": "array",
+      "description": "Retrieved text chunks with metadata",
+      "items": {
+        "type": "object",
+        "properties": {
+          "chunk_id": {
+            "type": "string",
+            "description": "Unique identifier for the chunk"
+          },
+          "text": {
+            "type": "string",
+            "description": "The actual text content of the chunk",
+            "minLength": 1
+          },
+          "citation": {
+            "type": "string",
+            "pattern": "^(NCERT:[a-zA-Z0-9_-]+:[a-zA-Z0-9._-]+|PYQ:[A-Z-]+:[0-9]{4}:(JAN|APR|MAY|JUN|SEP|OCT):[0-9]+)$",
+            "description": "Standardized citation in format NCERT:{doc_id}:{section} or PYQ:{exam}:{year}:{slot}:{qid}",
+            "examples": [
+              "NCERT:phy_11_ch2:2.3.1",
+              "PYQ:JEE-Main:2023:APR:42",
+              "NCERT:chem_12_ch5:example_5.2"
+            ]
+          },
+          "metadata": {
+            "type": "object",
+            "properties": {
+              "doc_title": {
+                "type": "string",
+                "description": "Document title"
+              },
+              "page": {
+                "type": "integer",
+                "description": "Page number in source document"
+              },
+              "chapter": {
+                "type": "string",
+                "description": "Chapter name or number"
+              },
+              "board": {
+                "type": "string",
+                "enum": ["CBSE", "ICSE", "State", "JEE", "NEET"]
+              },
+              "class": {
+                "type": "integer",
+                "minimum": 6,
+                "maximum": 12
+              },
+              "subject": {
+                "type": "string",
+                "enum": ["Physics", "Chemistry", "Biology", "Mathematics"]
+              }
+            }
+          },
+          "similarity_score": {
+            "type": "number",
+            "minimum": 0.0,
+            "maximum": 1.0,
+            "description": "Cosine similarity score from vector search"
+          }
+        },
+        "required": ["chunk_id", "text", "citation", "similarity_score"]
+      },
+      "minItems": 0,
+      "maxItems": 20
+    },
+    "total_retrieved": {
+      "type": "integer",
+      "minimum": 0,
+      "description": "Total number of chunks retrieved"
+    },
+    "retrieval_query": {
+      "type": "string",
+      "description": "The query used for retrieval"
+    },
+    "filters_applied": {
+      "type": "object",
+      "description": "Filters used during retrieval",
+      "properties": {
+        "board": {
+          "type": "string"
+        },
+        "class": {
+          "type": "integer"
+        },
+        "subject": {
+          "type": "string"
+        },
+        "chapter": {
+          "type": "string"
+        }
+      }
+    },
+    "has_sufficient_evidence": {
+      "type": "boolean",
+      "description": "Whether sufficient evidence was found (based on retrieval.reject_if_no_evidence policy)"
+    },
+    "avg_similarity": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Average similarity score across all retrieved chunks"
+    }
+  },
+  "required": ["chunks", "total_retrieved", "has_sufficient_evidence"],
+  "examples": [
+    {
+      "chunks": [
+        {
+          "chunk_id": "chunk_phy11_ch2_001",
+          "text": "Newton's second law of motion states that the rate of change of momentum of an object is directly proportional to the applied force and takes place in the direction of the force. Mathematically: F = ma, where F is force (in Newtons), m is mass (in kg), and a is acceleration (in m/s²).",
+          "citation": "NCERT:phy_11_ch2:2.3.1",
+          "metadata": {
+            "doc_title": "NCERT Physics Class 11 - Laws of Motion",
+            "page": 42,
+            "chapter": "Chapter 2: Laws of Motion",
+            "board": "CBSE",
+            "class": 11,
+            "subject": "Physics"
+          },
+          "similarity_score": 0.94
+        },
+        {
+          "chunk_id": "chunk_phy11_ch2_ex01",
+          "text": "Example 2.1: A force of 10 N acts on a body of mass 2 kg. Find the acceleration. Solution: Using F = ma, we get a = F/m = 10/2 = 5 m/s².",
+          "citation": "NCERT:phy_11_ch2:example_2.1",
+          "metadata": {
+            "doc_title": "NCERT Physics Class 11 - Laws of Motion",
+            "page": 43,
+            "chapter": "Chapter 2: Laws of Motion",
+            "board": "CBSE",
+            "class": 11,
+            "subject": "Physics"
+          },
+          "similarity_score": 0.89
+        }
+      ],
+      "total_retrieved": 2,
+      "retrieval_query": "Newton's second law formula and examples",
+      "filters_applied": {
+        "board": "CBSE",
+        "class": 11,
+        "subject": "Physics",
+        "chapter": "Laws of Motion"
+      },
+      "has_sufficient_evidence": true,
+      "avg_similarity": 0.915
+    },
+    {
+      "chunks": [
+        {
+          "chunk_id": "chunk_jee_main_2023_apr_42",
+          "text": "Q42: A particle moves in a straight line with constant acceleration. If it covers 100m in 5s and 150m in the next 5s, find the acceleration. Options: (A) 2 m/s² (B) 3 m/s² (C) 4 m/s² (D) 5 m/s². Correct Answer: (A) 2 m/s²",
+          "citation": "PYQ:JEE-Main:2023:APR:42",
+          "metadata": {
+            "doc_title": "JEE Main 2023 April Session - Physics",
+            "page": 8,
+            "chapter": "Kinematics",
+            "board": "JEE",
+            "class": 12,
+            "subject": "Physics"
+          },
+          "similarity_score": 0.87
+        }
+      ],
+      "total_retrieved": 1,
+      "retrieval_query": "constant acceleration problems",
+      "filters_applied": {
+        "board": "JEE",
+        "subject": "Physics"
+      },
+      "has_sufficient_evidence": true,
+      "avg_similarity": 0.87
+    },
+    {
+      "chunks": [],
+      "total_retrieved": 0,
+      "retrieval_query": "quantum chromodynamics",
+      "filters_applied": {
+        "board": "CBSE",
+        "class": 10,
+        "subject": "Physics"
+      },
+      "has_sufficient_evidence": false,
+      "avg_similarity": 0.0
+    }
+  ]
+}

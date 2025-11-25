@@ -1,0 +1,198 @@
+# Prometheus Alert Rules for VaktaAI Prompt System
+# Load with: prometheus --config.file=prometheus.yml --rules.file=alerts/prometheus-alerts.yml
+
+groups:
+  - name: vaktaai.quality
+    interval: 30s
+    rules:
+      # CRITICAL: Confidence scores below threshold
+      - alert: LowConfidenceBurst
+        expr: |
+          (
+            sum(rate(vaktaai_confidence_bucket{le="0.82"}[10m]))
+            /
+            sum(rate(vaktaai_confidence_count[10m]))
+          ) > 0.05
+        for: 10m
+        labels:
+          severity: page
+          component: prompt-orchestrator
+        annotations:
+          summary: "{{ $value | humanizePercentage }} of responses have confidence < 0.82"
+          description: "Target is 95%+ responses with confidence >= 0.82. Current: {{ $value | humanizePercentage }} below threshold."
+          runbook: "https://docs.vaktaai.com/runbooks/low-confidence"
+          dashboard: "https://grafana.vaktaai.com/d/orchestrator/prompt-system"
+
+      # WARNING: High regeneration rate
+      - alert: HighRegenRate
+        expr: |
+          (
+            sum(rate(vaktaai_regenerations_total[10m]))
+            /
+            sum(rate(vaktaai_responses_total[10m]))
+          ) > 0.15
+        for: 15m
+        labels:
+          severity: ticket
+          component: prompt-orchestrator
+        annotations:
+          summary: "{{ $value | humanizePercentage }} of responses require regeneration"
+          description: "Target is <15% regeneration rate. Current: {{ $value | humanizePercentage }}. Check acceptance gate thresholds."
+          runbook: "https://docs.vaktaai.com/runbooks/high-regen"
+
+      # WARNING: Citation validation failures
+      - alert: CitationFailures
+        expr: sum(rate(vaktaai_citations_fail_total[10m])) > 3
+        for: 10m
+        labels:
+          severity: ticket
+          component: prompt-orchestrator
+        annotations:
+          summary: "{{ $value }} citation validation failures per second"
+          description: "Frequent citation validation failures detected. Check RAG evidence quality and citation format."
+          runbook: "https://docs.vaktaai.com/runbooks/citation-failures"
+
+      # CRITICAL: Latency SLO violation
+      - alert: LatencySLOViolation
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(vaktaai_e2e_latency_ms_bucket[10m])) by (le, mode)
+          ) > 4200
+        for: 15m
+        labels:
+          severity: page
+          component: prompt-orchestrator
+        annotations:
+          summary: "p95 latency {{ $value }}ms exceeds 4.2s SLO for mode={{ $labels.mode }}"
+          description: "End-to-end latency p95 is {{ $value }}ms, above 4200ms target. Check LLM provider performance."
+          runbook: "https://docs.vaktaai.com/runbooks/high-latency"
+
+      # WARNING: Language detection accuracy drop
+      - alert: LangDetectionAccuracyDrop
+        expr: |
+          (
+            sum(rate(vaktaai_language_detect_total{conf_bucket="<0.6"}[10m]))
+            /
+            sum(rate(vaktaai_language_detect_total[10m]))
+          ) > 0.10
+        for: 20m
+        labels:
+          severity: ticket
+          component: language-detector
+        annotations:
+          summary: "{{ $value | humanizePercentage }} of language detections have confidence < 0.6"
+          description: "Language detection confidence is low. Check input quality or detector threshold."
+
+      # CRITICAL: High error rate
+      - alert: HighErrorRate
+        expr: |
+          (
+            sum(rate(vaktaai_responses_total{status="fail"}[10m]))
+            /
+            sum(rate(vaktaai_responses_total[10m]))
+          ) > 0.01
+        for: 10m
+        labels:
+          severity: page
+          component: prompt-orchestrator
+        annotations:
+          summary: "{{ $value | humanizePercentage }} of orchestrator runs are failing"
+          description: "Error rate is {{ $value | humanizePercentage }}. Check logs for MAX_REGENERATIONS_EXCEEDED."
+          runbook: "https://docs.vaktaai.com/runbooks/high-errors"
+
+  - name: vaktaai.performance
+    interval: 30s
+    rules:
+      # WARNING: Model call latency spike
+      - alert: ModelLatencySpike
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(vaktaai_model_latency_ms_bucket[5m])) by (le, model)
+          ) > 7000
+        for: 10m
+        labels:
+          severity: ticket
+          component: llm-provider
+        annotations:
+          summary: "{{ $labels.model }} p95 latency is {{ $value }}ms"
+          description: "LLM provider {{ $labels.model }} latency is high. Check provider status."
+
+      # INFO: High token consumption
+      - alert: HighTokenConsumption
+        expr: |
+          sum(rate(vaktaai_tokens_total[1h])) > 1000000
+        for: 30m
+        labels:
+          severity: info
+          component: cost-monitoring
+        annotations:
+          summary: "Token consumption rate: {{ $value | humanize }}/s"
+          description: "High token usage detected. Check if traffic spike is expected."
+
+  - name: vaktaai.data
+    interval: 60s
+    rules:
+      # WARNING: RAG retrieval returning few chunks
+      - alert: LowRAGChunks
+        expr: |
+          histogram_quantile(0.50,
+            sum(rate(vaktaai_rag_chunks_retrieved_bucket[10m])) by (le)
+          ) < 2
+        for: 20m
+        labels:
+          severity: ticket
+          component: rag-service
+        annotations:
+          summary: "Median RAG retrieval returning < 2 chunks"
+          description: "RAG service is returning insufficient evidence. Check vector DB and embedding service."
+
+      # WARNING: Low RAG similarity scores
+      - alert: LowRAGSimilarity
+        expr: |
+          histogram_quantile(0.50,
+            sum(rate(vaktaai_rag_avg_similarity_bucket[10m])) by (le)
+          ) < 0.5
+        for: 20m
+        labels:
+          severity: ticket
+          component: rag-service
+        annotations:
+          summary: "Median RAG similarity score is {{ $value }}"
+          description: "RAG retrieval quality is low (median < 0.5). Check embeddings and query formulation."
+
+  - name: vaktaai.sli
+    interval: 5m
+    rules:
+      # SLI: Availability (success rate >= 99%)
+      - record: vaktaai:availability:5m
+        expr: |
+          (
+            sum(rate(vaktaai_responses_total{status=~"ok|regen"}[5m]))
+            /
+            sum(rate(vaktaai_responses_total[5m]))
+          )
+
+      # SLI: Quality (confidence >= 0.82 for 95%+ responses)
+      - record: vaktaai:quality:5m
+        expr: |
+          (
+            sum(rate(vaktaai_confidence_bucket{le="0.82"}[5m]))
+            /
+            sum(rate(vaktaai_confidence_count[5m]))
+          )
+
+      # SLI: Latency (p95 within SLO)
+      - record: vaktaai:latency_p95:5m
+        expr: |
+          histogram_quantile(0.95,
+            sum(rate(vaktaai_e2e_latency_ms_bucket[5m])) by (le)
+          )
+
+      # SLI: Citation validity (>= 95% pass)
+      - record: vaktaai:citations_valid:5m
+        expr: |
+          (
+            sum(rate(vaktaai_citations_ok_total[5m]))
+            /
+            (sum(rate(vaktaai_citations_ok_total[5m])) + sum(rate(vaktaai_citations_fail_total[5m])))
+          )

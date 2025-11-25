@@ -1,0 +1,169 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vaktaai.com/schemas/OrchestratorTask.schema.json",
+  "title": "OrchestratorTask",
+  "description": "Input contract for the VaktaAI Dynamic Prompt Orchestrator. Captures user intent, educational context, and routing signals.",
+  "type": "object",
+  "properties": {
+    "user_msg": {
+      "type": "string",
+      "description": "The raw user query or message",
+      "minLength": 1,
+      "examples": ["What is electric charge?", "Solve: A train travels at 60 km/h for 2 hours. Find distance."]
+    },
+    "mode": {
+      "type": "string",
+      "enum": ["explain", "solve", "derive", "revise", "docchat", "strategy", "plan"],
+      "description": "Task mode determining the response type",
+      "examples": ["explain", "solve"]
+    },
+    "subject": {
+      "type": "string",
+      "enum": ["Physics", "Chemistry", "Biology", "Mathematics", "General"],
+      "description": "Academic subject for syllabus filtering",
+      "examples": ["Physics", "Mathematics"]
+    },
+    "board": {
+      "type": "string",
+      "enum": ["CBSE", "ICSE", "State", "JEE", "NEET"],
+      "description": "Educational board for content filtering",
+      "examples": ["CBSE", "JEE"]
+    },
+    "class": {
+      "type": "integer",
+      "minimum": 6,
+      "maximum": 12,
+      "description": "Student's class/grade level (6-12)",
+      "examples": [10, 12]
+    },
+    "exam": {
+      "type": "string",
+      "description": "Target exam context (optional)",
+      "examples": ["JEE-Main-2024", "NEET-2024", "CBSE-Board-2024"]
+    },
+    "lang": {
+      "type": "string",
+      "enum": ["en", "hi", "hinglish", "auto"],
+      "description": "User's preferred language (auto = detect from user_msg)",
+      "default": "auto",
+      "examples": ["en", "hinglish"]
+    },
+    "context": {
+      "type": "object",
+      "description": "Optional conversation context",
+      "properties": {
+        "conversation_history": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "role": {
+                "type": "string",
+                "enum": ["user", "assistant"]
+              },
+              "content": {
+                "type": "string"
+              }
+            }
+          },
+          "maxItems": 5
+        },
+        "doc_ids": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Document IDs for RAG retrieval"
+        },
+        "chapter": {
+          "type": "string",
+          "description": "Current chapter context"
+        }
+      }
+    },
+    "signals": {
+      "type": "object",
+      "description": "Routing signals for model selection",
+      "properties": {
+        "numeric": {
+          "type": "boolean",
+          "description": "True if task involves heavy numerical computation",
+          "default": false
+        },
+        "safety_critical": {
+          "type": "boolean",
+          "description": "True if task involves safety-sensitive content (e.g., chemistry lab)",
+          "default": false
+        },
+        "requires_images": {
+          "type": "boolean",
+          "description": "True if answer needs diagrams/images",
+          "default": false
+        },
+        "complexity": {
+          "type": "string",
+          "enum": ["low", "medium", "high"],
+          "description": "Estimated cognitive complexity"
+        }
+      }
+    },
+    "session": {
+      "type": "object",
+      "description": "Session metadata",
+      "properties": {
+        "user_id": {
+          "type": "string"
+        },
+        "session_id": {
+          "type": "string"
+        },
+        "timestamp": {
+          "type": "string",
+          "format": "date-time"
+        }
+      }
+    }
+  },
+  "required": ["user_msg", "mode", "subject", "board", "class"],
+  "examples": [
+    {
+      "user_msg": "What is electric charge?",
+      "mode": "explain",
+      "subject": "Physics",
+      "board": "CBSE",
+      "class": 10,
+      "lang": "hinglish",
+      "context": {
+        "chapter": "Electricity"
+      },
+      "signals": {
+        "numeric": false,
+        "safety_critical": false,
+        "complexity": "medium"
+      }
+    },
+    {
+      "user_msg": "A car accelerates from rest at 2 m/s² for 10 seconds. Find final velocity and distance covered.",
+      "mode": "solve",
+      "subject": "Physics",
+      "board": "CBSE",
+      "class": 11,
+      "lang": "en",
+      "signals": {
+        "numeric": true,
+        "complexity": "medium"
+      }
+    },
+    {
+      "user_msg": "Tell me about photosynthesis",
+      "mode": "docchat",
+      "subject": "Biology",
+      "board": "CBSE",
+      "class": 9,
+      "lang": "auto",
+      "context": {
+        "doc_ids": ["doc_ncert_bio_9_ch5"]
+      }
+    }
+  ]
+}

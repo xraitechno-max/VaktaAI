@@ -1,0 +1,146 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://vaktaai.com/schemas/RouterDecision.schema.json",
+  "title": "RouterDecision",
+  "description": "Model routing decision based on task characteristics, policy rules, and available models. Includes primary model, fallbacks, and generation parameters.",
+  "type": "object",
+  "properties": {
+    "selected_model": {
+      "type": "string",
+      "enum": [
+        "gpt-4o",
+        "gpt-4o-mini",
+        "gpt-4-turbo",
+        "claude-3.5-sonnet",
+        "claude-3-opus",
+        "gemini-1.5-pro",
+        "gemini-1.5-flash",
+        "grok-2-math"
+      ],
+      "description": "Primary model selected for this task"
+    },
+    "fallback_models": {
+      "type": "array",
+      "items": {
+        "type": "string",
+        "enum": [
+          "gpt-4o",
+          "gpt-4o-mini",
+          "gpt-4-turbo",
+          "claude-3.5-sonnet",
+          "claude-3-opus",
+          "gemini-1.5-pro",
+          "gemini-1.5-flash",
+          "grok-2-math"
+        ]
+      },
+      "description": "Ordered list of fallback models if primary fails",
+      "minItems": 1,
+      "maxItems": 3
+    },
+    "temperature": {
+      "type": "number",
+      "minimum": 0.0,
+      "maximum": 1.0,
+      "description": "Temperature setting based on mode (0.0 for solve/derive, 0.15 for explain, etc.)"
+    },
+    "max_tokens": {
+      "type": "integer",
+      "minimum": 100,
+      "maximum": 4000,
+      "description": "Maximum tokens for the response based on mode"
+    },
+    "rationale": {
+      "type": "string",
+      "description": "Explanation of why this model was selected"
+    },
+    "matched_rule": {
+      "type": "string",
+      "description": "Name of the routing rule that was matched (e.g., 'numeric_heavy', 'pedagogy_safety', 'fast_docchat', 'planning')"
+    },
+    "routing_signals": {
+      "type": "object",
+      "description": "Signals that influenced the routing decision",
+      "properties": {
+        "numeric": {
+          "type": "boolean"
+        },
+        "safety_critical": {
+          "type": "boolean"
+        },
+        "requires_speed": {
+          "type": "boolean"
+        }
+      }
+    },
+    "estimated_cost": {
+      "type": "number",
+      "description": "Estimated cost in USD for this request (optional)"
+    },
+    "estimated_latency_ms": {
+      "type": "integer",
+      "description": "Estimated latency in milliseconds (optional)"
+    }
+  },
+  "required": ["selected_model", "fallback_models", "temperature", "max_tokens", "rationale"],
+  "examples": [
+    {
+      "selected_model": "grok-2-math",
+      "fallback_models": ["claude-3.5-sonnet", "gpt-4o"],
+      "temperature": 0.0,
+      "max_tokens": 1500,
+      "rationale": "Mathematical computation requires specialized reasoning. Task involves heavy numerical computation (numeric=true, mode=solve).",
+      "matched_rule": "numeric_heavy",
+      "routing_signals": {
+        "numeric": true,
+        "safety_critical": false,
+        "requires_speed": false
+      },
+      "estimated_cost": 0.015,
+      "estimated_latency_ms": 2800
+    },
+    {
+      "selected_model": "claude-3.5-sonnet",
+      "fallback_models": ["gpt-4o", "gemini-1.5-pro"],
+      "temperature": 0.15,
+      "max_tokens": 2500,
+      "rationale": "Pedagogical content requires careful, safe explanations. Mode is 'explain' for Chemistry concepts.",
+      "matched_rule": "pedagogy_safety",
+      "routing_signals": {
+        "numeric": false,
+        "safety_critical": true,
+        "requires_speed": false
+      },
+      "estimated_cost": 0.012,
+      "estimated_latency_ms": 2200
+    },
+    {
+      "selected_model": "gemini-1.5-flash",
+      "fallback_models": ["gpt-4o-mini", "gpt-4o"],
+      "temperature": 0.1,
+      "max_tokens": 1200,
+      "rationale": "Document chat prioritizes speed and cost-effectiveness. Fast response needed for docchat mode.",
+      "matched_rule": "fast_docchat",
+      "routing_signals": {
+        "numeric": false,
+        "safety_critical": false,
+        "requires_speed": true
+      },
+      "estimated_cost": 0.002,
+      "estimated_latency_ms": 1400
+    },
+    {
+      "selected_model": "claude-3.5-sonnet",
+      "fallback_models": ["gpt-4o", "gemini-1.5-pro"],
+      "temperature": 0.15,
+      "max_tokens": 3000,
+      "rationale": "Planning requires structured, logical thinking. Using Claude for study plan creation.",
+      "matched_rule": "planning",
+      "routing_signals": {
+        "numeric": false,
+        "safety_critical": false,
+        "requires_speed": false
+      }
+    }
+  ]
+}

@@ -1,0 +1,986 @@
+import { sql } from 'drizzle-orm';
+import {
+  index,
+  jsonb,
+  pgTable,
+  timestamp,
+  varchar,
+  text,
+  integer,
+  boolean,
+  real,
+  customType,
+} from "drizzle-orm/pg-core";
+import { relations } from "drizzle-orm";
+import { createInsertSchema } from "drizzle-zod";
+
+const vector = customType<{ data: number[]; driverData: string }>({
+  dataType() {
+    return 'vector(384)';
+  },
+  toDriver(value: number[]): string {
+    return JSON.stringify(value);
+  },
+  fromDriver(value: string): number[] {
+    return JSON.parse(value);
+  },
+});
+
+// Session storage table
+export const sessions = pgTable(
+  "sessions",
+  {
+    sid: varchar("sid").primaryKey(),
+    sess: jsonb("sess").notNull(),
+    expire: timestamp("expire").notNull(),
+  },
+  (table) => [index("IDX_session_expire").on(table.expire)],
+);
+
+// User storage table with password authentication
+export const users = pgTable("users", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  email: varchar("email").notNull().unique(),
+  passwordHash: varchar("password_hash"), // Nullable for migration from OIDC users
+  firstName: varchar("first_name"),
+  lastName: varchar("last_name"),
+  profileImageUrl: varchar("profile_image_url"),
+  locale: varchar("locale").default('en'),
+  aiProvider: varchar("ai_provider").default('openai'), // 'cohere' or 'openai' - openai is default
+  
+  // India-centric student profile fields
+  educationBoard: varchar("education_board"), // 'CBSE', 'ICSE', 'State Board', etc.
+  examTarget: varchar("exam_target"), // 'JEE', 'NEET', 'Board Exams', 'Other'
+  currentClass: varchar("current_class"), // '10th', '12th', 'BSc Year 1', etc.
+  subjects: text("subjects").array(), // Array of subjects
+  
+  // Admin access control
+  role: varchar("role").default('user'), // 'user', 'admin', 'super_admin'
+  permissions: jsonb("permissions").$type<string[]>(), // ['edit_personas', 'manage_builds', etc.]
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Documents table
+export const documents = pgTable("documents", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  title: varchar("title").notNull(),
+  sourceType: varchar("source_type").notNull(), // 'pdf', 'docx', 'youtube', 'web', 'audio', 'video'
+  sourceUrl: varchar("source_url"),
+  fileKey: varchar("file_key"), // object storage key
+  fileHash: varchar("file_hash"), // SHA-256 hash for deduplication
+  pages: integer("pages"),
+  language: varchar("lang").default('en'),
+  tokens: integer("tokens"),
+  status: varchar("status").default('processing'), // 'processing', 'partially_ready', 'ready', 'error'
+  processingProgress: integer("processing_progress").default(0), // 0-100
+  processingError: text("processing_error"),
+  isNCERT: boolean("is_ncert").default(false),
+  ncertClass: integer("ncert_class"),
+  ncertSubject: varchar("ncert_subject"),
+  sharedFrom: varchar("shared_from"), // Reference to original document
+  totalChunks: integer("total_chunks").default(0),
+  metadata: jsonb("metadata").$type<{
+    videoId?: string;
+    url?: string;
+    duration?: string;
+    segments?: number;
+    extractedAt?: string;
+    [key: string]: any;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table): any[] => [
+  // Composite index for user documents ordered by creation
+  index("documents_user_id_created_at_idx").on(table.userId, table.createdAt),
+  // Index for filtering by status
+  index("documents_status_idx").on(table.status),
+  // Index for file hash deduplication
+  index("documents_file_hash_idx").on(table.fileHash),
+  // Index for NCERT documents
+  index("documents_ncert_idx").on(table.isNCERT),
+]);
+
+// Document chunks for RAG
+export const chunks = pgTable("chunks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  docId: varchar("doc_id").references(() => documents.id, { onDelete: "cascade" }).notNull(),
+  ord: integer("ord").notNull(), // chunk order
+  text: text("text").notNull(),
+  tokens: integer("tokens"),
+  page: integer("page"),
+  section: varchar("section"),
+  heading: varchar("heading"),
+  language: varchar("lang"),
+  hash: varchar("hash"),
+  embedding: vector("embedding"), // pgvector embedding (384 dimensions for all-MiniLM-L6-v2)
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  // Composite index for document chunks in order
+  index("chunks_doc_id_ord_idx").on(table.docId, table.ord),
+  // Note: Vector index (IVFFlat) will be created via SQL migration
+]);
+
+// Chats table
+export const chats = pgTable("chats", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  title: varchar("title"),
+  mode: varchar("mode").notNull(), // 'tutor', 'docchat', 'general'
+  subject: varchar("subject"),
+  level: varchar("level"),
+  language: varchar("language").default('en'),
+  topic: varchar("topic"),
+  docIds: jsonb("doc_ids"), // array of document IDs for docchat
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  // Composite index for user chats ordered by creation (most recent first)
+  index("chats_user_id_created_at_idx").on(table.userId, table.createdAt),
+  // Index for filtering by mode
+  index("chats_mode_idx").on(table.mode),
+]);
+
+// Messages table
+export const messages = pgTable("messages", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatId: varchar("chat_id").references(() => chats.id, { onDelete: "cascade" }).notNull(),
+  role: varchar("role").notNull(), // 'user', 'assistant', 'system'
+  content: text("content").notNull(),
+  tool: varchar("tool"), // tool used for this message
+  metadata: jsonb("metadata").$type<{
+    speakSSML?: string; // SSML for TTS (dual-output approach)
+    speakMeta?: {
+      persona?: "Priya" | "Amit";
+      language?: "en" | "hi" | "hinglish";
+      avg_wpm?: number;
+      segments?: Array<{
+        id: string;
+        purpose?: "hook" | "explain" | "example" | "step" | "recap" | "cta";
+        text_preview: string;
+        approx_seconds: number;
+      }>;
+    };
+    citations?: Array<{ text: string; source: string; page?: number }>;
+    confidence?: number;
+    toolUsed?: string;
+    regenerated?: boolean;
+    emotionDetected?: string;
+    languageDetected?: string;
+    [key: string]: any;
+  }>(),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  // Composite index for chat messages ordered by creation (chronological order)
+  index("messages_chat_id_created_at_idx").on(table.chatId, table.createdAt),
+]);
+
+// Notes table
+export const notes = pgTable("notes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  title: varchar("title").notNull(),
+  language: varchar("lang").default('en'),
+  template: varchar("template"), // 'cornell', 'lecture', 'research', etc.
+  content: jsonb("content_json"),
+  sourceIds: jsonb("source_ids"), // array of document IDs used as sources
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Quizzes table
+export const quizzes = pgTable("quizzes", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  title: varchar("title").notNull(),
+  source: varchar("source"), // 'topic', 'document', 'youtube', 'website'
+  sourceId: varchar("source_id"), // document ID if from document
+  subject: varchar("subject"),
+  topic: varchar("topic"),
+  language: varchar("lang").default('en'),
+  difficulty: varchar("difficulty").default('medium'),
+  totalQuestions: integer("total").notNull(),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Quiz questions table
+export const quizQuestions = pgTable("quiz_questions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quizId: varchar("quiz_id").references(() => quizzes.id, { onDelete: "cascade" }).notNull(),
+  type: varchar("type").notNull(), // 'mcq_single', 'mcq_multi', 'short', 'long'
+  stem: text("stem").notNull(), // the question text
+  options: jsonb("options"), // array of options for MCQ
+  answer: jsonb("answer"), // correct answer(s)
+  rationale: text("rationale"), // explanation
+  sourceRef: varchar("source_ref"), // citation
+  order: integer("order").notNull(),
+  metadata: jsonb("metadata"),
+});
+
+// Quiz attempts table
+export const quizAttempts = pgTable("quiz_attempts", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  quizId: varchar("quiz_id").references(() => quizzes.id, { onDelete: "cascade" }).notNull(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  answers: jsonb("answers"), // user's answers
+  score: real("score"),
+  totalScore: real("total_score"),
+  completedAt: timestamp("completed_at"),
+  timeSpent: integer("time_spent"), // in seconds
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Study plans table
+export const studyPlans = pgTable("study_plans", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  name: varchar("name").notNull(),
+  mode: varchar("mode").default('exam'), // 'exam', 'continuous'
+  language: varchar("lang").default('en'),
+  gradeLevel: varchar("grade_level"),
+  subject: varchar("subject"),
+  topics: jsonb("topics"), // array of topics
+  examDate: timestamp("exam_date"),
+  intensity: varchar("intensity").default('regular'), // 'light', 'regular', 'intense'
+  sessionDuration: integer("session_duration").default(30), // in minutes
+  preferences: jsonb("preferences"),
+  status: varchar("status").default('active'), // 'active', 'paused', 'completed'
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+});
+
+// Study tasks table
+export const studyTasks = pgTable("study_tasks", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  planId: varchar("plan_id").references(() => studyPlans.id, { onDelete: "cascade" }).notNull(),
+  title: varchar("title").notNull(),
+  type: varchar("type").notNull(), // 'read', 'tutor', 'quiz', 'flashcards', 'video'
+  dueAt: timestamp("due_at"),
+  durationMin: integer("duration_min"),
+  payload: jsonb("payload"), // task-specific data
+  status: varchar("status").default('pending'), // 'pending', 'completed', 'skipped'
+  completedAt: timestamp("completed_at"),
+  srsInterval: integer("srs_interval"), // spaced repetition interval in days
+  srsDueAt: timestamp("srs_due_at"),
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Flashcards table
+export const flashcards = pgTable("flashcards", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  noteId: varchar("note_id").references(() => notes.id, { onDelete: "cascade" }),
+  quizId: varchar("quiz_id").references(() => quizzes.id, { onDelete: "cascade" }),
+  front: text("front").notNull(),
+  back: text("back").notNull(),
+  tags: jsonb("tags"), // array of tags
+  difficulty: integer("difficulty").default(0), // SRS difficulty
+  interval: integer("interval").default(1), // SRS interval
+  repetition: integer("repetition").default(0), // SRS repetition count
+  easeFactor: real("ease_factor").default(2.5), // SRS ease factor
+  nextReview: timestamp("next_review").defaultNow(),
+  createdAt: timestamp("created_at").defaultNow(),
+});
+
+// Tutor Sessions table - tracks 7-phase conversation flow
+export const tutorSessions = pgTable("tutor_sessions", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  chatId: varchar("chat_id").references(() => chats.id, { onDelete: "cascade" }).notNull().unique(),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  
+  // Subject & topic
+  subject: varchar("subject").notNull(), // Physics, Chemistry, Math, Biology
+  topic: varchar("topic").notNull(), // current topic being taught
+  
+  // Session state
+  currentPhase: varchar("current_phase").notNull().default('greeting'), // greeting, rapport, assessment, teaching, practice, feedback, closure
+  phaseStep: integer("phase_step").default(0), // sub-step within current phase
+  progress: integer("progress").default(0).notNull(), // 0-100 overall progress
+  
+  // Persona & adaptation
+  personaId: varchar("persona_id").notNull(), // 'priya', 'amit'
+  level: varchar("level").default('beginner'), // beginner, intermediate, advanced
+  adaptiveMetrics: jsonb("adaptive_metrics").$type<{
+    diagnosticScore?: number; // 0-100
+    checkpointsPassed?: number;
+    hintsUsed?: number;
+    misconceptions?: string[];
+    strongConcepts?: string[];
+  }>(),
+  
+  // User context snapshot (from profile at session start)
+  profileSnapshot: jsonb("profile_snapshot").$type<{
+    firstName?: string;
+    lastName?: string;
+    currentClass?: string;
+    examTarget?: string;
+    educationBoard?: string;
+    subjects?: string[];
+    preferredLanguage?: string;
+  }>(),
+  
+  // Session data
+  lastCheckpoint: jsonb("last_checkpoint"), // last question/state for resume
+  voiceEnabled: boolean("voice_enabled").default(false),
+  
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  // Index for user's tutor sessions
+  index("tutor_sessions_user_id_idx").on(table.userId),
+  // Index for phase queries
+  index("tutor_sessions_phase_idx").on(table.currentPhase),
+]);
+
+// Language Detection Logs - tracks language detection analytics
+export const languageDetectionLogs = pgTable("language_detection_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  chatId: varchar("chat_id").references(() => chats.id, { onDelete: "cascade" }),
+  
+  // Input
+  inputText: text("input_text").notNull(),
+  
+  // Detection results
+  detectedLanguage: varchar("detected_language").notNull(), // 'hindi', 'hinglish', 'english'
+  confidence: real("confidence").notNull(),
+  confidenceLevel: varchar("confidence_level").notNull(), // 'very_high', 'high', 'medium', 'low'
+  
+  // Multi-layer analysis results
+  lexicalScore: real("lexical_score"),
+  syntacticScore: real("syntactic_score"),
+  statisticalScore: real("statistical_score"),
+  contextualScore: real("contextual_score"),
+  
+  // Performance metrics
+  processingTime: integer("processing_time"), // in ms
+  detectionMethod: varchar("detection_method"), // 'multi_layer', 'fallback'
+  
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("lang_detection_user_idx").on(table.userId),
+  index("lang_detection_chat_idx").on(table.chatId),
+  index("lang_detection_created_idx").on(table.createdAt),
+]);
+
+// Response Validation Logs - tracks response quality validation
+export const responseValidationLogs = pgTable("response_validation_logs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  chatId: varchar("chat_id").references(() => chats.id, { onDelete: "cascade" }),
+  messageId: varchar("message_id").references(() => messages.id, { onDelete: "cascade" }),
+  
+  // Validation context
+  expectedLanguage: varchar("expected_language").notNull(),
+  userEmotion: varchar("user_emotion").notNull(),
+  currentPhase: varchar("current_phase"),
+  
+  // Validation results
+  isValid: boolean("is_valid").notNull(),
+  overallScore: real("overall_score").notNull(),
+  
+  // Layer scores
+  languageMatchScore: real("language_match_score"),
+  toneScore: real("tone_score"),
+  qualityScore: real("quality_score"),
+  safetyScore: real("safety_score"),
+  
+  // Issues and recommendations
+  issues: jsonb("issues").$type<string[]>(),
+  recommendations: jsonb("recommendations").$type<string[]>(),
+  shouldRegenerate: boolean("should_regenerate"),
+  
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("response_val_user_idx").on(table.userId),
+  index("response_val_chat_idx").on(table.chatId),
+  index("response_val_score_idx").on(table.overallScore),
+  index("response_val_created_idx").on(table.createdAt),
+]);
+
+// Tutor Metrics - aggregate tutor performance metrics
+export const tutorMetrics = pgTable("tutor_metrics", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar("user_id").references(() => users.id, { onDelete: "cascade" }).notNull(),
+  chatId: varchar("chat_id").references(() => chats.id, { onDelete: "cascade" }),
+  sessionId: varchar("session_id").references(() => tutorSessions.id, { onDelete: "cascade" }),
+  
+  // Time period (for aggregation)
+  periodStart: timestamp("period_start").notNull(),
+  periodEnd: timestamp("period_end").notNull(),
+  periodType: varchar("period_type").notNull(), // 'session', 'daily', 'weekly', 'monthly'
+  
+  // Language metrics
+  avgLanguageConfidence: real("avg_language_confidence"),
+  languageConsistencyScore: real("language_consistency_score"),
+  primaryLanguage: varchar("primary_language"),
+  languageSwitchCount: integer("language_switch_count"),
+  
+  // Response quality metrics
+  avgResponseQuality: real("avg_response_quality"),
+  avgValidationScore: real("avg_validation_score"),
+  failedValidationCount: integer("failed_validation_count"),
+  regenerationCount: integer("regeneration_count"),
+  
+  // Performance metrics
+  avgResponseTime: integer("avg_response_time"), // in ms
+  totalMessages: integer("total_messages"),
+  avgMessagesPerSession: real("avg_messages_per_session"),
+  
+  // Learning progress metrics
+  conceptsMastered: integer("concepts_mastered"),
+  misconceptionsResolved: integer("misconceptions_resolved"),
+  avgDifficulty: real("avg_difficulty"),
+  progressRate: real("progress_rate"), // 0-100
+  
+  metadata: jsonb("metadata"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("tutor_metrics_user_idx").on(table.userId),
+  index("tutor_metrics_session_idx").on(table.sessionId),
+  index("tutor_metrics_period_idx").on(table.periodStart, table.periodEnd),
+  index("tutor_metrics_type_idx").on(table.periodType),
+]);
+
+// ========== ADMIN PANEL TABLES ==========
+
+// Admin Configuration Storage
+export const adminConfigs = pgTable("admin_configs", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  category: varchar("category").notNull(), // 'tutor', 'unity', 'tts', 'api', 'system', 'cache'
+  key: varchar("key").notNull().unique(), // e.g., 'tutor_personas', 'unity_gameobject_name'
+  value: jsonb("value").notNull(), // JSON configuration data
+  description: text("description"),
+  dataType: varchar("data_type"), // 'json', 'string', 'number', 'boolean', 'array'
+  isActive: boolean("is_active").default(true),
+  createdBy: varchar("created_by").references(() => users.id),
+  updatedBy: varchar("updated_by").references(() => users.id),
+  createdAt: timestamp("created_at").defaultNow(),
+  updatedAt: timestamp("updated_at").defaultNow(),
+}, (table) => [
+  index("admin_configs_category_idx").on(table.category),
+  index("admin_configs_key_idx").on(table.key),
+  index("admin_configs_active_idx").on(table.isActive),
+]);
+
+// Configuration Audit Log
+export const configAuditLog = pgTable("config_audit_log", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  configId: varchar("config_id").references(() => adminConfigs.id, { onDelete: "cascade" }),
+  action: varchar("action").notNull(), // 'create', 'update', 'delete', 'restore'
+  category: varchar("category").notNull(),
+  key: varchar("key").notNull(),
+  oldValue: jsonb("old_value"),
+  newValue: jsonb("new_value"),
+  changedBy: varchar("changed_by").references(() => users.id).notNull(),
+  ipAddress: varchar("ip_address"),
+  userAgent: text("user_agent"),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("audit_log_config_idx").on(table.configId),
+  index("audit_log_user_idx").on(table.changedBy),
+  index("audit_log_created_idx").on(table.createdAt),
+  index("audit_log_category_idx").on(table.category),
+]);
+
+// Unity Build Management
+export const unityBuilds = pgTable("unity_builds", {
+  id: varchar("id").primaryKey().default(sql`gen_random_uuid()`),
+  version: varchar("version").notNull(), // '1.0.0', '1.1.0'
+  buildDate: timestamp("build_date").notNull(),
+  gameObjectName: varchar("game_object_name").notNull(), // 'AvatarController'
+  s3Prefix: varchar("s3_prefix").default('unity-assets/'),
+  files: jsonb("files").$type<{
+    dataGz: { key: string; size: number; uploadedAt: string };
+    wasmGz: { key: string; size: number; uploadedAt: string };
+    frameworkJsGz: { key: string; size: number; uploadedAt: string };
+    loaderJs: { key: string; size: number; uploadedAt: string };
+  }>(),
+  isActive: boolean("is_active").default(false),
+  uploadedBy: varchar("uploaded_by").references(() => users.id),
+  notes: text("notes"),
+  createdAt: timestamp("created_at").defaultNow(),
+}, (table) => [
+  index("unity_builds_version_idx").on(table.version),
+  index("unity_builds_active_idx").on(table.isActive),
+  index("unity_builds_created_idx").on(table.createdAt),
+]);
+
+// Relations
+export const usersRelations = relations(users, ({ many }) => ({
+  documents: many(documents),
+  chats: many(chats),
+  notes: many(notes),
+  quizzes: many(quizzes),
+  studyPlans: many(studyPlans),
+  flashcards: many(flashcards),
+  quizAttempts: many(quizAttempts),
+  tutorSessions: many(tutorSessions),
+}));
+
+export const documentsRelations = relations(documents, ({ one, many }) => ({
+  user: one(users, {
+    fields: [documents.userId],
+    references: [users.id],
+  }),
+  chunks: many(chunks),
+}));
+
+export const chunksRelations = relations(chunks, ({ one }) => ({
+  document: one(documents, {
+    fields: [chunks.docId],
+    references: [documents.id],
+  }),
+}));
+
+export const chatsRelations = relations(chats, ({ one, many }) => ({
+  user: one(users, {
+    fields: [chats.userId],
+    references: [users.id],
+  }),
+  messages: many(messages),
+  tutorSession: one(tutorSessions, {
+    fields: [chats.id],
+    references: [tutorSessions.chatId],
+  }),
+}));
+
+export const messagesRelations = relations(messages, ({ one }) => ({
+  chat: one(chats, {
+    fields: [messages.chatId],
+    references: [chats.id],
+  }),
+}));
+
+export const notesRelations = relations(notes, ({ one, many }) => ({
+  user: one(users, {
+    fields: [notes.userId],
+    references: [users.id],
+  }),
+  flashcards: many(flashcards),
+}));
+
+export const quizzesRelations = relations(quizzes, ({ one, many }) => ({
+  user: one(users, {
+    fields: [quizzes.userId],
+    references: [users.id],
+  }),
+  questions: many(quizQuestions),
+  attempts: many(quizAttempts),
+  flashcards: many(flashcards),
+}));
+
+export const quizQuestionsRelations = relations(quizQuestions, ({ one }) => ({
+  quiz: one(quizzes, {
+    fields: [quizQuestions.quizId],
+    references: [quizzes.id],
+  }),
+}));
+
+export const quizAttemptsRelations = relations(quizAttempts, ({ one }) => ({
+  quiz: one(quizzes, {
+    fields: [quizAttempts.quizId],
+    references: [quizzes.id],
+  }),
+  user: one(users, {
+    fields: [quizAttempts.userId],
+    references: [users.id],
+  }),
+}));
+
+export const studyPlansRelations = relations(studyPlans, ({ one, many }) => ({
+  user: one(users, {
+    fields: [studyPlans.userId],
+    references: [users.id],
+  }),
+  tasks: many(studyTasks),
+}));
+
+export const studyTasksRelations = relations(studyTasks, ({ one }) => ({
+  plan: one(studyPlans, {
+    fields: [studyTasks.planId],
+    references: [studyPlans.id],
+  }),
+}));
+
+export const flashcardsRelations = relations(flashcards, ({ one }) => ({
+  user: one(users, {
+    fields: [flashcards.userId],
+    references: [users.id],
+  }),
+  note: one(notes, {
+    fields: [flashcards.noteId],
+    references: [notes.id],
+  }),
+  quiz: one(quizzes, {
+    fields: [flashcards.quizId],
+    references: [quizzes.id],
+  }),
+}));
+
+export const tutorSessionsRelations = relations(tutorSessions, ({ one }) => ({
+  user: one(users, {
+    fields: [tutorSessions.userId],
+    references: [users.id],
+  }),
+  chat: one(chats, {
+    fields: [tutorSessions.chatId],
+    references: [chats.id],
+  }),
+}));
+
+// Insert schemas
+export const insertDocumentSchema = createInsertSchema(documents).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertChatSchema = createInsertSchema(chats).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertMessageSchema = createInsertSchema(messages).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertNoteSchema = createInsertSchema(notes).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertQuizSchema = createInsertSchema(quizzes).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertQuizQuestionSchema = createInsertSchema(quizQuestions).omit({
+  id: true,
+});
+
+export const insertQuizAttemptSchema = createInsertSchema(quizAttempts).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertStudyPlanSchema = createInsertSchema(studyPlans).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertStudyTaskSchema = createInsertSchema(studyTasks).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertFlashcardSchema = createInsertSchema(flashcards).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertChunkSchema = createInsertSchema(chunks).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertTutorSessionSchema = createInsertSchema(tutorSessions).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertLanguageDetectionLogSchema = createInsertSchema(languageDetectionLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertResponseValidationLogSchema = createInsertSchema(responseValidationLogs).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Insert schema for users (exclude password_hash from inserts, handle separately)
+export const insertUserSchema = createInsertSchema(users).omit({
+  id: true,
+  passwordHash: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Admin tables insert schemas
+export const insertAdminConfigSchema = createInsertSchema(adminConfigs).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertConfigAuditLogSchema = createInsertSchema(configAuditLog).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertUnityBuildSchema = createInsertSchema(unityBuilds).omit({
+  id: true,
+  createdAt: true,
+});
+
+// Types
+export type UpsertUser = typeof users.$inferInsert;
+export type User = typeof users.$inferSelect;
+export type AuthUser = Omit<User, 'passwordHash'>; // Exclude password hash from auth responses
+export type InsertDocument = typeof insertDocumentSchema._type;
+export type Document = typeof documents.$inferSelect;
+export type InsertChat = typeof insertChatSchema._type;
+export type Chat = typeof chats.$inferSelect;
+export type InsertMessage = typeof insertMessageSchema._type;
+export type Message = typeof messages.$inferSelect;
+export type InsertNote = typeof insertNoteSchema._type;
+export type Note = typeof notes.$inferSelect;
+export type InsertQuiz = typeof insertQuizSchema._type;
+export type Quiz = typeof quizzes.$inferSelect;
+export type InsertQuizQuestion = typeof insertQuizQuestionSchema._type;
+export type QuizQuestion = typeof quizQuestions.$inferSelect;
+export type InsertQuizAttempt = typeof insertQuizAttemptSchema._type;
+export type QuizAttempt = typeof quizAttempts.$inferSelect;
+export type InsertStudyPlan = typeof insertStudyPlanSchema._type;
+export type StudyPlan = typeof studyPlans.$inferSelect;
+export type InsertStudyTask = typeof insertStudyTaskSchema._type;
+export type StudyTask = typeof studyTasks.$inferSelect;
+export type InsertFlashcard = typeof insertFlashcardSchema._type;
+export type Flashcard = typeof flashcards.$inferSelect;
+export type InsertChunk = typeof insertChunkSchema._type;
+export type Chunk = typeof chunks.$inferSelect;
+export type InsertTutorSession = typeof insertTutorSessionSchema._type;
+export type TutorSession = typeof tutorSessions.$inferSelect;
+export type InsertLanguageDetectionLog = typeof insertLanguageDetectionLogSchema._type;
+export type LanguageDetectionLog = typeof languageDetectionLogs.$inferSelect;
+export type InsertResponseValidationLog = typeof insertResponseValidationLogSchema._type;
+export type ResponseValidationLog = typeof responseValidationLogs.$inferSelect;
+export type InsertAdminConfig = typeof insertAdminConfigSchema._type;
+export type AdminConfig = typeof adminConfigs.$inferSelect;
+export type InsertConfigAuditLog = typeof insertConfigAuditLogSchema._type;
+export type ConfigAuditLog = typeof configAuditLog.$inferSelect;
+export type InsertUnityBuild = typeof insertUnityBuildSchema._type;
+export type UnityBuild = typeof unityBuilds.$inferSelect;
+
+// ========== ENHANCED DOCUMENT PROCESSING TABLES ==========
+
+// NCERT Books Database
+export const ncertBooks = pgTable('ncert_books', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  class: integer('class').notNull(),
+  subject: varchar('subject').notNull(),
+  board: varchar('board').notNull().default('CBSE'),
+  title: varchar('title').notNull(),
+  
+  // File information
+  fileHash: varchar('file_hash').notNull(),
+  fileSize: integer('file_size').notNull(),
+  
+  // Chapter information
+  chapters: jsonb('chapters').$type<Array<{
+    ch: number;
+    title: string;
+    url: string;
+  }>>().notNull(),
+  
+  // Metadata
+  isVirtual: boolean('is_virtual').default(false), // Auto-fetched from DIKSHA
+  userId: varchar('user_id').references(() => users.id),
+  
+  // Timestamps
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow()
+});
+
+// NCERT Chapter Content (for auto-fetched books)
+export const ncertChapters = pgTable('ncert_chapters', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  bookId: varchar('book_id').references(() => ncertBooks.id),
+  chapterNumber: integer('chapter_number').notNull(),
+  title: varchar('title').notNull(),
+  content: text('content'),
+  
+  // DIKSHA integration
+  dikshaId: varchar('diksha_id'),
+  dikshaUrl: varchar('diksha_url'),
+  
+  // Processing status
+  isProcessed: boolean('is_processed').default(false),
+  processingStatus: varchar('processing_status').$type<'pending' | 'processing' | 'completed' | 'failed'>().default('pending'),
+  
+  // Embeddings for search
+  embedding: vector('embedding'),
+  
+  createdAt: timestamp('created_at').defaultNow()
+});
+
+// NCERT Flashcards (auto-generated)
+export const ncertFlashcards = pgTable('ncert_flashcards', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  bookId: varchar('book_id').references(() => ncertBooks.id),
+  chapterId: varchar('chapter_id').references(() => ncertChapters.id),
+  
+  front: text('front').notNull(),
+  back: text('back').notNull(),
+  
+  // Difficulty and metadata
+  difficulty: integer('difficulty').$type<1 | 2 | 3 | 4 | 5>().default(3),
+  topic: varchar('topic'),
+  subtopic: varchar('subtopic'),
+  
+  // Auto-generated metadata
+  isAutoGenerated: boolean('is_auto_generated').default(true),
+  confidence: integer('confidence').default(85), // AI confidence score
+  
+  // User interaction
+  userId: varchar('user_id').references(() => users.id),
+  isReviewed: boolean('is_reviewed').default(false),
+  reviewCount: integer('review_count').default(0),
+  
+  createdAt: timestamp('created_at').defaultNow()
+});
+
+// NCERT Quiz Questions (auto-generated)
+export const ncertQuizQuestions = pgTable('ncert_quiz_questions', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  bookId: varchar('book_id').references(() => ncertBooks.id),
+  chapterId: varchar('chapter_id').references(() => ncertChapters.id),
+  
+  question: text('question').notNull(),
+  options: jsonb('options').$type<string[]>().notNull(),
+  correctAnswer: varchar('correct_answer').notNull(),
+  explanation: text('explanation'),
+  
+  // Question metadata
+  difficulty: integer('difficulty').$type<1 | 2 | 3 | 4 | 5>().default(3),
+  questionType: varchar('question_type').$type<'mcq' | 'true_false' | 'fill_blank' | 'short_answer'>().default('mcq'),
+  topic: varchar('topic'),
+  
+  // Auto-generation metadata
+  isAutoGenerated: boolean('is_auto_generated').default(true),
+  confidence: integer('confidence').default(80),
+  
+  // Usage tracking
+  timesUsed: integer('times_used').default(0),
+  correctRate: integer('correct_rate').default(0), // Percentage
+  
+  createdAt: timestamp('created_at').defaultNow()
+});
+
+// NCERT Study Plans (auto-generated)
+export const ncertStudyPlans = pgTable('ncert_study_plans', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  bookId: varchar('book_id').references(() => ncertBooks.id),
+  userId: varchar('user_id').references(() => users.id),
+  
+  title: varchar('title').notNull(),
+  description: text('description'),
+  
+  // Plan structure
+  totalDays: integer('total_days').notNull(),
+  currentDay: integer('current_day').default(1),
+  
+  // Daily schedule
+  dailySchedule: jsonb('daily_schedule').$type<Array<{
+    day: number;
+    chapters: number[];
+    topics: string[];
+    estimatedTime: number; // minutes
+    activities: string[];
+  }>>().notNull(),
+  
+  // Progress tracking
+  isActive: boolean('is_active').default(true),
+  completedDays: integer('completed_days').default(0),
+  progressPercentage: integer('progress_percentage').default(0),
+  
+  // Auto-generation metadata
+  isAutoGenerated: boolean('is_auto_generated').default(true),
+  generatedAt: timestamp('generated_at').defaultNow(),
+  
+  createdAt: timestamp('created_at').defaultNow()
+});
+
+// PYQ (Previous Year Questions) Database
+export const pyqs = pgTable('pyqs', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  exam: varchar('exam').notNull(), // 'JEE', 'NEET', 'UPSC', 'CBSE'
+  year: integer('year').notNull(),
+  subject: varchar('subject').notNull(),
+  topic: varchar('topic'),
+  chapter: integer('chapter'),
+  
+  question: text('question').notNull(),
+  options: jsonb('options').$type<string[]>(),
+  correctAnswer: varchar('correct_answer'),
+  solution: text('solution'),
+  explanation: text('explanation'),
+  
+  difficulty: integer('difficulty'), // 1-5
+  marks: integer('marks'),
+  timeAllocation: integer('time_allocation'), // seconds
+  
+  embedding: vector('embedding'),
+  
+  verified: boolean('verified').default(false),
+  createdAt: timestamp('created_at').defaultNow()
+});
+
+// Reference Materials Database
+export const referenceMaterials = pgTable('reference_materials', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  title: varchar('title').notNull(),
+  type: varchar('type').notNull(), // 'video', 'article', 'book', 'website'
+  source: varchar('source'), // 'Khan Academy', 'NCERT', 'YouTube'
+  url: varchar('url'),
+  
+  subject: varchar('subject'),
+  topic: varchar('topic'),
+  class: integer('class'),
+  
+  language: varchar('language'), // 'hi', 'en'
+  description: text('description'),
+  
+  embedding: vector('embedding'),
+  
+  quality: integer('quality'), // 1-5 rating
+  views: integer('views').default(0),
+  
+  createdAt: timestamp('created_at').defaultNow()
+});
+
+// Document-PYQ Links
+export const documentPYQLinks = pgTable('document_pyq_links', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  documentId: varchar('document_id').references(() => documents.id),
+  pyqId: varchar('pyq_id').references(() => pyqs.id),
+  chunkId: varchar('chunk_id'),
+  
+  similarity: integer('similarity'), // 0-100
+  relevance: varchar('relevance').$type<'high' | 'medium' | 'low'>(),
+  
+  createdAt: timestamp('created_at').defaultNow()
+});
+
+// Document-Reference Links
+export const documentReferenceLinks = pgTable('document_reference_links', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  documentId: varchar('document_id').references(() => documents.id),
+  referenceId: varchar('reference_id').references(() => referenceMaterials.id),
+  
+  similarity: integer('similarity'),
+  createdAt: timestamp('created_at').defaultNow()
+});
