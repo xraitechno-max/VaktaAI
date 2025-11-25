@@ -1,26 +1,110 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
+import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
 import TutorSetupWizard, { type TutorConfig } from "@/components/tutor/TutorSetupWizard";
 import TutorSession from "@/components/tutor/TutorSession";
 import UnityAvatar, { UnityAvatarHandle } from "@/components/tutor/UnityAvatar";
 import { motion } from "framer-motion";
+import { useLanguage } from "@/contexts/LanguageContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import {
   Brain, Sparkles, Video, MessageSquare, BookOpen,
-  Clock, TrendingUp, Zap, Target, ChevronRight, Loader2
+  Clock, TrendingUp, Zap, Target, ChevronRight, Loader2,
+  Atom, Beaker, Calculator, Dna, Mic, Play, ArrowRight,
+  Star, Users, Lightbulb, Settings
 } from "lucide-react";
+import mentorAvatar from "@assets/generated_images/female_teacher_gradient_background.png";
+
+const subjects = [
+  { 
+    id: 'physics', 
+    nameKey: 'subject.physics',
+    icon: Atom, 
+    color: 'from-blue-500 to-cyan-500',
+    bgColor: 'bg-blue-500/10',
+    borderColor: 'border-blue-500/30',
+    topicKeys: ['topic.physics.mechanics', 'topic.physics.optics', 'topic.physics.thermodynamics', 'topic.physics.electromagnetism']
+  },
+  { 
+    id: 'chemistry', 
+    nameKey: 'subject.chemistry',
+    icon: Beaker, 
+    color: 'from-green-500 to-emerald-500',
+    bgColor: 'bg-green-500/10',
+    borderColor: 'border-green-500/30',
+    topicKeys: ['topic.chemistry.organic', 'topic.chemistry.inorganic', 'topic.chemistry.physical', 'topic.chemistry.equilibrium']
+  },
+  { 
+    id: 'maths', 
+    nameKey: 'subject.maths',
+    icon: Calculator, 
+    color: 'from-amber-500 to-orange-500',
+    bgColor: 'bg-amber-500/10',
+    borderColor: 'border-amber-500/30',
+    topicKeys: ['topic.maths.calculus', 'topic.maths.algebra', 'topic.maths.trigonometry', 'topic.maths.coordinate']
+  },
+  { 
+    id: 'biology', 
+    nameKey: 'subject.biology',
+    icon: Dna, 
+    color: 'from-pink-500 to-rose-500',
+    bgColor: 'bg-pink-500/10',
+    borderColor: 'border-pink-500/30',
+    topicKeys: ['topic.biology.botany', 'topic.biology.zoology', 'topic.biology.physiology', 'topic.biology.genetics']
+  },
+];
+
+const features = [
+  { icon: Brain, titleKey: 'aiMentor.features.smart', descKey: 'aiMentor.features.smartDesc', color: 'from-purple-500 to-indigo-600' },
+  { icon: Mic, titleKey: 'aiMentor.features.voice', descKey: 'aiMentor.features.voiceDesc', color: 'from-blue-500 to-cyan-600' },
+  { icon: BookOpen, titleKey: 'aiMentor.features.subjects', descKey: 'aiMentor.features.subjectsDesc', color: 'from-pink-500 to-rose-600' },
+  { icon: Zap, titleKey: 'aiMentor.features.instant', descKey: 'aiMentor.features.instantDesc', color: 'from-orange-500 to-amber-600' },
+];
 
 export default function Tutor() {
+  const { t } = useLanguage();
+  const [location, setLocation] = useLocation();
   const [showSetupWizard, setShowSetupWizard] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isPreloadingAvatar, setIsPreloadingAvatar] = useState(false);
   const [avatarPreloaded, setAvatarPreloaded] = useState(false);
+  const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
+  const [quickStartSubject, setQuickStartSubject] = useState<string>('physics');
+  const [quickStartTriggered, setQuickStartTriggered] = useState(false);
   const preloadAvatarRef = useRef<UnityAvatarHandle>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Fetch recent tutor sessions
+  const triggerQuickStart = (subject: string = 'physics') => {
+    const defaultConfig: TutorConfig = {
+      subject: subject,
+      topic: 'mixed',
+      level: 'medium',
+      language: 'hinglish',
+      examType: 'competitive',
+    };
+    startSessionMutation.mutate(defaultConfig);
+  };
+
+  const handleQuickStart = () => {
+    triggerQuickStart(quickStartSubject);
+  };
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const isQuickStart = params.get('quick') === 'true';
+    
+    if (isQuickStart && !quickStartTriggered && !currentSessionId) {
+      setQuickStartTriggered(true);
+      window.history.replaceState({}, '', '/tutor');
+      triggerQuickStart('physics');
+    }
+  }, [quickStartTriggered, currentSessionId]);
+
   const { data: recentSessions } = useQuery({
     queryKey: ["/api/chats"],
     select: (data: any[]) =>
@@ -29,16 +113,14 @@ export default function Tutor() {
 
   const startSessionMutation = useMutation({
     mutationFn: async (config: TutorConfig) => {
-      // ALWAYS use Garima Ma'am (female voice) for all subjects
       const personaId = 'garima';
-
       const response = await apiRequest("POST", "/api/tutor/optimized/session/start", {
         subject: config.subject,
         topic: config.topic,
         level: config.level,
         language: config.language,
         personaId,
-        examType: config.examType, // Board Exam vs Competitive Exam
+        examType: config.examType,
       });
 
       if (!response.ok) {
@@ -47,11 +129,9 @@ export default function Tutor() {
       }
 
       const data = await response.json();
-
       if (!data || !data.session || !data.session.chatId) {
         throw new Error('Invalid response from server - missing chat ID');
       }
-
       return data;
     },
     onSuccess: (data: any) => {
@@ -73,24 +153,19 @@ export default function Tutor() {
           },
           createdAt: new Date().toISOString()
         };
-
         queryClient.setQueryData([`/api/chats/${chatId}/messages`], [greetingMessage]);
       }
 
       queryClient.invalidateQueries({ queryKey: ["/api/chats"] });
-
-      // Display Garima Ma'am as the mentor name
-      const personaName = data.session.personaId === 'garima' ? 'Garima Ma\'am' : 'your mentor';
-
       toast({
-        title: "Session Started",
-        description: `Your AI mentor ${personaName} is ready! 🎓`,
+        title: t('toast.sessionStarted'),
+        description: t('toast.sessionStartedDesc'),
       });
     },
     onError: (error: any) => {
       toast({
-        title: "Error",
-        description: error.message || "Failed to start mentor session. Please try again.",
+        title: t('toast.error'),
+        description: error.message || t('toast.failedToStart'),
         variant: "destructive",
       });
     },
@@ -100,37 +175,27 @@ export default function Tutor() {
     startSessionMutation.mutate(config);
   };
 
-  // Open setup wizard and start preloading avatar
-  const handleOpenSetupWizard = () => {
-    console.log('[Tutor] 🎬 Starting avatar preload...');
+  const handleOpenSetupWizard = (subject?: string) => {
+    if (subject) setSelectedSubject(subject);
     setShowSetupWizard(true);
     setIsPreloadingAvatar(true);
   };
 
-  // Handle avatar preload ready
   const handlePreloadReady = () => {
-    console.log('[Tutor] ✅ Avatar preloaded successfully!');
     setAvatarPreloaded(true);
     setIsPreloadingAvatar(false);
-    
-    toast({
-      title: "Avatar Ready!",
-      description: "Your AI mentor is loaded and ready to go! 🎭",
-    });
   };
 
-  // Handle avatar preload error
   const handlePreloadError = (error: string) => {
-    console.warn('[Tutor] ⚠️ Avatar preload failed:', error);
+    console.warn('[Tutor] Avatar preload failed:', error);
     setIsPreloadingAvatar(false);
-    // Don't show error to user, avatar will load normally in session
   };
 
   const handleEndSession = () => {
     setCurrentSessionId(null);
     toast({
-      title: "Session Ended",
-      description: "Your mentor session has been saved.",
+      title: t('toast.sessionEnded'),
+      description: t('toast.sessionEndedDesc'),
     });
   };
 
@@ -144,14 +209,17 @@ export default function Tutor() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50 relative overflow-hidden">
-      {/* Background Pattern */}
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_20%,rgba(240,109,31,0.08),transparent_50%),radial-gradient(circle_at_70%_80%,rgba(132,61,255,0.08),transparent_50%)]" />
+    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+      {/* Background Effects */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-purple-300/20 to-pink-300/20 rounded-full blur-3xl" />
+        <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-blue-300/20 to-cyan-300/20 rounded-full blur-3xl" />
+      </div>
 
-      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-12 sm:py-20">
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
 
         {/* Hero Section */}
-        <div className="text-center mb-16">
+        <div className="text-center mb-12 sm:mb-16">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
@@ -159,9 +227,9 @@ export default function Tutor() {
             className="inline-flex items-center justify-center mb-6"
           >
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary-500/30 to-secondary-500/30 blur-3xl rounded-full animate-pulse-slow" />
-              <div className="relative w-24 h-24 sm:w-32 sm:h-32 rounded-3xl bg-gradient-to-br from-primary-500 to-secondary-600 flex items-center justify-center shadow-2xl">
-                <Brain className="w-12 h-12 sm:w-16 sm:h-16 text-white" />
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-500/30 to-pink-500/30 blur-3xl rounded-full animate-pulse" />
+              <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-full overflow-hidden ring-4 ring-white/20 shadow-2xl">
+                <img src={mentorAvatar} alt="AI Mentor" className="w-full h-full object-cover" />
               </div>
             </div>
           </motion.div>
@@ -170,198 +238,274 @@ export default function Tutor() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="space-y-4"
+            className="space-y-3"
           >
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-display font-bold">
-              <span className="bg-gradient-to-r from-primary-600 via-secondary-600 to-pink-600 bg-clip-text text-transparent">
-                AI Mentor
+            <Badge className="mb-3 px-4 py-1.5 bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/50 dark:to-pink-900/50 text-purple-700 dark:text-purple-300 border-0">
+              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+              {t('aiMentor.subtitle')}
+            </Badge>
+            
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold">
+              <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
+                {t('aiMentor.title')}
               </span>
             </h1>
-            <p className="text-xl sm:text-2xl text-gray-700 font-medium">
-              Learn with Your AI Mentor 🎓
-            </p>
-            <p className="text-base sm:text-lg text-gray-600 max-w-2xl mx-auto">
-              Personalized learning sessions with Garima Ma'am - your 24/7 AI mentor
+            
+            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
+              {t('aiMentor.description')}
             </p>
           </motion.div>
 
-          {/* Start Session Button */}
+          {/* Quick Start Panel */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.4 }}
-            className="mt-8"
+            className="mt-8 max-w-2xl mx-auto"
           >
-            <button
-              onClick={handleOpenSetupWizard}
-              disabled={startSessionMutation.isPending || isPreloadingAvatar}
-              className="group relative inline-flex items-center gap-3 px-8 sm:px-12 py-4 sm:py-5 bg-gradient-to-r from-primary-500 to-secondary-600 hover:from-primary-600 hover:to-secondary-700 text-white rounded-2xl font-semibold text-base sm:text-lg shadow-xl hover:shadow-2xl transition-all duration-300 transform hover:scale-105 disabled:opacity-50 disabled:cursor-not-allowed"
-              data-testid="button-new-session"
-            >
-              {startSessionMutation.isPending ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Starting Session...</span>
-                </>
-              ) : isPreloadingAvatar ? (
-                <>
-                  <Loader2 className="w-5 h-5 animate-spin" />
-                  <span>Loading Avatar...</span>
-                </>
-              ) : avatarPreloaded ? (
-                <>
-                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6 animate-pulse" />
-                  <span>Avatar Ready - Start Session!</span>
-                  <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition" />
-                </>
-              ) : (
-                <>
-                  <Sparkles className="w-5 h-5 sm:w-6 sm:h-6" />
-                  <span>Start New Session</span>
-                  <ChevronRight className="w-5 h-5 sm:w-6 sm:h-6 group-hover:translate-x-1 transition" />
-                </>
-              )}
-              <div className="absolute inset-0 bg-gradient-to-r from-primary-400 to-secondary-500 rounded-2xl blur opacity-40 group-hover:opacity-60 transition-opacity duration-300 -z-10" />
-            </button>
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-3xl p-6 sm:p-8 shadow-2xl border border-gray-200/50 dark:border-gray-700/50">
+              <div className="text-center mb-6">
+                <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 mb-3">
+                  <Zap className="w-4 h-4 text-purple-600 dark:text-purple-400" />
+                  <span className="text-sm font-medium text-purple-700 dark:text-purple-300">{t('aiMentor.quickStart')}</span>
+                </div>
+                <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{t('aiMentor.selectSubjectStart')}</h3>
+              </div>
+
+              <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-6">
+                {subjects.map((subject) => {
+                  const Icon = subject.icon;
+                  const isSelected = quickStartSubject === subject.id;
+                  return (
+                    <button
+                      key={subject.id}
+                      onClick={() => setQuickStartSubject(subject.id)}
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 ${
+                        isSelected
+                          ? `bg-gradient-to-r ${subject.color} text-white shadow-lg scale-105`
+                          : `${subject.bgColor} ${subject.borderColor} border-2 text-gray-700 dark:text-gray-300 hover:scale-102`
+                      }`}
+                      data-testid={`quick-subject-${subject.id}`}
+                    >
+                      <Icon className="w-4 h-4" />
+                      <span>{t(subject.nameKey)}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  onClick={handleQuickStart}
+                  disabled={startSessionMutation.isPending}
+                  size="lg"
+                  className="flex-1 sm:flex-none group px-8 py-6 bg-gradient-to-r from-purple-500 via-pink-500 to-orange-500 hover:from-purple-600 hover:via-pink-600 hover:to-orange-600 text-white rounded-xl font-semibold text-base shadow-xl"
+                  data-testid="button-quick-start"
+                >
+                  {startSessionMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                      {t('aiMentor.startingSession')}
+                    </>
+                  ) : (
+                    <>
+                      <Zap className="w-5 h-5 mr-2" />
+                      {t('aiMentor.startNow')}
+                      <ArrowRight className="w-5 h-5 ml-2 group-hover:translate-x-1 transition" />
+                    </>
+                  )}
+                </Button>
+                <Button
+                  onClick={() => handleOpenSetupWizard(quickStartSubject)}
+                  variant="outline"
+                  size="lg"
+                  className="px-6 py-6 rounded-xl font-medium"
+                  data-testid="button-customize"
+                >
+                  <Settings className="w-5 h-5 mr-2" />
+                  {t('aiMentor.customize')}
+                </Button>
+              </div>
+            </div>
           </motion.div>
         </div>
 
-        {/* Stats Row */}
+        {/* Quick Stats */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.6 }}
-          className="grid grid-cols-2 sm:grid-cols-4 gap-4 mb-16"
+          transition={{ delay: 0.5 }}
+          className="grid grid-cols-2 sm:grid-cols-4 gap-3 sm:gap-4 mb-12"
         >
           {[
-            { icon: Clock, label: 'Sessions', value: recentSessions?.length || 0, emoji: '⏱️' },
-            { icon: MessageSquare, label: 'Questions Asked', value: '142', emoji: '💬' },
-            { icon: Target, label: 'Accuracy', value: '94%', emoji: '🎯' },
-            { icon: TrendingUp, label: 'Progress', value: '+12%', emoji: '📈' },
+            { icon: Clock, label: t('aiMentor.stats.sessions'), value: recentSessions?.length || 0 },
+            { icon: MessageSquare, label: t('aiMentor.stats.questions'), value: '142' },
+            { icon: Target, label: t('aiMentor.stats.accuracy'), value: '94%' },
+            { icon: TrendingUp, label: t('aiMentor.stats.progress'), value: '+12%' },
           ].map((stat, index) => (
             <motion.div
               key={index}
               initial={{ opacity: 0, scale: 0.9 }}
               animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.7 + index * 0.1 }}
-              whileHover={{ scale: 1.05 }}
-              className="bg-white rounded-2xl p-4 sm:p-6 border border-gray-200 shadow-lg hover:shadow-xl transition cursor-pointer"
+              transition={{ delay: 0.6 + index * 0.1 }}
+              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-4 sm:p-5 border border-gray-200/50 dark:border-gray-700/50 shadow-lg"
             >
-              <div className="text-2xl sm:text-3xl mb-2">{stat.emoji}</div>
-              <div className="text-xl sm:text-2xl font-bold mb-1">{stat.value}</div>
-              <div className="text-xs sm:text-sm text-gray-600">{stat.label}</div>
+              <stat.icon className="w-5 h-5 text-purple-500 mb-2" />
+              <div className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">{stat.value}</div>
+              <div className="text-xs sm:text-sm text-gray-500 dark:text-gray-400">{stat.label}</div>
             </motion.div>
           ))}
         </motion.div>
 
-        {/* Two Column Layout */}
-        <div className="grid lg:grid-cols-3 gap-8">
+        {/* Subject Cards - Quick Start */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.7 }}
+          className="mb-12"
+        >
+          <div className="text-center mb-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2">
+              {t('aiMentor.chooseSubject')}
+            </h2>
+            <p className="text-gray-600 dark:text-gray-400">{t('aiMentor.selectTopic')}</p>
+          </div>
 
-          {/* Left - Features */}
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
+            {subjects.map((subject, index) => (
+              <motion.div
+                key={subject.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.8 + index * 0.1 }}
+                whileHover={{ y: -5, scale: 1.02 }}
+                onClick={() => handleOpenSetupWizard(subject.id)}
+                className={`relative cursor-pointer rounded-2xl p-5 sm:p-6 border-2 ${subject.borderColor} ${subject.bgColor} bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm shadow-lg hover:shadow-xl transition-all duration-300`}
+                data-testid={`button-subject-${subject.id}`}
+              >
+                <div className={`w-12 h-12 sm:w-14 sm:h-14 rounded-xl bg-gradient-to-br ${subject.color} flex items-center justify-center mb-4 shadow-lg`}>
+                  <subject.icon className="w-6 h-6 sm:w-7 sm:h-7 text-white" />
+                </div>
+                <h3 className="font-bold text-base sm:text-lg text-gray-900 dark:text-white mb-2">
+                  {t(subject.nameKey)}
+                </h3>
+                <div className="flex flex-wrap gap-1">
+                  {subject.topicKeys.slice(0, 2).map((topicKey) => (
+                    <Badge key={topicKey} variant="secondary" className="text-xs">
+                      {t(topicKey)}
+                    </Badge>
+                  ))}
+                  {subject.topicKeys.length > 2 && (
+                    <Badge variant="outline" className="text-xs">+{subject.topicKeys.length - 2}</Badge>
+                  )}
+                </div>
+                <ChevronRight className="absolute top-1/2 right-4 -translate-y-1/2 w-5 h-5 text-gray-400" />
+              </motion.div>
+            ))}
+          </div>
+        </motion.div>
+
+        {/* Two Column Layout */}
+        <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
+
+          {/* Left - Features & How it works */}
           <div className="lg:col-span-2 space-y-6">
 
-            {/* Feature Cards */}
-            <div>
-              <h3 className="text-xl sm:text-2xl font-bold mb-6 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-                Why Choose AI Mentor? 🌟
-              </h3>
-
-              <div className="grid sm:grid-cols-2 gap-4 sm:gap-6">
-                {[
-                  {
-                    icon: Brain,
-                    emoji: '🧠',
-                    title: 'Smart AI Mentor',
-                    desc: 'Garima Ma\'am explains concepts in natural English or Hindi',
-                    color: 'from-purple-500 to-indigo-600',
-                  },
-                  {
-                    icon: Video,
-                    emoji: '🎤',
-                    title: 'Voice Learning',
-                    desc: 'Talk to your AI mentor like a real conversation',
-                    color: 'from-blue-500 to-cyan-600',
-                  },
-                  {
-                    icon: BookOpen,
-                    emoji: '📚',
-                    title: 'All Subjects',
-                    desc: 'Physics, Chemistry, Maths, Biology - sab covered',
-                    color: 'from-pink-500 to-rose-600',
-                  },
-                  {
-                    icon: Zap,
-                    emoji: '⚡',
-                    title: 'Instant Doubts',
-                    desc: 'No waiting - ask any doubt, get instant answers',
-                    color: 'from-orange-500 to-amber-600',
-                  },
-                ].map((feature, index) => (
-                  <motion.div
-                    key={index}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.9 + index * 0.1 }}
-                    whileHover={{ y: -5 }}
-                    className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg hover:shadow-xl transition-all cursor-pointer"
-                  >
-                    <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-4 shadow-lg`}>
-                      <feature.icon className="w-7 h-7 text-white" />
-                    </div>
-                    <div className="flex items-start gap-2 mb-2">
-                      <span className="text-2xl">{feature.emoji}</span>
-                      <h4 className="font-bold text-lg">{feature.title}</h4>
-                    </div>
-                    <p className="text-sm text-gray-600 leading-relaxed">{feature.desc}</p>
-                  </motion.div>
-                ))}
-              </div>
+            {/* Features Grid */}
+            <div className="grid sm:grid-cols-2 gap-4">
+              {features.map((feature, index) => (
+                <motion.div
+                  key={index}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ delay: 1.0 + index * 0.1 }}
+                  className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-5 border border-gray-200/50 dark:border-gray-700/50 shadow-lg"
+                >
+                  <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${feature.color} flex items-center justify-center mb-3 shadow-lg`}>
+                    <feature.icon className="w-6 h-6 text-white" />
+                  </div>
+                  <h3 className="font-bold text-gray-900 dark:text-white mb-1">{t(feature.titleKey)}</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{t(feature.descKey)}</p>
+                </motion.div>
+              ))}
             </div>
 
             {/* How It Works */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 1.3 }}
-              className="bg-gradient-to-br from-primary-500 to-secondary-600 rounded-3xl p-6 sm:p-8 text-white shadow-xl"
+              transition={{ delay: 1.4 }}
+              className="bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 rounded-3xl p-6 sm:p-8 text-white shadow-xl"
             >
               <h3 className="text-xl sm:text-2xl font-bold mb-6 flex items-center gap-2">
                 <Sparkles className="w-6 h-6" />
-                Kaise Kaam Karta Hai?
+                {t('aiMentor.howItWorks')}
               </h3>
               <div className="space-y-4">
                 {[
-                  { step: 1, text: 'Choose your subject and topic' },
-                  { step: 2, text: 'Pick your learning level (Class 6-12)' },
-                  { step: 3, text: 'Start talking to Garima Ma\'am' },
-                  { step: 4, text: 'Ask doubts, practice problems, master concepts!' },
+                  { step: 1, text: t('aiMentor.step1') },
+                  { step: 2, text: t('aiMentor.step2') },
+                  { step: 3, text: t('aiMentor.step3') },
+                  { step: 4, text: t('aiMentor.step4') },
                 ].map((item) => (
                   <div key={item.step} className="flex items-start gap-4">
-                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 font-bold">
+                    <div className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center flex-shrink-0 font-bold text-sm">
                       {item.step}
                     </div>
-                    <p className="text-base sm:text-lg pt-1">{item.text}</p>
+                    <p className="text-sm sm:text-base pt-1 text-white/90">{item.text}</p>
                   </div>
                 ))}
               </div>
             </motion.div>
-
           </div>
 
-          {/* Right - Recent Sessions */}
+          {/* Right Sidebar */}
           <div className="space-y-6">
+
+            {/* Mentor Card */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.0 }}
+              className="bg-gradient-to-br from-purple-100 to-pink-100 dark:from-purple-900/30 dark:to-pink-900/30 rounded-2xl p-6 border border-purple-200/50 dark:border-purple-700/50"
+            >
+              <div className="flex items-center gap-4 mb-4">
+                <div className="w-16 h-16 rounded-full overflow-hidden ring-2 ring-purple-300 dark:ring-purple-600 shadow-lg">
+                  <img src={mentorAvatar} alt="Garima" className="w-full h-full object-cover" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-lg text-gray-900 dark:text-white">{t('mentors.garima.name')}</h3>
+                  <p className="text-sm text-purple-600 dark:text-purple-400">{t('mentors.garima.subject')}</p>
+                  <div className="flex items-center gap-1 mt-1">
+                    <div className="w-2 h-2 bg-green-500 rounded-full animate-pulse" />
+                    <span className="text-xs text-gray-500">{t('common.onlineNow')}</span>
+                  </div>
+                </div>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {t('avatar.greeting')}
+              </p>
+              <Button 
+                onClick={() => handleOpenSetupWizard()}
+                className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
+                data-testid="button-start-with-mentor"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                {t('aiMentor.startSession')}
+              </Button>
+            </motion.div>
 
             {/* Recent Sessions */}
             {recentSessions && recentSessions.length > 0 && (
               <motion.div
                 initial={{ opacity: 0, x: 20 }}
                 animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: 1.0 }}
-                className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg"
+                transition={{ delay: 1.2 }}
+                className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-5 border border-gray-200/50 dark:border-gray-700/50 shadow-lg"
               >
-                <h3 className="font-bold text-lg mb-4 flex items-center gap-2">
-                  <Clock className="w-5 h-5 text-primary-600" />
-                  Recent Sessions
+                <h3 className="font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                  <Clock className="w-5 h-5 text-purple-500" />
+                  {t('aiMentor.recentSessions')}
                 </h3>
                 <div className="space-y-3">
                   {recentSessions.map((session: any, index: number) => (
@@ -369,17 +513,18 @@ export default function Tutor() {
                       key={session.id}
                       initial={{ opacity: 0, x: 20 }}
                       animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 1.1 + index * 0.1 }}
+                      transition={{ delay: 1.3 + index * 0.1 }}
                       onClick={() => setCurrentSessionId(session.id)}
-                      className="p-4 bg-gradient-to-r from-orange-50 to-purple-50 rounded-xl hover:shadow-md transition cursor-pointer border border-gray-200"
+                      className="p-3 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 rounded-xl hover:shadow-md transition cursor-pointer border border-purple-200/50 dark:border-purple-700/50"
+                      data-testid={`session-card-${session.id}`}
                     >
-                      <div className="flex items-start justify-between">
+                      <div className="flex items-center justify-between">
                         <div className="flex-1 min-w-0">
-                          <div className="font-medium text-sm mb-1 truncate">
-                            {session.subject || session.title || 'Mentor Session'}
+                          <div className="font-medium text-sm text-gray-900 dark:text-white truncate">
+                            {session.subject || session.title || t('aiMentor.mentorSession')}
                           </div>
-                          <div className="text-xs text-gray-600 truncate">
-                            {session.topic || 'General discussion'}
+                          <div className="text-xs text-gray-500 truncate">
+                            {session.topic || t('aiMentor.generalDiscussion')}
                           </div>
                         </div>
                         <ChevronRight className="w-4 h-4 text-gray-400 flex-shrink-0 ml-2" />
@@ -390,50 +535,48 @@ export default function Tutor() {
               </motion.div>
             )}
 
-            {/* Tips Card */}
-            <motion.div
-              initial={{ opacity: 0, x: 20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ delay: 1.4 }}
-              className="bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl p-6 text-white shadow-xl"
-            >
-              <div className="text-3xl mb-3">💡</div>
-              <h3 className="font-bold text-lg mb-2">Pro Tip</h3>
-              <p className="text-sm leading-relaxed">
-                Ask "Can you explain this with an example?" for better understanding. Garima Ma'am loves explaining with real-life examples!
-              </p>
-            </motion.div>
-
-            {/* Stats Card */}
+            {/* Pro Tip */}
             <motion.div
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ delay: 1.5 }}
-              className="bg-white rounded-2xl p-6 border border-gray-200 shadow-lg"
+              className="bg-gradient-to-br from-amber-400 to-orange-500 rounded-2xl p-5 text-white shadow-xl"
             >
-              <h3 className="font-bold text-lg mb-4">Your Learning Stats</h3>
+              <Lightbulb className="w-8 h-8 mb-3 opacity-90" />
+              <h3 className="font-bold text-lg mb-2">{t('aiMentor.proTip')}</h3>
+              <p className="text-sm leading-relaxed text-white/90">
+                {t('aiMentor.proTipText')}
+              </p>
+            </motion.div>
+
+            {/* Learning Stats */}
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 1.6 }}
+              className="bg-white/80 dark:bg-gray-800/80 backdrop-blur-sm rounded-2xl p-5 border border-gray-200/50 dark:border-gray-700/50 shadow-lg"
+            >
+              <h3 className="font-bold text-gray-900 dark:text-white mb-4">{t('aiMentor.learningStats')}</h3>
               <div className="space-y-4">
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <span className="text-sm text-gray-600">This Week</span>
-                    <span className="text-sm font-semibold">12 hours</span>
+                    <span className="text-sm text-gray-600 dark:text-gray-400">{t('aiMentor.stats.thisWeek')}</span>
+                    <span className="text-sm font-semibold text-gray-900 dark:text-white">12 {t('aiMentor.hours')}</span>
                   </div>
-                  <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-gradient-to-r from-primary-500 to-secondary-600 rounded-full" style={{ width: '75%' }} />
+                  <div className="h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div className="h-full bg-gradient-to-r from-purple-500 to-pink-500 rounded-full" style={{ width: '75%' }} />
                   </div>
                 </div>
-                <div className="pt-2 border-t border-gray-200">
+                <div className="pt-3 border-t border-gray-200 dark:border-gray-700">
                   <div className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600">Concepts Mastered</span>
-                    <span className="font-bold text-primary-600">24</span>
+                    <span className="text-gray-600 dark:text-gray-400">{t('aiMentor.stats.conceptsMastered')}</span>
+                    <span className="font-bold text-purple-600 dark:text-purple-400">24</span>
                   </div>
                 </div>
               </div>
             </motion.div>
-
           </div>
         </div>
-
       </div>
 
       <TutorSetupWizard
@@ -442,7 +585,7 @@ export default function Tutor() {
         onSubmit={handleStartSession}
       />
 
-      {/* Hidden Avatar Preloader - loads Unity assets in background */}
+      {/* Hidden Avatar Preloader */}
       {isPreloadingAvatar && !avatarPreloaded && (
         <div className="fixed inset-0 pointer-events-none" style={{ opacity: 0, zIndex: -9999 }}>
           <UnityAvatar

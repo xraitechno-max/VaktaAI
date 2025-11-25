@@ -45,6 +45,7 @@ import { Phone, PhoneOff } from "lucide-react";
 import { useUnityAvatar } from "@/contexts/UnityAvatarContext";
 // Removed AvatarContainer - using direct Unity iframe for split-screen
 import { useVoiceTutor } from "@/hooks/useVoiceTutor";
+import mentorAvatar from "@assets/generated_images/female_teacher_gradient_background.png";
 
 interface TutorResponse {
   type: 'teach' | 'check' | 'diagnose';
@@ -1436,350 +1437,375 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
   };
 
   return (
-    <div className="h-full flex flex-col bg-gray-50 dark:bg-slate-950 relative">
-      {/* Control Icons - Fixed Top-Right (Always Visible) */}
-      <div className="absolute top-4 right-4 flex items-center gap-2 z-50 bg-white/10 dark:bg-slate-900/10 backdrop-blur-md rounded-full p-2 border border-white/20">
-        {/* Timer */}
-        <div className="flex items-center gap-2 text-sm text-white px-3">
-          <Clock className="w-4 h-4" />
-          <span className="font-medium">{formatTime(sessionTime)}</span>
-        </div>
-        
-        <Separator orientation="vertical" className="h-6 bg-white/20" />
-        
-        {/* Text Chat Toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className={`w-10 h-10 rounded-full ${
-            showChatPanel 
-              ? 'bg-blue-600 text-white hover:bg-blue-700' 
-              : 'text-white/70 hover:text-white hover:bg-white/10'
-          }`}
-          onClick={() => setShowChatPanel(!showChatPanel)}
-          data-testid="button-chat-toggle"
-        >
-          {showChatPanel ? <MessageSquare className="w-5 h-5" /> : <MessageSquareOff className="w-5 h-5" />}
-        </Button>
+    <div className="h-full flex flex-col bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 relative overflow-hidden">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent pointer-events-none" />
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
 
-        {/* Speaker/Mute Toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className={`w-10 h-10 rounded-full ${
-            !isMuted 
-              ? 'bg-blue-600 text-white hover:bg-blue-700' 
-              : 'text-white/70 hover:text-white hover:bg-white/10'
-          }`}
-          onClick={() => setIsMuted(!isMuted)}
-          data-testid="button-speaker-toggle"
-        >
-          {!isMuted ? <Volume2 className="w-5 h-5" /> : <MicOff className="w-5 h-5" />}
-        </Button>
-
-        {/* Video Camera Toggle */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className={`w-10 h-10 rounded-full ${
-            showCamera 
-              ? 'bg-blue-600 text-white hover:bg-blue-700' 
-              : 'text-white/70 hover:text-white hover:bg-white/10'
-          }`}
-          onClick={() => setShowCamera(!showCamera)}
-          data-testid="button-video-toggle"
-        >
-          {showCamera ? <Video className="w-5 h-5" /> : <VideoOff className="w-5 h-5" />}
-        </Button>
-
-        {/* Close Session */}
-        <Button
-          variant="ghost"
-          size="icon"
-          className="w-10 h-10 rounded-full bg-red-500 hover:bg-red-600 text-white"
-          onClick={onEndSession}
-          data-testid="button-close-session"
-        >
-          <X className="w-5 h-5" />
-        </Button>
-      </div>
-
-      <div className="flex-1 flex flex-col md:flex-row">
-        {/* Left Section - 3D Avatar Display (60% width on desktop or full width if chat hidden) */}
-        <div className={`relative ${showChatPanel ? 'flex-[0_0_60%]' : 'flex-1'} bg-slate-50 dark:bg-slate-950 flex flex-col items-center justify-center p-8 md:p-12 transition-all duration-300`}>
-        {/* Unity Avatar Display - Direct component rendering (same as Landing.tsx) */}
-        <div 
-          ref={avatarDisplayBoxRef}
-          className="w-full max-w-4xl aspect-video rounded-3xl overflow-hidden shadow-2xl backdrop-blur-sm border border-white/10 relative mb-6"
-        >
-          {/* Loading State */}
-          {avatarLoading && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm">
-              <div className="text-center">
-                <Loader2 className="w-10 h-10 text-white animate-spin mx-auto mb-3" />
-                <p className="text-white/90 text-base font-medium">Loading 3D Avatar...</p>
-                <p className="text-white/60 text-sm mt-1">This may take 10-15 seconds</p>
+      <div className="relative flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
+        <div className={`relative flex flex-col min-h-0 ${
+          showChatPanel ? 'flex-1 lg:flex-[0_0_58%]' : 'flex-1'
+        }`}>
+          <div className="flex items-center justify-between px-4 py-3 lg:px-6 lg:py-4 bg-black/20 backdrop-blur-xl border-b border-white/5">
+            <div className="flex items-center gap-3 flex-wrap">
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${
+                chat.subject?.toLowerCase() === 'physics' ? 'from-blue-500 to-cyan-500' :
+                chat.subject?.toLowerCase() === 'chemistry' ? 'from-green-500 to-emerald-500' :
+                chat.subject?.toLowerCase() === 'mathematics' ? 'from-purple-500 to-pink-500' :
+                'from-orange-500 to-amber-500'
+              } text-white shadow-lg`}>
+                <BookOpen className="w-3.5 h-3.5" />
+                <span className="text-xs lg:text-sm font-semibold capitalize">{chat.subject || 'Subject'}</span>
+              </div>
+              <div className="hidden sm:flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/10 border border-white/10 text-white/80">
+                <Brain className="w-3.5 h-3.5" />
+                <span className="text-xs lg:text-sm font-medium truncate max-w-[150px]">{chat.topic || 'Topic'}</span>
+              </div>
+              <div className="hidden md:flex items-center gap-2 px-3 py-1 rounded-full bg-white/5 text-white/60">
+                <Clock className="w-3.5 h-3.5" />
+                <span className="text-xs font-medium">{formatTime(sessionTime)}</span>
               </div>
             </div>
-          )}
-          
-          {/* Error State */}
-          {avatarError && (
-            <div className="absolute inset-0 z-10 flex items-center justify-center bg-slate-900/70 backdrop-blur-sm">
-              <div className="text-center">
-                <AlertCircle className="w-10 h-10 text-amber-400 mx-auto mb-3" />
-                <p className="text-white/90 text-base font-medium">Avatar Unavailable</p>
-                <p className="text-white/60 text-sm mt-1">{avatarError}</p>
-              </div>
-            </div>
-          )}
-          
-          {/* Unity Avatar Component - renders directly inside */}
-          <UnityAvatar
-            ref={localAvatarRef}
-            className="w-full h-full"
-            defaultAvatar="priya"
-            onReady={handleAvatarReady}
-            onError={handleAvatarError}
-            onMessage={(message) => {
-              if (message.type === 'AUDIO_ENDED') {
-                console.log('[TTS] Unity audio playback ended:', message.id);
-                clearAudioSafetyTimeout();
-                setPlayingAudio(null);
-              } else if (message.type === 'AUDIO_FAILED') {
-                console.error('[TTS] Unity audio playback failed:', message.error);
-                clearAudioSafetyTimeout();
-                setPlayingAudio(null);
-              }
-            }}
-          />
-          
-          {/* Avatar Active Indicator */}
-          {avatarReady && (
-            <div className="absolute top-4 right-4 px-3 py-1.5 bg-green-500/20 backdrop-blur-md rounded-full border border-green-400/30 z-20">
-              <span className="text-xs font-semibold text-green-300 flex items-center gap-2">
-                <span className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
-                Avatar Active
-              </span>
-            </div>
-          )}
-        </div>
 
-        {/* User Video/Avatar Box - Below Main Avatar */}
-        <div className="w-48 h-32 rounded-2xl overflow-hidden shadow-xl border border-white/20 bg-slate-900/50 backdrop-blur-md relative">
-          {showCamera ? (
-            <div className="w-full h-full relative">
-              {/* Video element - always rendered when camera is on, stream attached via ref */}
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full object-cover"
-                data-testid="video-camera-feed"
-              />
-              {/* Loading overlay - shown while stream is starting */}
-              {!cameraStream && (
-                <div className="absolute inset-0 bg-slate-800 flex items-center justify-center text-white/60 text-sm">
-                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-white"></div>
-                  <span className="ml-2">Starting Camera...</span>
-                </div>
-              )}
+            <div className="flex items-center gap-1.5 p-1.5 rounded-full bg-white/5 border border-white/10">
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`w-8 h-8 lg:w-9 lg:h-9 rounded-full transition-all ${
+                  showChatPanel ? 'bg-blue-500/30 text-blue-300' : 'text-white/50 hover:text-white hover:bg-white/10'
+                }`}
+                onClick={() => setShowChatPanel(!showChatPanel)}
+                data-testid="button-chat-toggle"
+              >
+                {showChatPanel ? <MessageSquare className="w-4 h-4" /> : <MessageSquareOff className="w-4 h-4" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`w-8 h-8 lg:w-9 lg:h-9 rounded-full transition-all ${
+                  !isMuted ? 'bg-blue-500/30 text-blue-300' : 'text-white/50 hover:text-white hover:bg-white/10'
+                }`}
+                onClick={() => setIsMuted(!isMuted)}
+                data-testid="button-speaker-toggle"
+              >
+                {!isMuted ? <Volume2 className="w-4 h-4" /> : <MicOff className="w-4 h-4" />}
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon"
+                className={`w-8 h-8 lg:w-9 lg:h-9 rounded-full transition-all ${
+                  showCamera ? 'bg-blue-500/30 text-blue-300' : 'text-white/50 hover:text-white hover:bg-white/10'
+                }`}
+                onClick={() => setShowCamera(!showCamera)}
+                data-testid="button-video-toggle"
+              >
+                {showCamera ? <Video className="w-4 h-4" /> : <VideoOff className="w-4 h-4" />}
+              </Button>
+              <Separator orientation="vertical" className="h-5 bg-white/10 mx-0.5" />
+              <Button
+                variant="ghost"
+                size="icon"
+                className="w-8 h-8 lg:w-9 lg:h-9 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30"
+                onClick={onEndSession}
+                data-testid="button-close-session"
+              >
+                <X className="w-4 h-4" />
+              </Button>
             </div>
-          ) : (
-            <div className="w-full h-full bg-gradient-to-br from-blue-500 to-purple-600 flex items-center justify-center">
-              <div className="text-white text-5xl font-bold">
-                {(user as any)?.name ? ((user as any).name as string).charAt(0).toUpperCase() : 'U'}
-              </div>
-            </div>
-          )}
-        </div>
+          </div>
 
-        {/* Mode Indicators - Glassmorphic Pills */}
-        <div className="absolute bottom-12 left-12 flex gap-3">
-          <button
-            onClick={() => updateLearningMode('lecture')}
-            disabled={lectureMode}
-            className={`px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
-              lectureMode
-                ? 'bg-blue-600 text-white shadow-lg cursor-default'
-                : 'bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-slate-300 dark:hover:bg-slate-700 cursor-pointer'
-            }`}
-            data-testid="button-mode-lecture"
-          >
-            Lecture
-          </button>
-          <button
-            onClick={() => updateLearningMode('practice')}
-            disabled={!lectureMode}
-            className={`px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 ${
-              !lectureMode
-                ? 'bg-blue-600 text-white shadow-lg cursor-default'
-                : 'bg-slate-200 dark:bg-slate-800 text-slate-900 dark:text-slate-100 hover:bg-slate-300 dark:hover:bg-slate-700 cursor-pointer'
-            }`}
-            data-testid="button-mode-practice"
-          >
-            Practice
-          </button>
-        </div>
-      </div>
-
-        {/* Right Section - Chat Panel (40% width on desktop) */}
-        {showChatPanel && (
-          <div className="flex-[0_0_40%] bg-white dark:bg-slate-900 flex flex-col shadow-2xl transition-all duration-300">
-
-        {/* Messages - Learna AI Style with top padding to avoid control buttons */}
-        <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-6 pt-20 pb-4 space-y-4" id="chat-messages-container">
-          {messages.map((msg, index) => (
+          <div className="flex-1 flex flex-col items-center justify-center p-2 lg:p-6 relative">
             <div 
-              key={msg.id} 
-              className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-fade-in`}
+              ref={avatarDisplayBoxRef}
+              className="relative w-full h-full max-w-5xl rounded-2xl lg:rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-slate-800 to-slate-900"
             >
-              <div className={`max-w-[80%] ${msg.role === 'user' ? 'order-2' : 'order-1'}`}>
-                <div className={`rounded-2xl px-5 py-3 ${
-                  msg.role === 'user' 
-                    ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-900 dark:text-blue-100' 
-                    : 'bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-gray-100'
-                } ${msg.role === 'user' ? 'rounded-br-sm' : 'rounded-bl-sm'}`}>
-                  {msg.role === 'assistant' ? (
-                    <div className="prose prose-sm max-w-none dark:prose-invert leading-relaxed">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkMath]}
-                        rehypePlugins={[rehypeKatex]}
-                      >
-                        {msg.content}
-                      </ReactMarkdown>
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/30 via-transparent to-transparent" />
+              
+              {avatarLoading && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
+                  <div className="text-center px-4">
+                    <div className="relative w-16 h-16 lg:w-20 lg:h-20 mx-auto mb-4">
+                      <div className="absolute inset-0 rounded-full border-4 border-purple-500/30" />
+                      <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-purple-500 animate-spin" />
+                      <Loader2 className="absolute inset-0 m-auto w-6 h-6 lg:w-8 lg:h-8 text-purple-400 animate-pulse" />
                     </div>
-                  ) : (
-                    <p className="leading-relaxed text-base">{msg.content}</p>
-                  )}
-                </div>
-                {msg.role === 'assistant' && msg.metadata?.speakSSML && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="h-7 px-2 text-xs mt-1 ml-1"
-                    onClick={() => {
-                      const ssml = (msg.metadata as any)?.speakSSML as string;
-                      const persona = (msg.metadata as any)?.speakMeta?.persona || tutorSession?.session?.personaId || 'Priya';
-                      const language = (msg.metadata as any)?.speakMeta?.language || chat?.language || 'en';
-                      playSSMLAudio(msg.id, ssml, persona, language);
-                    }}
-                    disabled={playingAudio === msg.id}
-                    data-testid={`button-speak-${msg.id}`}
-                  >
-                    {playingAudio === msg.id ? (
-                      <Loader2 className="w-3 h-3 animate-spin" />
-                    ) : (
-                      <Volume2 className="w-3 h-3" />
-                    )}
-                  </Button>
-                )}
-              </div>
-            </div>
-          ))}
-
-          {transcribeMutation.isPending && (
-            <div className="flex justify-start animate-fade-in">
-              <div className="max-w-[80%] bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-2xl rounded-bl-sm px-5 py-3">
-                <p className="text-sm font-medium flex items-center gap-2">
-                  <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" />
-                  Transcribing your voice...
-                </p>
-              </div>
-            </div>
-          )}
-
-          {(isStreaming || voiceTutor.streamingResponse) && (
-            <div className="flex justify-start animate-fade-in">
-              <div className="max-w-[80%] bg-gray-100 dark:bg-slate-800 text-gray-900 dark:text-gray-100 rounded-2xl rounded-bl-sm px-5 py-3">
-                {voiceTutor.streamingResponse ? (
-                  <>
-                    <div className="prose prose-sm max-w-none dark:prose-invert leading-relaxed inline-block">
-                      <ReactMarkdown
-                        remarkPlugins={[remarkMath]}
-                        rehypePlugins={[rehypeKatex]}
-                      >
-                        {voiceTutor.streamingResponse}
-                      </ReactMarkdown>
-                    </div>
-                    {isStreaming && <div className="inline-block w-0.5 h-4 bg-blue-600 animate-pulse ml-1" />}
-                  </>
-                ) : (
-                  <div className="typing-indicator" data-testid="typing-indicator">
-                    <div className="typing-dot"></div>
-                    <div className="typing-dot"></div>
-                    <div className="typing-dot"></div>
+                    <p className="text-white/90 text-sm lg:text-base font-medium">Loading Garima...</p>
+                    <p className="text-white/50 text-xs lg:text-sm mt-1">Preparing your AI mentor</p>
                   </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Input Area - Learna AI Style */}
-        <div className="p-6 border-t border-gray-200 dark:border-slate-700 bg-white dark:bg-slate-900">
-          {voiceMode ? (
-            <VoiceControl
-              chatId={chatId}
-              onTranscription={(text) => {
-                setMessage(text);
-                setTimeout(() => {
-                  const submitEvent = new Event('submit', { bubbles: true, cancelable: true });
-                  const formElement = document.querySelector('form');
-                  if (formElement && text.trim()) {
-                    formElement.dispatchEvent(submitEvent);
-                  }
-                }, 100);
-              }}
-              disabled={isStreaming}
-            />
-          ) : (
-            <>
-              {/* Example Suggestion - Like Learna AI */}
-              {messages.length <= 2 && (
-                <div className="mb-3 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800/50 rounded-xl p-4">
-                  <p className="text-xs font-semibold text-yellow-800 dark:text-yellow-300 mb-2">
-                    Example of what you can say:
-                  </p>
-                  <p className="text-sm font-medium text-yellow-900 dark:text-yellow-200">
-                    I have a doubt about {chat.topic}
-                  </p>
                 </div>
               )}
               
-              <form onSubmit={handleSubmit} className="flex items-center gap-3">
-                <Input
-                  value={message}
-                  onChange={(e) => setMessage(e.target.value)}
-                  placeholder="Reply here"
-                  disabled={isStreaming || isRecording || transcribeMutation.isPending}
-                  className="flex-1 h-12 rounded-3xl border-2 border-gray-200 dark:border-slate-700 px-5 focus-visible:ring-blue-500 focus-visible:border-blue-500"
-                  data-testid="input-chat-message"
-                />
-                <Button 
-                  type="button" 
-                  size="icon"
-                  disabled={isStreaming || transcribeMutation.isPending}
-                  onClick={isRecording ? stopRecording : startRecording}
-                  data-testid="button-voice-input"
-                  className={`h-12 w-12 rounded-full transition-all ${
-                    isRecording 
-                      ? "bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-500/50" 
-                      : "bg-blue-600 hover:bg-blue-700 text-white shadow-lg hover:shadow-xl"
-                  }`}
+              {avatarError && !avatarLoading && (
+                <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
+                  <div className="text-center px-4">
+                    <div className="w-14 h-14 lg:w-16 lg:h-16 mx-auto mb-4 rounded-full bg-amber-500/20 flex items-center justify-center">
+                      <AlertCircle className="w-7 h-7 lg:w-8 lg:h-8 text-amber-400" />
+                    </div>
+                    <p className="text-white/90 text-sm lg:text-base font-medium">Avatar Unavailable</p>
+                    <p className="text-white/50 text-xs lg:text-sm mt-1 max-w-xs">{avatarError}</p>
+                  </div>
+                </div>
+              )}
+              
+              <UnityAvatar
+                ref={localAvatarRef}
+                className="w-full h-full"
+                defaultAvatar="priya"
+                onReady={handleAvatarReady}
+                onError={handleAvatarError}
+                onMessage={(msg) => {
+                  if (msg.type === 'AUDIO_ENDED') {
+                    console.log('[TTS] Unity audio playback ended:', msg.id);
+                    clearAudioSafetyTimeout();
+                    setPlayingAudio(null);
+                  } else if (msg.type === 'AUDIO_FAILED') {
+                    console.error('[TTS] Unity audio playback failed:', msg.error);
+                    clearAudioSafetyTimeout();
+                    setPlayingAudio(null);
+                  }
+                }}
+              />
+              
+              {playingAudio && (
+                <div className="absolute top-3 right-3 lg:top-4 lg:right-4 z-30">
+                  <div className="px-2.5 py-1 lg:px-3 lg:py-1.5 rounded-full backdrop-blur-md border flex items-center gap-1.5 lg:gap-2 bg-blue-500/20 border-blue-400/30">
+                    <div className="flex items-center gap-0.5">
+                      <span className="w-0.5 lg:w-1 h-2 lg:h-3 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '0ms' }} />
+                      <span className="w-0.5 lg:w-1 h-3 lg:h-4 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '150ms' }} />
+                      <span className="w-0.5 lg:w-1 h-2 lg:h-2 bg-blue-400 rounded-full animate-pulse" style={{ animationDelay: '300ms' }} />
+                    </div>
+                    <span className="text-[10px] lg:text-xs font-medium text-blue-300">Speaking</span>
+                  </div>
+                </div>
+              )}
+
+              {isRecording && (
+                <div className="absolute bottom-3 left-1/2 -translate-x-1/2 lg:bottom-4 z-30">
+                  <div className="px-3 lg:px-4 py-1.5 lg:py-2 rounded-full bg-red-500/20 backdrop-blur-md border border-red-400/30 flex items-center gap-2">
+                    <div className="relative">
+                      <Mic className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-red-400" />
+                      <span className="absolute -top-0.5 -right-0.5 w-1.5 lg:w-2 h-1.5 lg:h-2 bg-red-500 rounded-full animate-ping" />
+                    </div>
+                    <span className="text-xs lg:text-sm font-medium text-red-300">Listening...</span>
+                  </div>
+                </div>
+              )}
+
+              {showCamera && cameraStream && (
+                <div className="absolute bottom-4 right-4 lg:bottom-6 lg:right-6 z-30">
+                  <div className="w-28 h-20 lg:w-36 lg:h-28 rounded-xl overflow-hidden shadow-2xl border-2 border-white/30 bg-slate-800/50 backdrop-blur-md">
+                    <video ref={videoRef} autoPlay playsInline muted className="w-full h-full object-cover" data-testid="video-camera-feed" />
+                  </div>
+                </div>
+              )}
+
+              <div className="absolute bottom-4 left-1/2 -translate-x-1/2 lg:bottom-6 z-30">
+                <div className="flex items-center rounded-full bg-black/40 backdrop-blur-md border border-white/10 p-0.5">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className={`rounded-full px-3 lg:px-4 h-8 text-xs font-medium transition-all ${
+                      lectureMode
+                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
+                        : 'text-white/60 hover:text-white hover:bg-white/10'
+                    }`}
+                    onClick={() => updateLearningMode('lecture')}
+                    data-testid="button-mode-lecture"
+                  >
+                    <BookOpen className="w-3 h-3 lg:w-3.5 lg:h-3.5 mr-1 lg:mr-1.5" />
+                    Lecture
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className={`rounded-full px-3 lg:px-4 h-8 text-xs font-medium transition-all ${
+                      !lectureMode
+                        ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg'
+                        : 'text-white/60 hover:text-white hover:bg-white/10'
+                    }`}
+                    onClick={() => updateLearningMode('practice')}
+                    data-testid="button-mode-practice"
+                  >
+                    <Brain className="w-3 h-3 lg:w-3.5 lg:h-3.5 mr-1 lg:mr-1.5" />
+                    Practice
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {showChatPanel && (
+          <div className="flex-[0_0_40%] lg:flex-[0_0_42%] flex flex-col bg-slate-900/50 backdrop-blur-xl border-t lg:border-t-0 lg:border-l border-white/5 min-h-[200px] max-h-[40vh] lg:max-h-none overflow-hidden">
+            <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-4 py-4 lg:px-5 lg:py-5 space-y-4 scrollbar-thin scrollbar-thumb-white/10">
+              {messages.map((msg) => (
+                <div key={msg.id} className={`flex gap-2.5 lg:gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
+                  {msg.role === 'assistant' ? (
+                    <div className="flex-shrink-0 w-7 h-7 lg:w-9 lg:h-9 rounded-full overflow-hidden ring-2 ring-purple-400/50 shadow-lg">
+                      <img src={mentorAvatar} alt="Garima" className="w-full h-full object-cover" />
+                    </div>
+                  ) : (
+                    <div className="flex-shrink-0 w-7 h-7 lg:w-9 lg:h-9 rounded-full bg-gradient-to-br from-blue-500 to-cyan-500 flex items-center justify-center shadow-lg">
+                      <User className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-white" />
+                    </div>
+                  )}
+                  <div className={`group max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
+                    <div className={`rounded-2xl px-3.5 py-2.5 lg:px-4 lg:py-3 ${
+                      msg.role === 'user'
+                        ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-md'
+                        : 'bg-white/10 backdrop-blur-sm border border-white/10 text-white/90 rounded-bl-md'
+                    }`}>
+                      {msg.role === 'assistant' ? (
+                        <div className="prose prose-sm prose-invert max-w-none text-sm lg:text-base leading-relaxed">
+                          <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                            {msg.content}
+                          </ReactMarkdown>
+                        </div>
+                      ) : (
+                        <p className="text-sm lg:text-base leading-relaxed">{msg.content}</p>
+                      )}
+                    </div>
+                    {msg.role === 'assistant' && (
+                      <div className="flex items-center gap-1 mt-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="w-6 h-6 lg:w-7 lg:h-7 rounded-full text-white/40 hover:text-white hover:bg-white/10"
+                          onClick={() => {
+                            const ssml = (msg.metadata as any)?.speakSSML;
+                            if (ssml) {
+                              const persona = (msg.metadata as any)?.speakMeta?.persona || tutorSession?.session?.personaId || 'Priya';
+                              const language = (msg.metadata as any)?.speakMeta?.language || chat?.language || 'en';
+                              playSSMLAudio(msg.id, ssml, persona, language);
+                            } else {
+                              playAudio(msg.id, msg.content);
+                            }
+                          }}
+                          data-testid={`button-speak-${msg.id}`}
+                        >
+                          {playingAudio === msg.id ? <Loader2 className="w-3 h-3 animate-spin" /> : <Volume2 className="w-3 h-3" />}
+                        </Button>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {transcribeMutation.isPending && (
+                <div className="flex gap-2.5 lg:gap-3">
+                  <div className="flex-shrink-0 w-7 h-7 lg:w-9 lg:h-9 rounded-full overflow-hidden ring-2 ring-purple-400/50">
+                    <img src={mentorAvatar} alt="Garima" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="rounded-2xl rounded-bl-md px-3.5 py-2.5 lg:px-4 lg:py-3 bg-white/10 backdrop-blur-sm border border-white/10">
+                    <div className="flex items-center gap-2">
+                      <Loader2 className="w-3.5 h-3.5 lg:w-4 lg:h-4 text-blue-400 animate-spin" />
+                      <span className="text-xs lg:text-sm text-white/60">Transcribing...</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {(isStreaming || voiceTutor.streamingResponse) && (
+                <div className="flex gap-2.5 lg:gap-3">
+                  <div className="flex-shrink-0 w-7 h-7 lg:w-9 lg:h-9 rounded-full overflow-hidden ring-2 ring-purple-400/50">
+                    <img src={mentorAvatar} alt="Garima" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="max-w-[80%] rounded-2xl rounded-bl-md px-3.5 py-2.5 lg:px-4 lg:py-3 bg-white/10 backdrop-blur-sm border border-white/10">
+                    {voiceTutor.streamingResponse ? (
+                      <>
+                        <div className="prose prose-sm prose-invert max-w-none text-sm lg:text-base inline">
+                          <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
+                            {voiceTutor.streamingResponse}
+                          </ReactMarkdown>
+                        </div>
+                        {isStreaming && <span className="inline-block w-0.5 h-4 bg-purple-400 animate-pulse ml-1 align-middle" />}
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-1">
+                        <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                        <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                        <span className="w-1.5 h-1.5 bg-purple-400 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {messages.length <= 2 && (
+              <div className="px-4 py-3 lg:px-5 lg:py-3 border-t border-white/5 bg-white/5">
+                <p className="text-[10px] lg:text-xs text-white/40 mb-2 flex items-center gap-1.5">
+                  <Lightbulb className="w-3 h-3" />
+                  Example of what you can say:
+                </p>
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start h-auto py-2 px-3 text-xs lg:text-sm bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 text-amber-200 hover:bg-amber-500/20 rounded-xl"
+                  onClick={() => sendMessageMutation.mutate(`I have a doubt about ${chat.topic}`)}
+                  data-testid="button-example-prompt"
                 >
-                  <Mic className="w-5 h-5" />
+                  I have a doubt about {chat.topic}
                 </Button>
-              </form>
-            </>
-          )}
-        </div>
-        </div>
+              </div>
+            )}
+
+            <div className="p-3 lg:p-4 border-t border-white/5 bg-black/20">
+              {voiceMode ? (
+                <VoiceControl
+                  chatId={chatId}
+                  onTranscription={(text) => {
+                    setMessage(text);
+                    setTimeout(() => {
+                      if (text.trim()) sendMessageMutation.mutate(text.trim());
+                    }, 100);
+                  }}
+                  disabled={isStreaming}
+                />
+              ) : (
+                <form onSubmit={handleSubmit}>
+                  <div className="flex items-center gap-2 p-1.5 lg:p-2 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20">
+                    <Input
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder={isRecording ? "Listening..." : "Type your question..."}
+                      disabled={isStreaming || isRecording || transcribeMutation.isPending}
+                      className="flex-1 bg-transparent border-0 focus-visible:ring-0 text-white placeholder:text-white/40 text-sm lg:text-base h-9 lg:h-10"
+                      data-testid="input-chat-message"
+                    />
+                    <div className="flex items-center gap-1.5">
+                      <Button
+                        type="button"
+                        size="icon"
+                        variant="ghost"
+                        className={`w-9 h-9 lg:w-10 lg:h-10 rounded-full transition-all ${
+                          isRecording
+                            ? 'bg-red-500 hover:bg-red-600 text-white'
+                            : 'text-white/60 hover:text-white hover:bg-white/10'
+                        }`}
+                        onClick={isRecording ? stopRecording : startRecording}
+                        disabled={isStreaming || transcribeMutation.isPending}
+                        data-testid="button-voice-input"
+                      >
+                        {isRecording ? <MicOff className="w-4 h-4 lg:w-5 lg:h-5" /> : <Mic className="w-4 h-4 lg:w-5 lg:h-5" />}
+                      </Button>
+                      <Button
+                        type="submit"
+                        size="icon"
+                        disabled={!message.trim() || isStreaming}
+                        className="w-9 h-9 lg:w-10 lg:h-10 rounded-full bg-gradient-to-r from-purple-500 to-pink-500 hover:from-purple-600 hover:to-pink-600 text-white shadow-lg disabled:opacity-50"
+                        data-testid="button-send-message"
+                      >
+                        {isStreaming ? <Loader2 className="w-4 h-4 lg:w-5 lg:h-5 animate-spin" /> : <Send className="w-4 h-4 lg:w-5 lg:h-5" />}
+                      </Button>
+                    </div>
+                  </div>
+                </form>
+              )}
+            </div>
+          </div>
         )}
       </div>
 
-      {/* Quick Tool Modal */}
       {chat && (
         <QuickToolModal
           open={activeToolModal !== null}

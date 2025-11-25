@@ -26,9 +26,19 @@ import {
 import OpenAI from 'openai';
 import { documentService } from './documentService.js';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+
+function getOpenAI(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured. Please add it to your secrets.');
+    }
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
 /**
  * Map our language codes to VaktaAI language codes
@@ -87,7 +97,7 @@ const llmService: LLMService = {
         openaiModel = 'gpt-4o'; // Use GPT-4o instead of Claude (not available via OpenAI)
       }
 
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAI().chat.completions.create({
         model: openaiModel,
         messages: messages as any,
         temperature,

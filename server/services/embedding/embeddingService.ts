@@ -6,9 +6,19 @@ import {
   cacheEmbeddingsBatch,
 } from '../cache/embeddingCache.js';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY,
-});
+let openai: OpenAI | null = null;
+
+function getOpenAI(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured. Please add it to your secrets.');
+    }
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY,
+    });
+  }
+  return openai;
+}
 
 const EMBEDDING_MODEL = 'text-embedding-3-small';
 
@@ -44,7 +54,7 @@ export async function generateEmbedding(text: string): Promise<EmbeddingResult> 
     }
 
     // Cache miss - call OpenAI API
-    const response = await openai.embeddings.create({
+    const response = await getOpenAI().embeddings.create({
       model: EMBEDDING_MODEL,
       input: text,
     });
@@ -104,7 +114,7 @@ export async function generateEmbeddings(texts: string[]): Promise<EmbeddingResu
     }
 
     // Call API only for uncached texts
-    const response = await openai.embeddings.create({
+    const response = await getOpenAI().embeddings.create({
       model: EMBEDDING_MODEL,
       input: uncachedTexts,
     });

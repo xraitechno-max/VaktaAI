@@ -4,9 +4,19 @@
 
 import OpenAI from 'openai';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY || ""
-});
+let openai: OpenAI | null = null;
+
+function getOpenAI(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured. Please add it to your secrets.');
+    }
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
+  }
+  return openai;
+}
 
 export interface StreamingOptions {
   temperature?: number;
@@ -35,7 +45,7 @@ export async function streamChatCompletion(
     ...messages
   ];
 
-  const stream = await openai.chat.completions.create({
+  const stream = await getOpenAI().chat.completions.create({
     model,
     messages: messagesWithSystem,
     temperature,
@@ -73,7 +83,7 @@ export async function streamSentences(
     ...messages
   ];
 
-  const stream = await openai.chat.completions.create({
+  const stream = await getOpenAI().chat.completions.create({
     model,
     messages: messagesWithSystem,
     temperature,

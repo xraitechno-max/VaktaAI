@@ -2,9 +2,19 @@ import OpenAI from "openai";
 import { embeddingService } from "./embeddingService";
 
 // Cost-optimized: GPT-4o for core features (tutor, docChat), GPT-4o-mini for simple tasks (quiz, notes, study plans, doc analysis)
-const openai = new OpenAI({ 
-  apiKey: process.env.OPENAI_API_KEY || process.env.OPENAI_API_KEY_ENV_VAR || ""
-});
+let openai: OpenAI | null = null;
+
+function getOpenAI(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured. Please add it to your secrets.');
+    }
+    openai = new OpenAI({ 
+      apiKey: process.env.OPENAI_API_KEY
+    });
+  }
+  return openai;
+}
 
 export interface TutorResponse {
   explain: string;
@@ -76,7 +86,7 @@ ${context ? `\nDOCS (optional context):\n${context}` : ''}`;
       ...conversationHistory.map(msg => ({ role: msg.role as any, content: msg.content }))
     ];
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: "gpt-4o",
       messages,
       response_format: { type: "json_object" },
@@ -103,7 +113,7 @@ Language: ${language}. Keep tone friendly and clear.
 CONTEXT:
 ${context}`;
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
@@ -140,7 +150,7 @@ Constraints:
 - Return a JSON array of questions.
 ${context ? `\nSOURCE CONTEXT:\n${context}` : ''}`;
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: systemPrompt }],
       response_format: { type: "json_object" },
@@ -170,7 +180,7 @@ Sections:
 Include source breadcrumbs (URL title or Doc page). Be concise.
 Return valid JSON with structure: {"bigIdea": "...", "keyTerms": [...], "summary": "...", "sections": [...], "flashcards": [...], "quizableFacts": [...]}`;
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [
         { role: "system", content: systemPrompt },
@@ -206,7 +216,7 @@ Return JSON object with "tasks" array containing tasks with {"date": "YYYY-MM-DD
 
       console.log('[generateStudyPlan] Creating study plan with prompt:', systemPrompt);
 
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAI().chat.completions.create({
         model: "gpt-4o-mini",
         messages: [{ role: "user", content: systemPrompt }],
         response_format: { type: "json_object" },
@@ -253,7 +263,7 @@ Return JSON object with "tasks" array containing tasks with {"date": "YYYY-MM-DD
     console.log('[analyzeDocument] Preview length:', contentPreview.length);
 
     try {
-      const response = await openai.chat.completions.create({
+      const response = await getOpenAI().chat.completions.create({
         model: "gpt-4o-mini",
         messages: [
           { role: "system", content: systemPrompt },
@@ -292,7 +302,7 @@ Return JSON object with "tasks" array containing tasks with {"date": "YYYY-MM-DD
     messages: { role: string; content: string }[],
     systemPrompt: string
   ): AsyncGenerator<string, void, unknown> {
-    const stream = await openai.chat.completions.create({
+    const stream = await getOpenAI().chat.completions.create({
       model: "gpt-4o",
       messages: [
         { role: "system", content: systemPrompt },
@@ -323,7 +333,7 @@ Return JSON object with "tasks" array containing tasks with {"date": "YYYY-MM-DD
     // For now, we'll use a simple approach - in production you'd use a reranking model
     const prompt = `Rank these ${results.length} text passages by relevance to the query: "${query}"\n\nPassages:\n${results.map((r, i) => `${i + 1}. ${r.text.substring(0, 200)}...`).join('\n\n')}\n\nReturn only the numbers of the most relevant ${topK} passages, in order of relevance (most relevant first), separated by commas.`;
 
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: "gpt-4o-mini",
       messages: [{ role: "user", content: prompt }],
       max_completion_tokens: 100,

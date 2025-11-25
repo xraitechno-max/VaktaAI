@@ -1,9 +1,19 @@
 import OpenAI from 'openai';
-import { embeddingService } from '../embedding/embeddingService';
+import { generateEmbedding } from '../embedding/embeddingService';
 import { db } from '../../db';
 import { chunks } from '../../db/schema';
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+let openai: OpenAI | null = null;
+
+function getOpenAI(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured. Please add it to your secrets.');
+    }
+    openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+  }
+  return openai;
+}
 
 interface ChunkParams {
   text: string;
@@ -102,7 +112,7 @@ export class SemanticChunkingService {
   private async generateSentenceEmbeddings(sentences: string[]): Promise<number[][]> {
     try {
       // Use OpenAI for faster batch processing
-      const response = await openai.embeddings.create({
+      const response = await getOpenAI().embeddings.create({
         model: 'text-embedding-3-small',
         input: sentences
       });
@@ -114,8 +124,8 @@ export class SemanticChunkingService {
       // Fallback to local embeddings
       const embeddings: number[][] = [];
       for (const sentence of sentences) {
-        const embedding = await embeddingService.generateEmbedding(sentence);
-        embeddings.push(embedding);
+        const result = await generateEmbedding(sentence);
+        embeddings.push(result.embedding);
       }
       return embeddings;
     }

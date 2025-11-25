@@ -13,9 +13,19 @@ import { sanitizeSSML, lintSSMLStrict, estimateSpeechSeconds, compressSpeakSSML 
 import { buildDevContext } from '../prompts/dualOutput.dev';
 import { generateFallbackDualOutput } from '../utils/chatToSpeechFallback';
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!
-});
+let openai: OpenAI | null = null;
+
+function getOpenAI(): OpenAI {
+  if (!openai) {
+    if (!process.env.OPENAI_API_KEY) {
+      throw new Error('OPENAI_API_KEY is not configured. Please add it to your secrets.');
+    }
+    openai = new OpenAI({
+      apiKey: process.env.OPENAI_API_KEY
+    });
+  }
+  return openai;
+}
 
 interface GenerateDualOutputOptions {
   userQuery: string;
@@ -92,7 +102,7 @@ export async function generateDualOutput(
 
   // Try primary generation
   try {
-    const response = await openai.chat.completions.create({
+    const response = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
       temperature: 0.6,
       response_format: { type: 'json_object' },
@@ -184,7 +194,7 @@ async function repairDualOutput(
   console.log('[Dual Output] Repair attempt with malformed JSON:', malformedJson.substring(0, 200));
   
   try {
-    const repairResponse = await openai.chat.completions.create({
+    const repairResponse = await getOpenAI().chat.completions.create({
       model: 'gpt-4o-mini',
       temperature: 0.2,
       response_format: { type: 'json_object' },
@@ -293,7 +303,7 @@ export async function generateChatOnly(
 ): Promise<string> {
   const { userQuery, contextMessages, persona = 'Priya', language = 'en' } = options;
 
-  const response = await openai.chat.completions.create({
+  const response = await getOpenAI().chat.completions.create({
     model: 'gpt-4o-mini',
     temperature: 0.5,
     messages: [

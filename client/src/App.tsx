@@ -6,15 +6,15 @@ import { useAuth } from "@/hooks/useAuth";
 import AppLayout from "@/components/layout/AppLayout";
 import { OverlayProvider } from "@/lib/useOverlay";
 import { UnityAvatarProvider } from "@/contexts/UnityAvatarContext";
+import { LanguageProvider } from "@/contexts/LanguageContext";
 
 // Pages
 import Landing from "@/pages/Landing";
 import Onboarding from "@/pages/Onboarding";
-import Dashboard from "@/pages/Dashboard";
 import Chat from "@/pages/Chat";
 import Tutor from "@/pages/Tutor";
-import DocChatSources from "@/pages/DocChatSources";
-import DocChatSession from "@/pages/DocChatSession";
+import DocSathiSources from "@/pages/DocSathiSources";
+import DocSathiSession from "@/pages/DocSathiSession";
 import Quiz from "@/pages/Quiz";
 import QuizAttempt from "@/pages/QuizAttempt";
 import StudyPlan from "@/pages/StudyPlan";
@@ -69,11 +69,14 @@ function Router() {
     <UnityAvatarProvider>
       <AppLayout>
         <Switch>
-          <Route path="/" component={Dashboard} />
+          <Route path="/" component={Tutor} />
           <Route path="/chat" component={Chat} />
           <Route path="/tutor" component={Tutor} />
-          <Route path="/docchat/:chatId" component={DocChatSession} />
-          <Route path="/docchat" component={DocChatSources} />
+          <Route path="/docsathi/:chatId" component={DocSathiSession} />
+          <Route path="/docsathi" component={DocSathiSources} />
+          {/* Legacy route redirects */}
+          <Route path="/docchat/:chatId">{() => { window.location.href = window.location.href.replace('/docchat/', '/docsathi/'); return null; }}</Route>
+          <Route path="/docchat">{() => { window.location.href = '/docsathi'; return null; }}</Route>
           <Route path="/quiz/:id" component={QuizAttempt} />
           <Route path="/quiz" component={Quiz} />
           <Route path="/study-plan" component={StudyPlan} />
@@ -96,10 +99,12 @@ function Router() {
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
-      <OverlayProvider>
-        <Router />
-        <Toaster />
-      </OverlayProvider>
+      <LanguageProvider>
+        <OverlayProvider>
+          <Router />
+          <Toaster />
+        </OverlayProvider>
+      </LanguageProvider>
     </QueryClientProvider>
   );
 }
