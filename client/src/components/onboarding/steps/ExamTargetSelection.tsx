@@ -20,22 +20,26 @@ export default function ExamTargetSelection({
 }: ExamTargetSelectionProps) {
   // Define exam targets based on class
   const getExamTargets = () => {
-    if (currentClass === 'class-6-10') {
+    // Class 6-10: Board focused
+    if (['6', '7', '8', '9', '10'].includes(currentClass)) {
       return [
         {
-          id: 'board',
+          id: 'board-only',
           label: 'Board Exam Preparation',
           description: 'Focus on school exams & NCERT mastery',
           icon: Award,
         },
         {
-          id: 'foundation',
+          id: 'board-foundation',
           label: 'Foundation for JEE/NEET',
           description: 'Early preparation for competitive exams',
           icon: Target,
         },
       ];
-    } else if (currentClass === 'class-11-12') {
+    }
+    
+    // Class 11-12: Board + Competitive exams
+    if (['11', '12'].includes(currentClass)) {
       return [
         {
           id: 'board-only',
@@ -62,23 +66,23 @@ export default function ExamTargetSelection({
           icon: Zap,
         },
       ];
-    } else {
-      // Dropper
-      return [
-        {
-          id: 'pure-jee',
-          label: 'Pure JEE Focus',
-          description: 'Dedicated JEE Main & Advanced prep',
-          icon: Trophy,
-        },
-        {
-          id: 'pure-neet',
-          label: 'Pure NEET Focus',
-          description: 'Dedicated medical entrance prep',
-          icon: Zap,
-        },
-      ];
     }
+    
+    // Dropper: Pure competitive focus
+    return [
+      {
+        id: 'pure-jee',
+        label: 'Pure JEE Focus',
+        description: 'Dedicated JEE Main & Advanced prep',
+        icon: Trophy,
+      },
+      {
+        id: 'pure-neet',
+        label: 'Pure NEET Focus',
+        description: 'Dedicated medical entrance prep',
+        icon: Zap,
+      },
+    ];
   };
 
   const examTargets = getExamTargets();

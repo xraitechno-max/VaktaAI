@@ -1,22 +1,23 @@
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Label } from '@/components/ui/label';
-import { Atom, FlaskConical, Calculator, Dna } from 'lucide-react';
+import { Atom, FlaskConical, Calculator, Dna, BookOpen, Globe, Languages, Code, Beaker } from 'lucide-react';
 
 interface SubjectSelectionProps {
+  currentClass: string;
   examTarget: string;
   value: string[];
   onChange: (value: string[]) => void;
 }
 
-export default function SubjectSelection({ examTarget, value, onChange }: SubjectSelectionProps) {
-  const subjects = [
+export default function SubjectSelection({ currentClass, examTarget, value, onChange }: SubjectSelectionProps) {
+  // All possible subjects with icons
+  const allSubjects = [
     {
       id: 'physics',
       label: 'Physics',
       icon: Atom,
       gradient: 'from-blue-500 to-cyan-500',
-      description: 'Mechanics, Optics, Modern Physics',
+      description: 'Mechanics, Optics, Electricity',
     },
     {
       id: 'chemistry',
@@ -30,28 +31,99 @@ export default function SubjectSelection({ examTarget, value, onChange }: Subjec
       label: 'Mathematics',
       icon: Calculator,
       gradient: 'from-orange-500 to-red-500',
-      description: 'Calculus, Algebra, Trigonometry',
+      description: 'Algebra, Geometry, Calculus',
     },
     {
       id: 'biology',
       label: 'Biology',
       icon: Dna,
       gradient: 'from-green-500 to-emerald-500',
-      description: 'Botany, Zoology, Human Physiology',
+      description: 'Botany, Zoology, Physiology',
+    },
+    {
+      id: 'science',
+      label: 'Science',
+      icon: Beaker,
+      gradient: 'from-teal-500 to-cyan-500',
+      description: 'General Science (Physics, Chemistry, Biology)',
+    },
+    {
+      id: 'social',
+      label: 'Social Science',
+      icon: Globe,
+      gradient: 'from-amber-500 to-yellow-500',
+      description: 'History, Geography, Civics',
+    },
+    {
+      id: 'english',
+      label: 'English',
+      icon: BookOpen,
+      gradient: 'from-indigo-500 to-blue-500',
+      description: 'Grammar, Literature, Writing',
+    },
+    {
+      id: 'hindi',
+      label: 'Hindi',
+      icon: Languages,
+      gradient: 'from-rose-500 to-pink-500',
+      description: 'Vyakaran, Sahitya, Lekhan',
+    },
+    {
+      id: 'computer',
+      label: 'Computer Science',
+      icon: Code,
+      gradient: 'from-violet-500 to-purple-500',
+      description: 'Programming, Data Structures',
     },
   ];
 
-  // Filter subjects based on exam target
+  // Get subjects based on class and exam target
   const getAvailableSubjects = () => {
-    if (examTarget.includes('neet')) {
-      // NEET: Physics, Chemistry, Biology
-      return subjects.filter(s => ['physics', 'chemistry', 'biology'].includes(s.id));
-    } else if (examTarget.includes('jee')) {
-      // JEE: Physics, Chemistry, Maths
-      return subjects.filter(s => ['physics', 'chemistry', 'maths'].includes(s.id));
+    const examLower = examTarget.toLowerCase();
+    
+    // Class 6-8: General subjects
+    if (['6', '7', '8'].includes(currentClass)) {
+      return allSubjects.filter(s => 
+        ['science', 'maths', 'social', 'english', 'hindi'].includes(s.id)
+      );
     }
-    // All subjects for board exam
-    return subjects;
+    
+    // Class 9-10: Separate sciences
+    if (['9', '10'].includes(currentClass)) {
+      return allSubjects.filter(s => 
+        ['physics', 'chemistry', 'biology', 'maths', 'social', 'english', 'hindi', 'computer'].includes(s.id)
+      );
+    }
+    
+    // Class 11-12 or Dropper: Based on exam target (with fallback if not set yet)
+    if (['11', '12', 'dropper'].includes(currentClass)) {
+      if (!examTarget || examTarget === '') {
+        // Default to all science subjects if exam target not set yet
+        return allSubjects.filter(s => 
+          ['physics', 'chemistry', 'maths', 'biology', 'english', 'hindi', 'computer'].includes(s.id)
+        );
+      }
+      
+      if (examLower.includes('neet')) {
+        // NEET: PCB + English
+        return allSubjects.filter(s => 
+          ['physics', 'chemistry', 'biology', 'english'].includes(s.id)
+        );
+      } else if (examLower.includes('jee')) {
+        // JEE: PCM + English
+        return allSubjects.filter(s => 
+          ['physics', 'chemistry', 'maths', 'english'].includes(s.id)
+        );
+      } else if (examLower.includes('board')) {
+        // Board exams: All science subjects
+        return allSubjects.filter(s => 
+          ['physics', 'chemistry', 'maths', 'biology', 'english', 'hindi', 'computer'].includes(s.id)
+        );
+      }
+    }
+    
+    // Default fallback: All subjects
+    return allSubjects;
   };
 
   const availableSubjects = getAvailableSubjects();
@@ -66,11 +138,22 @@ export default function SubjectSelection({ examTarget, value, onChange }: Subjec
 
   // Recommended subjects message
   const getRecommendation = () => {
-    if (examTarget.includes('neet')) {
+    const examLower = examTarget.toLowerCase();
+    
+    if (['6', '7', '8'].includes(currentClass)) {
+      return 'Select subjects you need help with';
+    }
+    
+    if (['9', '10'].includes(currentClass)) {
+      return 'Choose subjects for your Class ' + currentClass + ' board exam preparation';
+    }
+    
+    if (examLower.includes('neet')) {
       return 'NEET requires Physics, Chemistry & Biology (PCB)';
-    } else if (examTarget.includes('jee')) {
+    } else if (examLower.includes('jee')) {
       return 'JEE requires Physics, Chemistry & Maths (PCM)';
     }
+    
     return 'Select subjects you want to study';
   };
 

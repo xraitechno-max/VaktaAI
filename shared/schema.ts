@@ -54,6 +54,7 @@ export const users = pgTable("users", {
   currentClass: varchar("current_class"), // '10th', '12th', 'BSc Year 1', etc.
   subjects: text("subjects").array(), // Array of subjects
   languagePreference: varchar("language_preference").default('hinglish'), // 'english', 'hindi', 'hinglish'
+  onboardingCompleted: boolean("onboarding_completed").default(false), // Track if user completed/skipped onboarding
   
   // Admin access control
   role: varchar("role").default('user'), // 'user', 'admin', 'super_admin'

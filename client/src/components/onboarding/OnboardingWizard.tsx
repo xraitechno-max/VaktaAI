@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -45,6 +45,49 @@ export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizar
     setFormData(prev => ({ ...prev, [field]: value }));
   };
 
+  // Reset dependent fields when class changes (but not on initial mount)
+  useEffect(() => {
+    if (formData.currentClass === '') return; // Skip on initial mount
+    
+    setFormData(prev => ({
+      ...prev,
+      examTarget: '', // Reset exam target when class changes
+      subjects: [], // Reset subjects when class changes
+    }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.currentClass]);
+
+  // Sanitize subjects when exam target changes
+  useEffect(() => {
+    if (!formData.examTarget || formData.subjects.length === 0) return;
+    
+    const examLower = formData.examTarget.toLowerCase();
+    
+    // Define valid subjects for current exam target
+    let validSubjects: string[] = [];
+    
+    if (examLower.includes('neet')) {
+      validSubjects = ['physics', 'chemistry', 'biology', 'english'];
+    } else if (examLower.includes('jee')) {
+      validSubjects = ['physics', 'chemistry', 'maths', 'english'];
+    } else if (['6', '7', '8'].includes(formData.currentClass)) {
+      validSubjects = ['science', 'maths', 'social', 'english', 'hindi'];
+    } else if (['9', '10'].includes(formData.currentClass)) {
+      validSubjects = ['physics', 'chemistry', 'biology', 'maths', 'social', 'english', 'hindi', 'computer'];
+    } else {
+      // Board-only or other exam targets for 11-12/dropper
+      validSubjects = ['physics', 'chemistry', 'maths', 'biology', 'english', 'hindi', 'computer'];
+    }
+    
+    // Remove any subjects that are no longer valid
+    const sanitizedSubjects = formData.subjects.filter(s => validSubjects.includes(s));
+    
+    if (sanitizedSubjects.length !== formData.subjects.length) {
+      setFormData(prev => ({ ...prev, subjects: sanitizedSubjects }));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [formData.examTarget]);
+
   const handleNext = () => {
     if (currentStep < totalSteps) {
       setCurrentStep(prev => prev + 1);
@@ -66,6 +109,10 @@ export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizar
       case 2:
         return formData.examTarget !== '';
       case 3:
+        // For Step 3, enforce exam target for senior classes
+        if (['11', '12', 'dropper'].includes(formData.currentClass) && !formData.examTarget) {
+          return false; // Block Step 3 if exam target not set for seniors
+        }
         return formData.subjects.length > 0;
       case 4:
         return formData.languagePreference !== '';
@@ -140,6 +187,7 @@ export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizar
           )}
           {currentStep === 3 && (
             <SubjectSelection
+              currentClass={formData.currentClass}
               examTarget={formData.examTarget}
               value={formData.subjects}
               onChange={(value: string[]) => updateFormData('subjects', value)}

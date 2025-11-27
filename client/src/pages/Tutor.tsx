@@ -90,7 +90,9 @@ export default function Tutor() {
   // Check if user needs onboarding
   useEffect(() => {
     if (user && !userLoading && !onboardingSkipped) {
-      const needsOnboarding = !user.currentClass || !user.examTarget || !user.subjects || user.subjects.length === 0 || !user.languagePreference;
+      const hasCompletedOnboarding = user.onboardingCompleted === true;
+      const hasAllFields = user.currentClass && user.examTarget && user.subjects && user.subjects.length > 0 && user.languagePreference;
+      const needsOnboarding = !hasCompletedOnboarding && !hasAllFields;
       setShowOnboarding(needsOnboarding);
     }
   }, [user, userLoading, onboardingSkipped]);
@@ -130,15 +132,27 @@ export default function Tutor() {
   // Handle onboarding completion
   const saveOnboardingMutation = useMutation({
     mutationFn: async (data: OnboardingData) => {
-      return await apiRequest("PATCH", "/api/auth/profile", data);
-    },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      setShowOnboarding(false);
-      toast({
-        title: "Profile Updated! 🎉",
-        description: "Your learning preferences have been saved.",
+      const response = await apiRequest("PATCH", "/api/auth/profile", {
+        ...data,
+        onboardingCompleted: true
       });
+      return await response.json();
+    },
+    onSuccess: async () => {
+      // Wait for cache to fully update with confirmed data
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      const refetchedData = await queryClient.ensureQueryData({ 
+        queryKey: ["/api/auth/user"],
+      });
+      
+      // Only hide wizard after confirmed cache update
+      if (refetchedData) {
+        setShowOnboarding(false);
+        toast({
+          title: "Profile Updated!",
+          description: "Your learning preferences have been saved.",
+        });
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -146,6 +160,7 @@ export default function Tutor() {
         description: error.message || "Failed to save preferences",
         variant: "destructive",
       });
+      // Keep wizard visible on error so user can retry
     },
   });
 
@@ -153,9 +168,41 @@ export default function Tutor() {
     saveOnboardingMutation.mutate(data);
   };
 
-  const handleOnboardingSkip = () => {
-    setOnboardingSkipped(true);
-    setShowOnboarding(false);
+  const handleOnboardingSkip = async () => {
+    try {
+      // Provide safe defaults: Class 10 board-only with all board subjects
+      const response = await apiRequest("PATCH", "/api/auth/profile", { 
+        currentClass: '10',
+        examTarget: 'board-only',
+        educationBoard: 'CBSE',
+        subjects: ['physics', 'chemistry', 'biology', 'maths', 'english', 'hindi'], // Board subjects for Class 10
+        languagePreference: 'hinglish',
+        onboardingCompleted: true 
+      });
+      const updatedUser = await response.json();
+      
+      // Wait for cache to fully update with confirmed data
+      await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      const refetchedData = await queryClient.ensureQueryData({ 
+        queryKey: ["/api/auth/user"],
+      });
+      
+      // Only hide wizard after confirmed cache update
+      if (refetchedData) {
+        setOnboardingSkipped(true);
+        setShowOnboarding(false);
+        toast({
+          title: "Onboarding Skipped",
+          description: "You can update preferences anytime from settings.",
+        });
+      }
+    } catch (error: any) {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to skip onboarding",
+        variant: "destructive",
+      });
+    }
   };
 
   const startSessionMutation = useMutation({
@@ -245,6 +292,18 @@ export default function Tutor() {
       description: t('toast.sessionEndedDesc'),
     });
   };
+
+  // Show loading state while checking user profile
+  if (userLoading || saveOnboardingMutation.isPending) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-50 via-white to-orange-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+        <div className="text-center">
+          <Loader2 className="w-12 h-12 animate-spin text-purple-600 mx-auto mb-4" />
+          <p className="text-gray-600 dark:text-gray-400">Loading your profile...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Show onboarding wizard if user needs onboarding
   if (showOnboarding) {
