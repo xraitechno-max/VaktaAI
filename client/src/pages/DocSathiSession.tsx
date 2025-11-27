@@ -314,7 +314,11 @@ export default function DocChatSession() {
 
   const getPdfUrl = () => {
     if (!currentDoc?.fileKey) return null;
-    return `${window.location.origin}${currentDoc.fileKey}`;
+    try {
+      return new URL(currentDoc.fileKey, window.location.origin).toString();
+    } catch {
+      return currentDoc.fileKey;
+    }
   };
 
   return (
