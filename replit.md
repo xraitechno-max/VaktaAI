@@ -3,7 +3,35 @@
 ## Overview
 VaktaAI is an AI-powered educational platform designed to be a comprehensive study companion, offering an AI Mentor, Document Chat, Quiz Generation, Study Plan Management, and Smart Notes. It supports multilingual learning (English, Hindi) across various content formats (PDFs, videos, audio, web content). The platform aims to provide grounded, citation-based AI responses to prevent hallucination, alongside a "fast, calm UI" with minimal navigation, real-time streaming, keyboard-first interactions, and strong accessibility. VaktaAI's vision is to revolutionize personalized education through adaptive AI.
 
-## Recent Performance Optimizations (Nov 27, 2025)
+## Recent Updates (Nov 27, 2025)
+
+### AI Mentor Personalization System (Task 9 - COMPLETED)
+VaktaAI now delivers fully personalized AI Mentor greetings and teaching strategies based on user onboarding data:
+
+**Greeting Personalization**:
+- **Context-Based Templates**: 4 student contexts (Foundation/Board Prep/Competitive/Dropper) × 2 languages (English/Hinglish) × 3 times (Morning/Afternoon/Evening)
+- **Direct & Professional**: Removed generic greetings ("Good morning", "Namaste") and informal terms ("beta", "baccho")
+- **Class-Specific Motivation**:
+  - Classes 6-8 (Foundation): Focus on building strong basics
+  - Classes 9-10 (Board Prep): Balance concepts with board exam patterns
+  - Classes 11-12 (Competitive): Deep concepts + JEE/NEET preparation
+  - Dropper: Comeback motivation with focused exam preparation
+
+**System Prompt Intelligence**:
+- **Class-Aware Teaching**: Difficulty level, explanation depth, and example complexity adapt to student's class
+- **Exam-Specific Focus**: JEE demands conceptual depth + shortcuts, NEET emphasizes NCERT + memory techniques, Boards focus on scoring strategies
+- **Profile Integration**: Student name, class, exam target, and board all influence AI behavior
+
+**Technical Implementation**:
+- `normalizeClass()`: Robust parsing of "Class 11", "Grade 10", "11th", "Dropper", etc.
+- `getGreetingTemplate()`: Context detection based on normalized class (foundation/board_prep/competitive/dropper)
+- `DynamicPromptEngine`: Enhanced with userProfile context for personalized teaching guidance
+- `tutorSessionService`: Language preference priority (user.languagePreference > chat.language)
+- `optimizedTutor.ts`: Automatic examType detection (competitive vs board) from examTarget
+
+**Data Flow**: Onboarding → User Profile → Session Snapshot → Greeting Selection + System Prompt → Personalized AI Response
+
+### Performance Optimizations
 - **Parallel Text + TTS Streaming**: Text chunks now stream instantly to users while TTS generates in parallel background. Previously, text was blocked waiting for TTS completion, causing perceived lag. This fix delivers:
   - Instant text response visibility (no waiting for audio)
   - Background TTS generation with atomic deduplication (ttsInFlightMap)
