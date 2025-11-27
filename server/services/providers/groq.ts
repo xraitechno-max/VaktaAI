@@ -4,6 +4,13 @@ import { getOpenAI } from "./openai";
 // Lazy initialization of Groq client
 let groqClient: OpenAI | null = null;
 
+// Log Groq availability at module load
+if (process.env.GROQ_API_KEY) {
+  console.log('[Groq] ✅ API key detected - Groq provider ready');
+} else {
+  console.log('[Groq] ⚠️ No API key - will use OpenAI fallback');
+}
+
 /**
  * Get Groq client configured with Groq API endpoint
  * Uses OpenAI SDK with custom baseURL for Groq compatibility
