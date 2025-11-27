@@ -204,7 +204,7 @@ export default function DocChatSources() {
   const firstName = user?.firstName || user?.email?.split('@')[0] || t('common.userFallback');
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+    <div className="min-h-screen overflow-x-hidden bg-gradient-to-br from-blue-50 via-white to-cyan-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
       {documentsLoading ? (
         <div className="flex items-center justify-center min-h-screen">
           <div className="text-center">
@@ -216,11 +216,11 @@ export default function DocChatSources() {
         <>
           {/* Background Effects */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
-            <div className="absolute -top-40 -right-40 w-96 h-96 bg-gradient-to-br from-blue-300/20 to-cyan-300/20 rounded-full blur-3xl" />
-            <div className="absolute -bottom-40 -left-40 w-96 h-96 bg-gradient-to-br from-purple-300/20 to-pink-300/20 rounded-full blur-3xl" />
+            <div className="absolute -top-20 sm:-top-40 -right-20 sm:-right-40 w-48 h-48 sm:w-96 sm:h-96 bg-gradient-to-br from-blue-300/20 to-cyan-300/20 rounded-full blur-3xl" />
+            <div className="absolute -bottom-20 sm:-bottom-40 -left-20 sm:-left-40 w-48 h-48 sm:w-96 sm:h-96 bg-gradient-to-br from-purple-300/20 to-pink-300/20 rounded-full blur-3xl" />
           </div>
 
-          <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
+          <div className="relative max-w-6xl mx-auto px-3 sm:px-6 py-4 sm:py-12">
 
         {/* Hero Section - Mobile Optimized */}
         <div className="text-center mb-6 sm:mb-10">
@@ -265,7 +265,7 @@ export default function DocChatSources() {
         <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
 
           {/* Left - Upload Section */}
-          <div className="lg:col-span-2 space-y-6">
+          <div className="lg:col-span-2 space-y-6 pb-24 lg:pb-0">
 
             {/* Upload Card */}
             <motion.div
@@ -447,7 +447,7 @@ export default function DocChatSources() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 text-white shadow-xl sticky bottom-4 z-10 lg:static lg:z-auto"
+              className="bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-xl sm:rounded-3xl p-3 sm:p-6 lg:p-8 text-white shadow-xl sticky lg:static bottom-0 z-20 lg:z-auto -mx-3 sm:mx-0"
             >
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
                 <div className="hidden sm:block">

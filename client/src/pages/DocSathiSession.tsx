@@ -362,19 +362,21 @@ export default function DocChatSession() {
         </div>
       </div>
 
-      {/* Left: Document Viewer */}
-      <div className="flex-1 flex flex-col min-w-0 lg:border-r border-border/50">
+      {/* Left: Document Viewer - Collapsible on Mobile */}
+      <div className="flex-none lg:flex-1 flex flex-col min-w-0 lg:border-r border-border/50 h-[40vh] lg:h-auto">
         {currentDoc ? (
           <>
             {/* Document Content */}
-            <div className="flex-1 overflow-hidden">
+            <div className="h-full overflow-hidden">
               {currentDoc.sourceType === 'pdf' ? (
                 currentDoc.fileKey ? (
-                  <PDFViewer 
-                    fileUrl={getPdfUrl() || ''} 
-                    title={currentDoc.title}
-                    onPageChange={(page, total) => setCurrentPage(page)}
-                  />
+                  <div className="h-full">
+                    <PDFViewer 
+                      fileUrl={getPdfUrl() || ''} 
+                      title={currentDoc.title}
+                      onPageChange={(page, total) => setCurrentPage(page)}
+                    />
+                  </div>
                 ) : (
                   <div className="flex items-center justify-center h-full bg-muted/20">
                     <div className="text-center">
@@ -402,10 +404,10 @@ export default function DocChatSession() {
                     }
 
                     return (
-                      <div className="p-6">
+                      <div className="p-3 sm:p-6">
                         {videoId ? (
                           <div className="max-w-4xl mx-auto">
-                            <div className="aspect-video rounded-xl overflow-hidden shadow-2xl bg-black">
+                            <div className="aspect-video rounded-lg sm:rounded-xl overflow-hidden shadow-2xl bg-black">
                               <iframe
                                 src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}&rel=0`}
                                 className="w-full h-full border-0"
@@ -427,15 +429,15 @@ export default function DocChatSession() {
                         
                         {currentDoc.metadata?.transcriptSegments && currentDoc.metadata.transcriptSegments.length > 0 && (
                           <div className="mt-6 bg-card rounded-xl border border-border/50 overflow-hidden">
-                            <div className="p-4 border-b border-border/50 flex items-center justify-between flex-wrap gap-2">
-                              <h4 className="font-semibold">Transcript</h4>
-                              <div className="relative">
+                            <div className="p-3 sm:p-4 border-b border-border/50 flex items-center justify-between flex-wrap gap-2">
+                              <h4 className="font-semibold text-sm sm:text-base">Transcript</h4>
+                              <div className="relative w-full sm:w-auto">
                                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                                 <Input
-                                  placeholder="Search for keywords in transcript..."
+                                  placeholder="Search transcript..."
                                   value={transcriptSearch}
                                   onChange={(e) => setTranscriptSearch(e.target.value)}
-                                  className="pl-9 h-8 text-sm w-64"
+                                  className="pl-9 h-8 text-sm w-full sm:w-64"
                                   data-testid="input-transcript-search"
                                 />
                               </div>
@@ -496,33 +498,34 @@ export default function DocChatSession() {
 
       {/* Right Panel: Chat - Full Width on Mobile */}
       <div className="w-full lg:w-[420px] flex flex-col bg-card/30 backdrop-blur-sm">
-        {/* Header with Tabs and Actions - Hidden on Mobile */}
-        <div className="hidden lg:block border-b border-border/50">
-          <div className="px-4 pt-3 flex items-center justify-between gap-2">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'insight' | 'research')} className="flex-1">
-              <TabsList className="h-9 bg-muted/50 p-0.5">
+        {/* Header with Tabs and Actions - Hidden on Small Mobile */}
+        <div className="hidden sm:block border-b border-border/50">
+          <div className="px-3 sm:px-4 pt-2 sm:pt-3 flex items-center justify-between gap-2">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'insight' | 'research')} className="flex-1 min-w-0">
+              <TabsList className="h-8 sm:h-9 bg-muted/50 p-0.5 w-full sm:w-auto">
                 <TabsTrigger 
                   value="insight" 
-                  className="text-xs px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  className="text-xs px-2 sm:px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm flex-1 sm:flex-none"
                   data-testid="tab-quick-insight"
                 >
-                  Quick Insight
+                  Quick
                 </TabsTrigger>
                 <TabsTrigger 
                   value="research" 
-                  className="text-xs px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  className="text-xs px-2 sm:px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm flex-1 sm:flex-none"
                   data-testid="tab-cited-research"
                 >
-                  Cited Research
+                  Research
                 </TabsTrigger>
               </TabsList>
             </Tabs>
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="text-xs gap-1.5 shrink-0" data-testid="button-source-actions">
-                  Source Quick Actions
-                  <ChevronRight className="w-3 h-3" />
+                <Button variant="ghost" size="sm" className="text-xs gap-1.5 shrink-0 px-2 sm:px-3" data-testid="button-source-actions">
+                  <span className="hidden sm:inline">Actions</span>
+                  <span className="sm:hidden">...</span>
+                  <ChevronRight className="w-3 h-3 hidden sm:inline" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
@@ -571,7 +574,7 @@ export default function DocChatSession() {
 
         {/* Chat Messages */}
         <ScrollArea className="flex-1">
-          <div className="p-4 space-y-4">
+          <div className="p-2 sm:p-4 space-y-3 sm:space-y-4">
             {messages.map((msg) => (
               <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`} data-testid={`message-${msg.id}`}>
                 {msg.role === 'assistant' ? (
@@ -621,7 +624,7 @@ export default function DocChatSession() {
 
         {/* Suggested Questions */}
         {messages.length === 0 && (
-          <div className="px-4 pb-2 space-y-2">
+          <div className="px-2 sm:px-4 pb-2 space-y-2">
             {suggestedQuestions.slice(0, 2).map((question, idx) => (
               <button
                 key={idx}
