@@ -2,6 +2,7 @@ import "dotenv/config";
 import express, { type Request, Response, NextFunction } from "express";
 import helmet from "helmet";
 import compression from "compression";
+import path from "path";
 import { registerRoutes } from "./routes";
 import { setupVite, serveStatic, log } from "./vite";
 import { apiLimiter } from "./middleware/security";
@@ -80,6 +81,16 @@ app.use(express.json({
   }
 }));
 app.use(express.urlencoded({ extended: false }));
+
+// Serve PDF.js worker file statically
+app.use('/pdf.worker.min.mjs', express.static(
+  path.join(import.meta.dirname, '../client/public/pdf.worker.min.mjs'),
+  { 
+    setHeaders: (res) => {
+      res.setHeader('Content-Type', 'application/javascript');
+    }
+  }
+));
 
 // Apply rate limiting to all API routes
 app.use('/api/', apiLimiter);
