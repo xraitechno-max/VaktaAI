@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { useRoute } from "wouter";
+import { useRoute, useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Card, CardContent } from "@/components/ui/card";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import {
   FileText,
@@ -22,14 +23,40 @@ import {
   Layers,
   BookOpen,
   Sparkles,
+  Share2,
+  Pin,
+  RotateCcw,
+  Search,
+  ExternalLink,
+  ArrowLeft,
+  MoreVertical,
+  MessageSquare,
+  Lightbulb,
+  Quote,
+  Image as ImageIcon,
 } from "lucide-react";
 import { Document, Chat, Message } from "@shared/schema";
 import DocChatActionModal from "@/components/docchat/DocChatActionModal";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 type ActionType = 'summary' | 'highlights' | 'quiz' | 'flashcards';
 
+const suggestedQuestions = [
+  "What do I need to know to understand this document?",
+  "What topics should I explore after this document?",
+  "Summarize the key points in simple terms",
+  "What are the most important concepts here?",
+];
+
 export default function DocChatSession() {
   const [, params] = useRoute("/docsathi/:chatId");
+  const [, setLocation] = useLocation();
   const chatId = params?.chatId || null;
   
   const [message, setMessage] = useState("");
@@ -38,7 +65,9 @@ export default function DocChatSession() {
   const [activeActionModal, setActiveActionModal] = useState<ActionType | null>(null);
   const [actionProcessing, setActionProcessing] = useState(false);
   const [actionContent, setActionContent] = useState("");
-  const [quickActionsCollapsed, setQuickActionsCollapsed] = useState(false);
+  const [activeTab, setActiveTab] = useState<'insight' | 'research'>('insight');
+  const [transcriptSearch, setTranscriptSearch] = useState("");
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
@@ -60,18 +89,9 @@ export default function DocChatSession() {
     queryKey: ["/api/documents"],
   });
 
-  // Debug: Log documents data
   useEffect(() => {
-    if (documents.length > 0) {
-      console.log('[DocChat] Documents loaded:', documents.length);
-      console.log('[DocChat] First doc:', {
-        id: documents[0].id,
-        title: documents[0].title,
-        sourceType: documents[0].sourceType,
-        fileKey: documents[0].fileKey
-      });
-    }
-  }, [documents]);
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
 
   const sendMessageMutation = useMutation({
     mutationFn: async (messageText: string) => {
@@ -125,7 +145,6 @@ export default function DocChatSession() {
                         return;
                       } else if (data.content) {
                         fullResponse += data.content;
-                        // Update UI with streaming content
                         queryClient.setQueryData<Message[]>(["/api/chats", chatId, "messages"], (old = []) => {
                           const updated = [...old];
                           const lastMessage = updated[updated.length - 1];
@@ -177,6 +196,12 @@ export default function DocChatSession() {
     e.preventDefault();
     if (message.trim() && chatId) {
       sendMessageMutation.mutate(message.trim());
+    }
+  };
+
+  const handleSuggestedQuestion = (question: string) => {
+    if (chatId) {
+      sendMessageMutation.mutate(question);
     }
   };
 
@@ -252,21 +277,47 @@ export default function DocChatSession() {
     }
   };
 
+  const getSourceIcon = (type: string) => {
+    switch (type) {
+      case 'youtube': return <Youtube className="w-4 h-4 text-red-500" />;
+      case 'web': return <Globe className="w-4 h-4 text-blue-500" />;
+      case 'image': return <ImageIcon className="w-4 h-4 text-green-500" />;
+      default: return <FileText className="w-4 h-4 text-orange-500" />;
+    }
+  };
+
   if (chatLoading) {
     return (
-      <div className="h-full flex items-center justify-center">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      <div className="h-full flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
+        <div className="text-center">
+          <div className="relative w-16 h-16 mx-auto mb-4">
+            <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary via-accent to-primary animate-spin" style={{ animationDuration: '2s' }} />
+            <div className="absolute inset-1 rounded-full bg-background" />
+            <div className="absolute inset-2 rounded-full bg-gradient-to-r from-primary/20 to-accent/20 animate-pulse" />
+          </div>
+          <p className="text-sm text-muted-foreground">Loading chat session...</p>
+        </div>
       </div>
     );
   }
 
   if (!currentChat) {
     return (
-      <div className="h-full flex items-center justify-center">
+      <div className="h-full flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
         <div className="text-center">
-          <FileText className="w-16 h-16 text-muted-foreground/50 mx-auto mb-4" />
+          <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-muted to-muted/50 flex items-center justify-center mx-auto mb-4">
+            <FileText className="w-10 h-10 text-muted-foreground/50" />
+          </div>
           <h3 className="text-lg font-semibold mb-2">Chat not found</h3>
-          <p className="text-sm text-muted-foreground">This chat session doesn't exist</p>
+          <p className="text-sm text-muted-foreground mb-4">This chat session doesn't exist</p>
+          <Button 
+            variant="outline" 
+            onClick={() => setLocation('/docsathi')}
+            className="gap-2"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            Back to DocSathi
+          </Button>
         </div>
       </div>
     );
@@ -279,108 +330,130 @@ export default function DocChatSession() {
   const selectedDocs = chatDocs.map(d => ({ id: d.id, title: d.title }));
 
   return (
-    <div className="h-full flex gap-6 p-8">
-      {/* Center: Document Viewer */}
-      <div className="flex-1 glass-card rounded-xl overflow-hidden flex flex-col shadow-lg">
-        {currentDoc ? (
-          <>
-            {/* Only show PDF controls for PDF documents */}
-            {currentDoc.sourceType === 'pdf' && (
-              <div className="p-5 border-b border-border/50 flex items-center justify-between backdrop-blur-sm bg-card/50">
-                <div className="flex items-center gap-3">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                    disabled={currentPage <= 1}
-                    className="btn-gradient text-white border-0"
-                    data-testid="button-prev-page"
-                  >
-                    <ChevronLeft className="w-4 h-4" />
-                  </Button>
-                  <span className="text-sm font-medium px-3 py-1 rounded-lg bg-gradient-subtle" data-testid="text-page-info">
-                    Page {currentPage} of {currentDoc.pages || 1}
-                  </span>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setCurrentPage(Math.min(currentDoc.pages || 1, currentPage + 1))}
-                    disabled={currentPage >= (currentDoc.pages || 1)}
-                    className="btn-gradient text-white border-0"
-                    data-testid="button-next-page"
-                  >
-                    <ChevronRight className="w-4 h-4" />
-                  </Button>
+    <div className="h-full flex bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Left Sidebar: Sources */}
+      <div className="w-56 border-r border-border/50 flex flex-col bg-card/30 backdrop-blur-sm">
+        <div className="p-4 border-b border-border/50">
+          <div className="flex items-center justify-between gap-2 mb-3">
+            <h3 className="font-medium text-sm">Sources</h3>
+            <div className="flex items-center gap-1">
+              <Button variant="ghost" size="icon" className="h-7 w-7" data-testid="button-add-source">
+                <span className="text-lg font-light">+</span>
+              </Button>
+              <Button variant="ghost" size="icon" className="h-7 w-7" data-testid="button-open-external">
+                <ExternalLink className="w-3.5 h-3.5" />
+              </Button>
+            </div>
+          </div>
+        </div>
+        
+        <ScrollArea className="flex-1 p-3">
+          <div className="space-y-3">
+            {chatDocs.map((doc) => (
+              <div 
+                key={doc.id} 
+                className="group relative rounded-lg border border-border/50 bg-card/50 p-2 hover:border-primary/30 hover:bg-card transition-all cursor-pointer"
+                data-testid={`source-card-${doc.id}`}
+              >
+                <div className="aspect-[4/3] rounded-md bg-muted/50 mb-2 overflow-hidden flex items-center justify-center relative">
+                  {doc.sourceType === 'youtube' ? (
+                    <div className="w-full h-full bg-gradient-to-br from-red-500/20 to-red-600/20 flex items-center justify-center">
+                      <Youtube className="w-8 h-8 text-red-500" />
+                    </div>
+                  ) : doc.sourceType === 'pdf' ? (
+                    <div className="w-full h-full bg-gradient-to-br from-orange-500/10 to-orange-600/10 flex items-center justify-center p-2">
+                      <div className="text-center">
+                        <FileText className="w-8 h-8 text-orange-500 mx-auto mb-1" />
+                        <span className="text-[10px] text-muted-foreground uppercase font-medium">PDF</span>
+                      </div>
+                    </div>
+                  ) : doc.sourceType === 'web' ? (
+                    <div className="w-full h-full bg-gradient-to-br from-blue-500/10 to-blue-600/10 flex items-center justify-center">
+                      <Globe className="w-8 h-8 text-blue-500" />
+                    </div>
+                  ) : (
+                    <FileText className="w-8 h-8 text-muted-foreground/50" />
+                  )}
+                  <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <input type="checkbox" className="w-4 h-4 rounded border-2 border-primary accent-primary" />
+                  </div>
                 </div>
-                <div className="flex items-center gap-2">
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setZoom(Math.max(50, zoom - 25))}
-                    disabled={zoom <= 50}
-                    className="transition-all duration-200 hover:scale-105"
-                    data-testid="button-zoom-out"
-                  >
-                    <ZoomOut className="w-4 h-4" />
-                  </Button>
-                  <span className="text-sm px-3 py-1 rounded-lg bg-gradient-subtle font-medium" data-testid="text-zoom-level">{zoom}%</span>
-                  <Button 
-                    variant="outline" 
-                    size="sm" 
-                    onClick={() => setZoom(Math.min(200, zoom + 25))}
-                    disabled={zoom >= 200}
-                    className="transition-all duration-200 hover:scale-105"
-                    data-testid="button-zoom-in"
-                  >
-                    <ZoomIn className="w-4 h-4" />
-                  </Button>
-                  <Button 
-                    variant="outline" 
-                    size="sm"
-                    className="transition-all duration-200 hover:scale-105"
-                    data-testid="button-download"
-                  >
-                    <Download className="w-4 h-4" />
-                  </Button>
-                </div>
+                <p className="text-xs text-muted-foreground truncate px-1" title={doc.title}>
+                  {doc.title}
+                </p>
+              </div>
+            ))}
+            
+            {chatDocs.length === 0 && (
+              <div className="text-center py-8">
+                <FileText className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
+                <p className="text-xs text-muted-foreground">No sources added</p>
               </div>
             )}
+          </div>
+        </ScrollArea>
+      </div>
 
-            <div className="flex-1 bg-muted/50 overflow-hidden backdrop-blur-sm">
+      {/* Center: Document Viewer */}
+      <div className="flex-1 flex flex-col min-w-0">
+        {currentDoc ? (
+          <>
+            {/* Document Toolbar */}
+            <div className="h-12 border-b border-border/50 flex items-center justify-between px-4 bg-card/30 backdrop-blur-sm">
+              <div className="flex items-center gap-2">
+                <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-zoom-out-toolbar">
+                  <ZoomOut className="w-4 h-4" />
+                </Button>
+                <span className="text-xs text-muted-foreground min-w-[2rem] text-center">
+                  {currentDoc.sourceType === 'pdf' && `${currentPage}`}
+                </span>
+                <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-zoom-in-toolbar">
+                  <ZoomIn className="w-4 h-4" />
+                </Button>
+              </div>
+              
+              <div className="flex items-center gap-1">
+                <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-search-doc">
+                  <Search className="w-4 h-4" />
+                </Button>
+                <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-download-doc">
+                  <Download className="w-4 h-4" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Document Content */}
+            <div className="flex-1 overflow-hidden bg-muted/30">
               {currentDoc.sourceType === 'pdf' ? (
                 currentDoc.fileKey ? (
-                  <div className="w-full h-full overflow-auto bg-gray-200">
-                    {/* Sandbox attribute removed to allow PDF rendering - our backend is trusted */}
-                    <iframe
-                      src={`${window.location.origin}${currentDoc.fileKey}`}
-                      className="w-full h-full border-0"
-                      title={currentDoc.title}
-                      style={{ minHeight: '100%', width: '100%', height: '100%' }}
-                      data-testid="pdf-iframe"
-                    />
+                  <div className="w-full h-full overflow-auto flex items-start justify-center p-4">
+                    <div className="bg-white shadow-xl rounded-lg overflow-hidden max-w-4xl w-full" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}>
+                      <iframe
+                        src={`${window.location.origin}${currentDoc.fileKey}`}
+                        className="w-full border-0"
+                        style={{ minHeight: '800px' }}
+                        title={currentDoc.title}
+                        data-testid="pdf-iframe"
+                      />
+                    </div>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-full">
                     <div className="text-center">
-                      <FileText className="w-16 h-16 text-muted-foreground/50 mx-auto mb-4" />
-                      <p className="text-sm text-muted-foreground">PDF file not found</p>
+                      <FileText className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
+                      <p className="text-sm text-muted-foreground">PDF file not available</p>
                     </div>
                   </div>
                 )
               ) : currentDoc.sourceType === 'youtube' ? (
-                <div className="w-full h-full overflow-y-auto bg-muted/30">
-                  {/* YouTube Video */}
+                <div className="h-full overflow-y-auto">
                   {(() => {
-                    // Extract video ID from metadata or source URL
                     let videoId = currentDoc.metadata?.videoId;
-
                     if (!videoId && currentDoc.sourceUrl) {
-                      // Try to extract from URL as fallback
                       const urlPatterns = [
                         /(?:youtube\.com\/(?:watch\?v=|embed\/|v\/|shorts\/|live\/)|youtu\.be\/)([a-zA-Z0-9_-]{11})/,
                         /^([a-zA-Z0-9_-]{11})$/
                       ];
-
                       for (const pattern of urlPatterns) {
                         const match = currentDoc.sourceUrl.match(pattern);
                         if (match && match[1]) {
@@ -390,87 +463,82 @@ export default function DocChatSession() {
                       }
                     }
 
-                    return videoId ? (
-                      <div className="bg-black p-8 flex items-center justify-center">
-                        <div className="w-full max-w-4xl aspect-video">
-                          <iframe
-                            src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}&rel=0`}
-                            className="w-full h-full border-0 rounded-lg shadow-2xl"
-                            title={currentDoc.title}
-                            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
-                            allowFullScreen
-                            referrerPolicy="strict-origin-when-cross-origin"
-                          />
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="bg-black p-8 flex items-center justify-center">
-                        <div className="text-center text-white">
-                          <Youtube className="w-16 h-16 mx-auto mb-4 opacity-50" />
-                          <p className="text-sm">Video preview not available</p>
-                          {currentDoc.sourceUrl && (
-                            <a
-                              href={currentDoc.sourceUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-400 hover:underline text-xs mt-2 inline-block"
-                            >
-                              Watch on YouTube
-                            </a>
-                          )}
-                        </div>
+                    return (
+                      <div className="p-6">
+                        {videoId ? (
+                          <div className="max-w-4xl mx-auto">
+                            <div className="aspect-video rounded-xl overflow-hidden shadow-2xl bg-black">
+                              <iframe
+                                src={`https://www.youtube.com/embed/${videoId}?enablejsapi=1&origin=${window.location.origin}&rel=0`}
+                                className="w-full h-full border-0"
+                                title={currentDoc.title}
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                allowFullScreen
+                                referrerPolicy="strict-origin-when-cross-origin"
+                              />
+                            </div>
+                          </div>
+                        ) : (
+                          <div className="flex items-center justify-center h-64 bg-muted/50 rounded-xl">
+                            <div className="text-center">
+                              <Youtube className="w-12 h-12 text-muted-foreground/30 mx-auto mb-2" />
+                              <p className="text-sm text-muted-foreground">Video preview unavailable</p>
+                            </div>
+                          </div>
+                        )}
+                        
+                        {currentDoc.metadata?.transcriptSegments && currentDoc.metadata.transcriptSegments.length > 0 && (
+                          <div className="mt-6 bg-card rounded-xl border border-border/50 overflow-hidden">
+                            <div className="p-4 border-b border-border/50 flex items-center justify-between">
+                              <h4 className="font-semibold">Transcript</h4>
+                              <div className="relative">
+                                <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                                <Input
+                                  placeholder="Search for keywords in transcript..."
+                                  value={transcriptSearch}
+                                  onChange={(e) => setTranscriptSearch(e.target.value)}
+                                  className="pl-9 h-8 text-sm w-64"
+                                  data-testid="input-transcript-search"
+                                />
+                              </div>
+                            </div>
+                            <ScrollArea className="h-80">
+                              <div className="p-4 space-y-4">
+                                {currentDoc.metadata.transcriptSegments
+                                  .filter((segment: any) => 
+                                    !transcriptSearch || 
+                                    segment.text.toLowerCase().includes(transcriptSearch.toLowerCase())
+                                  )
+                                  .map((segment: any, idx: number) => {
+                                    const timeInSeconds = segment.startTime || 0;
+                                    const minutes = Math.floor(timeInSeconds / 60);
+                                    const seconds = Math.floor(timeInSeconds % 60);
+                                    
+                                    return (
+                                      <div key={idx} className="flex gap-4 hover:bg-muted/50 p-2 -mx-2 rounded-lg transition-colors cursor-pointer">
+                                        <span className="text-sm font-medium text-primary shrink-0 min-w-[3rem]">
+                                          {minutes}:{seconds.toString().padStart(2, '0')}
+                                        </span>
+                                        <p className="text-sm text-foreground/80 leading-relaxed">{segment.text}</p>
+                                      </div>
+                                    );
+                                  })}
+                              </div>
+                            </ScrollArea>
+                          </div>
+                        )}
                       </div>
                     );
                   })()}
-
-                  {/* Transcript Section */}
-                  {currentDoc.metadata?.transcriptSegments && currentDoc.metadata.transcriptSegments.length > 0 && (
-                    <div className="p-6 bg-card/50 backdrop-blur-sm">
-                      <h4 className="text-sm font-semibold mb-4 flex items-center gap-2 text-muted-foreground">
-                        <FileText className="w-4 h-4" />
-                        Video Transcript
-                      </h4>
-                      <div className="space-y-3 text-sm max-h-96 overflow-y-auto pr-2">
-                        {currentDoc.metadata.transcriptSegments.map((segment: any, idx: number) => {
-                          // Handle both seconds and milliseconds
-                          const timeInSeconds = segment.startTime || 0;
-                          const minutes = Math.floor(timeInSeconds / 60);
-                          const seconds = Math.floor(timeInSeconds % 60);
-
-                          return (
-                            <div key={idx} className="flex gap-3 hover:bg-muted/50 p-2 rounded-lg transition-colors">
-                              <span className="text-xs text-muted-foreground font-mono shrink-0 mt-0.5">
-                                {minutes}:{seconds.toString().padStart(2, '0')}
-                              </span>
-                              <p className="text-foreground/90 leading-relaxed">{segment.text}</p>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ) : currentDoc.status === 'processing' ? (
-                <div className="flex items-center justify-center h-full">
-                  <div className="text-center">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
-                    <p className="text-sm font-medium">Processing document...</p>
-                    <p className="text-xs text-muted-foreground mt-2">This may take a few moments</p>
-                  </div>
                 </div>
               ) : (
                 <div className="flex items-center justify-center h-full p-8">
                   <div className="text-center max-w-md">
-                    {currentDoc.sourceType === 'youtube' && <Youtube className="w-16 h-16 text-primary/50 mx-auto mb-4" />}
-                    {currentDoc.sourceType === 'web' && <Globe className="w-16 h-16 text-primary/50 mx-auto mb-4" />}
-                    {!['youtube', 'web', 'pdf'].includes(currentDoc.sourceType) && <FileText className="w-16 h-16 text-muted-foreground/50 mx-auto mb-4" />}
+                    {currentDoc.sourceType === 'web' && <Globe className="w-16 h-16 text-blue-500/50 mx-auto mb-4" />}
+                    {!['youtube', 'web', 'pdf'].includes(currentDoc.sourceType) && <FileText className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />}
                     <h3 className="text-lg font-semibold mb-2">{currentDoc.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-4">
-                      {currentDoc.sourceType === 'youtube' 
-                        ? 'YouTube video transcript is ready for chat' 
-                        : currentDoc.sourceType === 'web'
-                        ? 'Web content is ready for chat'
-                        : 'Document content is ready'}
+                    <p className="text-sm text-muted-foreground">
+                      {currentDoc.sourceType === 'web' ? 'Web content ready for chat' : 'Document content ready for chat'}
                     </p>
                   </div>
                 </div>
@@ -480,7 +548,7 @@ export default function DocChatSession() {
         ) : (
           <div className="flex items-center justify-center h-full">
             <div className="text-center">
-              <FileText className="w-16 h-16 text-muted-foreground/50 mx-auto mb-4" />
+              <FileText className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
               <h3 className="text-lg font-semibold mb-2">No document selected</h3>
               <p className="text-sm text-muted-foreground">This chat has no associated documents</p>
             </div>
@@ -488,154 +556,181 @@ export default function DocChatSession() {
         )}
       </div>
 
-      {/* Right: Quick Actions & Chat */}
-      <div className="w-96 flex flex-col gap-6">
-        {/* Quick Actions - Collapsible */}
-        <div className="glass-card rounded-xl overflow-hidden shadow-lg transition-all duration-300">
-          <button
-            onClick={() => setQuickActionsCollapsed(!quickActionsCollapsed)}
-            className="w-full p-5 flex items-center justify-between hover:bg-muted/50 transition-colors"
-            data-testid="button-toggle-quick-actions"
-          >
-            <h3 className="font-semibold text-sm text-muted-foreground uppercase tracking-wide flex items-center gap-2">
-              <Sparkles className="w-4 h-4 text-primary" />
-              Quick Actions
-            </h3>
-            <ChevronRight className={`w-5 h-5 text-muted-foreground transition-transform duration-300 ${quickActionsCollapsed ? '' : 'rotate-90'}`} />
-          </button>
+      {/* Right Panel: Chat */}
+      <div className="w-[420px] border-l border-border/50 flex flex-col bg-card/30 backdrop-blur-sm">
+        {/* Header with Tabs and Actions */}
+        <div className="border-b border-border/50">
+          <div className="px-4 pt-3 flex items-center justify-between">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'insight' | 'research')} className="w-full">
+              <TabsList className="h-9 bg-muted/50 p-0.5">
+                <TabsTrigger 
+                  value="insight" 
+                  className="text-xs px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  data-testid="tab-quick-insight"
+                >
+                  Quick Insight
+                </TabsTrigger>
+                <TabsTrigger 
+                  value="research" 
+                  className="text-xs px-4 data-[state=active]:bg-background data-[state=active]:shadow-sm"
+                  data-testid="tab-cited-research"
+                >
+                  Cited Research
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
+            
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button variant="ghost" size="sm" className="ml-2 text-xs gap-1.5 shrink-0" data-testid="button-source-actions">
+                  Source Quick Actions
+                  <ChevronRight className="w-3 h-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-48">
+                <DropdownMenuItem className="gap-2" data-testid="action-share">
+                  <Share2 className="w-4 h-4" /> Share
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2" onClick={() => setActiveActionModal('summary')} data-testid="action-summary">
+                  <FileText className="w-4 h-4" /> Summary
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2" onClick={() => setActiveActionModal('highlights')} data-testid="action-highlights">
+                  <Highlighter className="w-4 h-4" /> Highlights
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2" data-testid="action-pinned">
+                  <Pin className="w-4 h-4" /> Pinned
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="gap-2" onClick={() => setActiveActionModal('quiz')} data-testid="action-generate-quiz">
+                  <BookOpen className="w-4 h-4" /> Generate Quiz
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2" onClick={() => setActiveActionModal('flashcards')} data-testid="action-generate-flashcards">
+                  <Layers className="w-4 h-4" /> Generate Flashcards
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem className="gap-2" data-testid="action-view-quizzes">
+                  <BookOpen className="w-4 h-4" /> View Quizzes
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2" data-testid="action-view-flashcards">
+                  <Layers className="w-4 h-4" /> View Flashcards
+                </DropdownMenuItem>
+                <DropdownMenuItem className="gap-2" data-testid="action-view-notes">
+                  <FileText className="w-4 h-4" /> View Notes
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          </div>
           
-          {!quickActionsCollapsed && (
-            <div className="p-5 pt-0 grid grid-cols-2 gap-3">
-            <Button 
-              variant="outline" 
-              className="p-4 h-auto flex-col gap-2 transition-all duration-200 hover:scale-105 hover:shadow-lg border-primary/20 hover:border-primary/40"
-              onClick={() => setActiveActionModal('summary')}
-              disabled={chatDocs.length === 0}
-              data-testid="button-quick-summary"
-            >
-              <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <FileText className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xs font-medium">Summary</span>
+          <div className="px-4 py-2 flex gap-1.5">
+            <Button variant="ghost" size="icon" className="h-7 w-7" data-testid="button-chat-tools">
+              <Sparkles className="w-4 h-4" />
             </Button>
-            <Button 
-              variant="outline" 
-              className="p-4 h-auto flex-col gap-2 transition-all duration-200 hover:scale-105 hover:shadow-lg border-primary/20 hover:border-primary/40"
-              onClick={() => setActiveActionModal('highlights')}
-              disabled={chatDocs.length === 0}
-              data-testid="button-quick-highlights"
-            >
-              <div className="w-10 h-10 rounded-lg bg-gradient-accent flex items-center justify-center">
-                <Highlighter className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xs font-medium">Highlights</span>
+            <Button variant="ghost" size="icon" className="h-7 w-7" data-testid="button-chat-notes">
+              <FileText className="w-4 h-4" />
             </Button>
-            <Button 
-              variant="outline" 
-              className="p-4 h-auto flex-col gap-2 transition-all duration-200 hover:scale-105 hover:shadow-lg border-primary/20 hover:border-primary/40"
-              onClick={() => setActiveActionModal('quiz')}
-              disabled={chatDocs.length === 0}
-              data-testid="button-quick-quiz"
-            >
-              <div className="w-10 h-10 rounded-lg bg-gradient-primary flex items-center justify-center">
-                <BookOpen className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xs font-medium">Quiz</span>
-            </Button>
-            <Button 
-              variant="outline" 
-              className="p-4 h-auto flex-col gap-2 transition-all duration-200 hover:scale-105 hover:shadow-lg border-primary/20 hover:border-primary/40"
-              onClick={() => setActiveActionModal('flashcards')}
-              disabled={chatDocs.length === 0}
-              data-testid="button-quick-flashcards"
-            >
-              <div className="w-10 h-10 rounded-lg bg-gradient-accent flex items-center justify-center">
-                <Layers className="w-5 h-5 text-white" />
-              </div>
-              <span className="text-xs font-medium">Flashcards</span>
-            </Button>
-            </div>
-          )}
+          </div>
         </div>
 
-        {/* Chat Panel */}
-        <div className="glass-card rounded-xl flex-1 flex flex-col overflow-hidden shadow-lg">
-          <div className="p-5 border-b border-border/50 backdrop-blur-sm bg-card/50">
-            <h3 className="font-semibold flex items-center gap-2">
-              <Bot className="w-5 h-5 text-primary" />
-              Chat with Documents
-            </h3>
-          </div>
-
-          {/* Messages */}
-          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+        {/* Chat Messages */}
+        <ScrollArea className="flex-1">
+          <div className="p-4 space-y-4">
             {messages.map((msg) => (
-              <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'justify-end' : ''}`} data-testid={`message-${msg.id}`}>
-                {msg.role === 'assistant' && (
-                  <div className="w-8 h-8 rounded-full bg-gradient-primary flex items-center justify-center flex-shrink-0 shadow-md">
+              <div key={msg.id} className={`flex gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`} data-testid={`message-${msg.id}`}>
+                {msg.role === 'assistant' ? (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-primary to-accent flex items-center justify-center shrink-0 shadow-md">
                     <Bot className="w-4 h-4 text-white" />
+                  </div>
+                ) : (
+                  <div className="w-8 h-8 rounded-full bg-gradient-to-br from-accent to-primary/80 flex items-center justify-center shrink-0 shadow-md">
+                    <User className="w-4 h-4 text-white" />
                   </div>
                 )}
                 
-                <div className={msg.role === 'user' ? 'bg-gradient-primary text-white rounded-2xl px-4 py-3 text-sm max-w-xs shadow-md' : 'flex-1'}>
-                  {msg.role === 'assistant' ? (
-                    <div className="bg-card/80 backdrop-blur-sm rounded-2xl px-4 py-3 text-sm border border-border/50 shadow-sm">
-                      <p className="mb-2">{msg.content}</p>
-                      {msg.metadata && typeof msg.metadata === 'object' && 'sources' in msg.metadata ? (
-                        <div className="mt-2 pt-2 border-t border-border/50">
-                          <p className="text-xs text-muted-foreground flex items-center gap-1">
-                            <BookOpen className="w-3 h-3" />
-                            Sources referenced
-                          </p>
-                        </div>
-                      ) : null}
+                <div className={`max-w-[85%] ${msg.role === 'user' ? 'text-right' : ''}`}>
+                  {msg.role === 'user' ? (
+                    <div className="inline-block bg-muted/80 rounded-2xl rounded-tr-md px-4 py-2.5">
+                      <p className="text-sm">{msg.content}</p>
                     </div>
                   ) : (
-                    <p>{msg.content}</p>
+                    <div className="bg-card rounded-2xl rounded-tl-md px-4 py-3 shadow-sm border border-border/30">
+                      <div className="text-sm prose prose-sm dark:prose-invert max-w-none">
+                        <p className="whitespace-pre-wrap">{msg.content}</p>
+                      </div>
+                      {msg.metadata && typeof msg.metadata === 'object' && 'sources' in msg.metadata && (
+                        <div className="mt-3 pt-2 border-t border-border/30 flex items-center gap-1.5 text-xs text-muted-foreground">
+                          <Quote className="w-3 h-3" />
+                          <span>Sources referenced</span>
+                        </div>
+                      )}
+                    </div>
                   )}
                 </div>
-
-                {msg.role === 'user' && (
-                  <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center flex-shrink-0 shadow-md">
-                    <User className="w-4 h-4" />
-                  </div>
-                )}
               </div>
             ))}
 
             {messages.length === 0 && (
-              <div className="text-center py-8">
-                <div className="w-16 h-16 rounded-full bg-gradient-subtle mx-auto mb-4 flex items-center justify-center">
-                  <Bot className="w-8 h-8 text-muted-foreground/50" />
+              <div className="text-center py-12">
+                <div className="w-16 h-16 rounded-full bg-gradient-to-br from-primary/10 to-accent/10 mx-auto mb-4 flex items-center justify-center">
+                  <MessageSquare className="w-8 h-8 text-primary/60" />
                 </div>
-                <p className="text-sm text-muted-foreground">Start a conversation</p>
-                <p className="text-xs text-muted-foreground mt-1">Ask questions about your documents</p>
+                <h4 className="font-medium mb-1">Start a conversation</h4>
+                <p className="text-sm text-muted-foreground">Ask questions about your documents</p>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
+        </ScrollArea>
 
-          {/* Input */}
-          <div className="p-5 border-t border-border/50 backdrop-blur-sm bg-card/50">
-            <form onSubmit={handleSubmit} className="flex gap-3">
+        {/* Suggested Questions */}
+        {messages.length === 0 && (
+          <div className="px-4 pb-2 space-y-2">
+            {suggestedQuestions.slice(0, 2).map((question, idx) => (
+              <button
+                key={idx}
+                onClick={() => handleSuggestedQuestion(question)}
+                disabled={sendMessageMutation.isPending}
+                className="w-full text-left px-4 py-2.5 rounded-xl border border-primary/20 text-sm text-primary hover:bg-primary/5 hover:border-primary/40 transition-all disabled:opacity-50"
+                data-testid={`button-suggested-${idx}`}
+              >
+                {question}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Input Area */}
+        <div className="p-4 border-t border-border/50 bg-card/50">
+          <form onSubmit={handleSubmit} className="flex items-center gap-2">
+            <div className="flex-1 relative">
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Ask a question..."
+                placeholder="Ask anything. Use @ to select docs"
                 disabled={sendMessageMutation.isPending}
-                className="flex-1 transition-all duration-200 focus:shadow-md"
+                className="pr-10 bg-background/80 border-border/50 focus-visible:ring-primary/30"
                 data-testid="input-chat-message"
               />
-              <Button 
-                type="submit" 
-                disabled={!message.trim() || sendMessageMutation.isPending}
-                size="sm"
-                className="btn-gradient px-4 shadow-md"
-                data-testid="button-send-message"
-              >
-                <Send className="w-4 h-4" />
-              </Button>
-            </form>
-          </div>
+            </div>
+            <Button 
+              type="submit" 
+              size="icon"
+              disabled={!message.trim() || sendMessageMutation.isPending}
+              className="shrink-0 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white shadow-md"
+              data-testid="button-send-message"
+            >
+              <Send className="w-4 h-4" />
+            </Button>
+            <Button 
+              type="button"
+              variant="ghost" 
+              size="icon"
+              onClick={() => queryClient.invalidateQueries({ queryKey: ["/api/chats", chatId, "messages"] })}
+              className="shrink-0"
+              data-testid="button-refresh-chat"
+            >
+              <RotateCcw className="w-4 h-4" />
+            </Button>
+          </form>
         </div>
       </div>
 
