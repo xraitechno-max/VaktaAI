@@ -1,21 +1,7 @@
-import OpenAI from 'openai';
+import { callGroqWithFallback } from './providers/groq';
 import type { DetectedLanguage } from './LanguageDetectionEngine';
 import type { EmotionalState } from '../config/emotionPatterns';
 import { languageDetectionEngine } from './LanguageDetectionEngine';
-
-// Lazy initialization of OpenAI client
-let openai: OpenAI | null = null;
-
-function getOpenAI(): OpenAI {
-  if (!openai) {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY is not configured. Please add your OpenAI API key to use response validation.');
-    }
-    openai = new OpenAI({ apiKey });
-  }
-  return openai;
-}
 
 export interface ValidationContext {
   expectedLanguage: DetectedLanguage;
@@ -203,7 +189,9 @@ export class ResponseValidator {
     currentPhase: string
   ): Promise<ToneValidationResult> {
     try {
-      const prompt = `Analyze the tone of this AI tutor response:
+      const systemPrompt = `You are a tone analyzer for educational AI responses. Analyze tone and return valid JSON.`;
+      
+      const userPrompt = `Analyze the tone of this AI tutor response:
 
 Response: "${response}"
 
@@ -217,7 +205,7 @@ Evaluate:
 3. Empathy level (0-10)
 4. Encouragement level (0-10)
 
-Respond in JSON format:
+Return ONLY valid JSON:
 {
   "detectedTone": "string",
   "matchesEmotion": boolean,
@@ -226,13 +214,19 @@ Respond in JSON format:
   "reasoning": "string"
 }`;
 
-      const completion = await getOpenAI().chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' },
-        temperature: 0.3,
-        max_tokens: 200
-      });
+      const completion = await callGroqWithFallback(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        {
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.3,
+          maxTokens: 200,
+          responseFormat: 'json_object',
+          serviceName: 'ToneValidator'
+        }
+      );
 
       const result = JSON.parse(completion.choices[0].message.content || '{}');
 
@@ -268,7 +262,9 @@ Respond in JSON format:
     topic: string
   ): Promise<QualityValidationResult> {
     try {
-      const prompt = `Evaluate the educational quality of this AI tutor response:
+      const systemPrompt = `You are an educational quality analyzer. Evaluate AI tutor responses and return valid JSON.`;
+      
+      const userPrompt = `Evaluate the educational quality of this AI tutor response:
 
 Student Question: "${userMessage}"
 AI Response: "${response}"
@@ -283,7 +279,7 @@ Evaluate:
 4. Clarity score (0-10) - how clear and understandable
 5. Depth score (0-10) - appropriate level of detail
 
-Respond in JSON format:
+Return ONLY valid JSON:
 {
   "isAccurate": boolean,
   "isHelpful": boolean,
@@ -293,13 +289,19 @@ Respond in JSON format:
   "reasoning": "string"
 }`;
 
-      const completion = await getOpenAI().chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        response_format: { type: 'json_object' },
-        temperature: 0.3,
-        max_tokens: 250
-      });
+      const completion = await callGroqWithFallback(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        {
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.3,
+          maxTokens: 250,
+          responseFormat: 'json_object',
+          serviceName: 'QualityValidator'
+        }
+      );
 
       const result = JSON.parse(completion.choices[0].message.content || '{}');
 
