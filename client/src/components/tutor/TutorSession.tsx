@@ -577,14 +577,17 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       if (usePhonemeTTS) {
         // Phoneme-based TTS returns JSON
         const ttsData = await response.json();
-        console.log('[TTS] Phoneme data received - Phonemes:', ttsData.phonemes?.length || 0, 'Audio base64 length:', ttsData.audio?.length || 0);
+        console.log('🔍🔍🔍 [TTS PHONEMES] RAW RESPONSE:', JSON.stringify(ttsData).substring(0, 200));
+        console.log('🔍🔍🔍 [TTS PHONEMES] Phonemes count:', ttsData.phonemes?.length || 0);
+        console.log('🔍🔍🔍 [TTS PHONEMES] Audio base64 length:', ttsData.audio?.length || 0);
+        console.log('🔍🔍🔍 [TTS PHONEMES] First 3 phonemes:', JSON.stringify(ttsData.phonemes?.slice(0, 3)));
         
         // Convert base64 audio to blob (🎯 FIX: Polly returns MP3, not WAV)
         const audioBuffer = Uint8Array.from(atob(ttsData.audio), c => c.charCodeAt(0));
         audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' }); // Correct MIME type for Polly MP3
         phonemes = ttsData.phonemes || [];
         
-        console.log('[TTS] Converted to blob, size:', audioBlob.size);
+        console.log('🔍🔍🔍 [TTS PHONEMES] Converted to blob, size:', audioBlob.size, 'Phonemes array length:', phonemes.length);
       } else {
         // Regular TTS returns audio blob
         audioBlob = await response.blob();
@@ -595,7 +598,8 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       const currentAvatarReady = localAvatarRef.current?.isReady || false;
       const isAvatarStillLoading = avatarLoading && !currentAvatarReady;
       
-      console.log('[Avatar] Status check - Ready:', currentAvatarReady, 'Loading:', isAvatarStillLoading);
+      console.log('🔍🔍🔍 [Avatar] Status check - Ready:', currentAvatarReady, 'Loading:', isAvatarStillLoading, 'localAvatarRef exists:', !!localAvatarRef.current);
+      console.log('🔍🔍🔍 [Avatar] Phonemes available:', phonemes.length, 'usePhonemeTTS:', usePhonemeTTS);
       
       // 🎭 AVATAR: If Unity is loading, wait up to 5 seconds for it to be ready
       if (isAvatarStillLoading && localAvatarRef.current) {
@@ -652,17 +656,14 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       
       // 🎭 AVATAR: If Unity is already ready, send immediately
       if (currentAvatarReady && localAvatarRef.current) {
-        console.log('[Avatar] ✅ Avatar ready - sending audio to Unity WebGL with lip-sync');
-        console.log('[Avatar] 🔇 Skipping browser audio - Unity will play with lip-sync');
-        
-        // 🔍 DEBUG: Force visible alert to verify execution
-        console.log('🔍 DEBUG: Phonemes count:', phonemes.length, 'usePhonemeTTS:', usePhonemeTTS);
+        console.log('🔍🔍🔍 [Avatar] ✅ Avatar ready - sending audio to Unity WebGL with lip-sync');
+        console.log('🔍🔍🔍 [Avatar] Phonemes count:', phonemes.length, 'usePhonemeTTS:', usePhonemeTTS);
         
         try {
           // 🎯 Use phoneme-based method if phonemes available
           if (phonemes.length > 0 && usePhonemeTTS) {
-            console.log('[Avatar] 🎵 Sending phoneme-based lip-sync - Phonemes:', phonemes.length);
-            console.log('🔍 DEBUG: About to send', phonemes.length, 'phonemes to Unity');
+            console.log('🔍🔍🔍 [Avatar] 🎵🎵🎵 SENDING PHONEME-BASED LIP-SYNC - Phonemes:', phonemes.length);
+            console.log('🔍🔍🔍 [Avatar] First 3 phonemes being sent:', JSON.stringify(phonemes.slice(0, 3)));
             
             // Convert blob to base64 for phoneme method
             const audioBase64 = await new Promise<string>((resolve) => {
