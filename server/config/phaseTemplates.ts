@@ -476,6 +476,27 @@ Keep learning! 💫`,
   ]
 };
 
+// Normalize class string to extract numeric value or special labels
+function normalizeClass(classStr: string | undefined): string | null {
+  if (!classStr) return null;
+  
+  // Lowercase and trim
+  const normalized = classStr.toLowerCase().trim();
+  
+  // Check for dropper variants
+  if (normalized.includes('dropper') || normalized.includes('drop')) {
+    return 'dropper';
+  }
+  
+  // Extract numeric class from "Class 11", "Grade 10", "11th", etc.
+  const match = normalized.match(/(\d{1,2})/);
+  if (match) {
+    return match[1]; // Returns '6', '7', '8', '9', '10', '11', or '12'
+  }
+  
+  return null;
+}
+
 // Template selection helpers with user profile awareness
 export function getGreetingTemplate(
   timeOfDay: 'morning' | 'afternoon' | 'evening',
@@ -489,15 +510,15 @@ export function getGreetingTemplate(
   let context: string | undefined;
   
   if (userProfile?.currentClass) {
-    const classNum = userProfile.currentClass;
+    const normalizedClass = normalizeClass(userProfile.currentClass);
     
-    if (classNum === 'dropper') {
+    if (normalizedClass === 'dropper') {
       context = 'dropper';
-    } else if (['6', '7', '8'].includes(classNum)) {
+    } else if (normalizedClass && ['6', '7', '8'].includes(normalizedClass)) {
       context = 'foundation';
-    } else if (['9', '10'].includes(classNum)) {
+    } else if (normalizedClass && ['9', '10'].includes(normalizedClass)) {
       context = 'board_prep';
-    } else if (['11', '12'].includes(classNum)) {
+    } else if (normalizedClass && ['11', '12'].includes(normalizedClass)) {
       context = 'competitive';
     }
   }

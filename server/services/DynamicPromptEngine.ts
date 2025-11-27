@@ -175,6 +175,28 @@ export class DynamicPromptEngine {
   }
 
   /**
+   * Normalize class string to extract numeric value or detect dropper
+   */
+  private normalizeClass(classStr: string | undefined): string | null {
+    if (!classStr) return null;
+    
+    const normalized = classStr.toLowerCase().trim();
+    
+    // Check for dropper variants
+    if (normalized.includes('dropper') || normalized.includes('drop')) {
+      return 'dropper';
+    }
+    
+    // Extract numeric class from "Class 11", "Grade 10", "11th", etc.
+    const match = normalized.match(/(\d{1,2})/);
+    if (match) {
+      return match[1]; // Returns '6', '7', '8', '9', '10', '11', or '12'
+    }
+    
+    return null;
+  }
+
+  /**
    * Get learning context section with user profile
    */
   private getLearningContext(context: PromptContext): string {
@@ -200,15 +222,17 @@ ${context.messageCount ? `Messages in Session: ${context.messageCount}` : ''}`;
         if (currentClass) {
           contextStr += `\nClass: ${currentClass}`;
           
+          // Normalize class for comparison
+          const normalizedClass = this.normalizeClass(currentClass);
+          
           // Class-specific teaching guidance
-          const classNum = currentClass;
-          if (classNum === 'dropper') {
+          if (normalizedClass === 'dropper') {
             contextStr += '\n- DROPPER STUDENT: This is their second attempt. They have determination and need focused, exam-oriented preparation. Build confidence while addressing gaps.';
-          } else if (['6', '7', '8'].includes(classNum)) {
+          } else if (normalizedClass && ['6', '7', '8'].includes(normalizedClass)) {
             contextStr += '\n- FOUNDATION STAGE: Focus on building strong fundamentals. Use simple explanations and interesting examples. Avoid overwhelming with advanced concepts.';
-          } else if (['9', '10'].includes(classNum)) {
+          } else if (normalizedClass && ['9', '10'].includes(normalizedClass)) {
             contextStr += '\n- BOARD PREPARATION: Balance conceptual clarity with board exam patterns. Emphasize NCERT concepts and scoring strategies.';
-          } else if (['11', '12'].includes(classNum)) {
+          } else if (normalizedClass && ['11', '12'].includes(normalizedClass)) {
             contextStr += '\n- ADVANCED STAGE: Prepare for both boards and competitive exams. Go deeper into concepts, include problem-solving techniques and exam shortcuts.';
           }
         }

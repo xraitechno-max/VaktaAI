@@ -569,6 +569,18 @@ optimizedTutorRouter.post('/session/ask', async (req, res) => {
     });
     
     // 🔥 GENERATE DYNAMIC CONTEXT-AWARE PROMPT
+    
+    // Determine exam type from user profile
+    let examType: 'board' | 'competitive' | undefined;
+    if (session.profileSnapshot?.examTarget) {
+      const target = session.profileSnapshot.examTarget.toLowerCase();
+      if (target.includes('jee') || target.includes('neet')) {
+        examType = 'competitive';
+      } else if (target.includes('board')) {
+        examType = 'board';
+      }
+    }
+    
     const promptContext = {
       // Language context
       detectedLanguage: detectedLang,
@@ -589,6 +601,9 @@ optimizedTutorRouter.post('/session/ask', async (req, res) => {
       
       // Intent context
       intent: intentResult.intent,
+      
+      // Exam type context (from user profile)
+      examType,
       
       // User profile context (from onboarding)
       userProfile: session.profileSnapshot ? {
