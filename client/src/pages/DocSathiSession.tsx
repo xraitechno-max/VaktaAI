@@ -29,11 +29,11 @@ import {
   Search,
   ExternalLink,
   ArrowLeft,
-  MoreVertical,
   MessageSquare,
-  Lightbulb,
   Quote,
   Image as ImageIcon,
+  Maximize2,
+  Minimize2,
 } from "lucide-react";
 import { Document, Chat, Message } from "@shared/schema";
 import DocChatActionModal from "@/components/docchat/DocChatActionModal";
@@ -67,6 +67,7 @@ export default function DocChatSession() {
   const [actionContent, setActionContent] = useState("");
   const [activeTab, setActiveTab] = useState<'insight' | 'research'>('insight');
   const [transcriptSearch, setTranscriptSearch] = useState("");
+  const [pdfExpanded, setPdfExpanded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -277,15 +278,6 @@ export default function DocChatSession() {
     }
   };
 
-  const getSourceIcon = (type: string) => {
-    switch (type) {
-      case 'youtube': return <Youtube className="w-4 h-4 text-red-500" />;
-      case 'web': return <Globe className="w-4 h-4 text-blue-500" />;
-      case 'image': return <ImageIcon className="w-4 h-4 text-green-500" />;
-      default: return <FileText className="w-4 h-4 text-orange-500" />;
-    }
-  };
-
   if (chatLoading) {
     return (
       <div className="h-full flex items-center justify-center bg-gradient-to-br from-background via-background to-primary/5">
@@ -329,113 +321,115 @@ export default function DocChatSession() {
   const currentDoc = chatDocs[0];
   const selectedDocs = chatDocs.map(d => ({ id: d.id, title: d.title }));
 
+  const getPdfUrl = () => {
+    if (!currentDoc?.fileKey) return null;
+    return `${window.location.origin}${currentDoc.fileKey}`;
+  };
+
   return (
     <div className="h-full flex bg-gradient-to-br from-background via-background to-primary/5">
-      {/* Left Sidebar: Sources */}
-      <div className="w-56 border-r border-border/50 flex flex-col bg-card/30 backdrop-blur-sm">
-        <div className="p-4 border-b border-border/50">
-          <div className="flex items-center justify-between gap-2 mb-3">
-            <h3 className="font-medium text-sm">Sources</h3>
-            <div className="flex items-center gap-1">
-              <Button variant="ghost" size="icon" className="h-7 w-7" data-testid="button-add-source">
-                <span className="text-lg font-light">+</span>
-              </Button>
-              <Button variant="ghost" size="icon" className="h-7 w-7" data-testid="button-open-external">
-                <ExternalLink className="w-3.5 h-3.5" />
-              </Button>
-            </div>
-          </div>
-        </div>
-        
-        <ScrollArea className="flex-1 p-3">
-          <div className="space-y-3">
-            {chatDocs.map((doc) => (
-              <div 
-                key={doc.id} 
-                className="group relative rounded-lg border border-border/50 bg-card/50 p-2 hover:border-primary/30 hover:bg-card transition-all cursor-pointer"
-                data-testid={`source-card-${doc.id}`}
-              >
-                <div className="aspect-[4/3] rounded-md bg-muted/50 mb-2 overflow-hidden flex items-center justify-center relative">
-                  {doc.sourceType === 'youtube' ? (
-                    <div className="w-full h-full bg-gradient-to-br from-red-500/20 to-red-600/20 flex items-center justify-center">
-                      <Youtube className="w-8 h-8 text-red-500" />
-                    </div>
-                  ) : doc.sourceType === 'pdf' ? (
-                    <div className="w-full h-full bg-gradient-to-br from-orange-500/10 to-orange-600/10 flex items-center justify-center p-2">
-                      <div className="text-center">
-                        <FileText className="w-8 h-8 text-orange-500 mx-auto mb-1" />
-                        <span className="text-[10px] text-muted-foreground uppercase font-medium">PDF</span>
-                      </div>
-                    </div>
-                  ) : doc.sourceType === 'web' ? (
-                    <div className="w-full h-full bg-gradient-to-br from-blue-500/10 to-blue-600/10 flex items-center justify-center">
-                      <Globe className="w-8 h-8 text-blue-500" />
-                    </div>
-                  ) : (
-                    <FileText className="w-8 h-8 text-muted-foreground/50" />
-                  )}
-                  <div className="absolute top-1 right-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                    <input type="checkbox" className="w-4 h-4 rounded border-2 border-primary accent-primary" />
-                  </div>
-                </div>
-                <p className="text-xs text-muted-foreground truncate px-1" title={doc.title}>
-                  {doc.title}
-                </p>
-              </div>
-            ))}
-            
-            {chatDocs.length === 0 && (
-              <div className="text-center py-8">
-                <FileText className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-xs text-muted-foreground">No sources added</p>
-              </div>
-            )}
-          </div>
-        </ScrollArea>
-      </div>
-
-      {/* Center: Document Viewer */}
-      <div className="flex-1 flex flex-col min-w-0">
+      {/* Left: Document Viewer */}
+      <div className="flex-1 flex flex-col min-w-0 border-r border-border/50">
         {currentDoc ? (
           <>
             {/* Document Toolbar */}
             <div className="h-12 border-b border-border/50 flex items-center justify-between px-4 bg-card/30 backdrop-blur-sm">
               <div className="flex items-center gap-2">
-                <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-zoom-out-toolbar">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8" 
+                  onClick={() => setZoom(Math.max(50, zoom - 25))}
+                  disabled={zoom <= 50}
+                  data-testid="button-zoom-out-toolbar"
+                >
                   <ZoomOut className="w-4 h-4" />
                 </Button>
-                <span className="text-xs text-muted-foreground min-w-[2rem] text-center">
-                  {currentDoc.sourceType === 'pdf' && `${currentPage}`}
+                <span className="text-xs text-muted-foreground min-w-[3rem] text-center bg-muted/50 px-2 py-1 rounded">
+                  {zoom}%
                 </span>
-                <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-zoom-in-toolbar">
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8"
+                  onClick={() => setZoom(Math.min(200, zoom + 25))}
+                  disabled={zoom >= 200}
+                  data-testid="button-zoom-in-toolbar"
+                >
                   <ZoomIn className="w-4 h-4" />
                 </Button>
               </div>
               
               <div className="flex items-center gap-1">
-                <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-search-doc">
-                  <Search className="w-4 h-4" />
+                <Button 
+                  variant="ghost" 
+                  size="icon" 
+                  className="h-8 w-8"
+                  onClick={() => setPdfExpanded(!pdfExpanded)}
+                  data-testid="button-expand-doc"
+                >
+                  {pdfExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
                 </Button>
-                <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-download-doc">
-                  <Download className="w-4 h-4" />
-                </Button>
+                {currentDoc.fileKey && (
+                  <a 
+                    href={getPdfUrl() || '#'} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="inline-flex"
+                  >
+                    <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-open-new-tab">
+                      <ExternalLink className="w-4 h-4" />
+                    </Button>
+                  </a>
+                )}
+                {currentDoc.fileKey && (
+                  <a href={getPdfUrl() || '#'} download>
+                    <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-download-doc">
+                      <Download className="w-4 h-4" />
+                    </Button>
+                  </a>
+                )}
               </div>
             </div>
 
             {/* Document Content */}
-            <div className="flex-1 overflow-hidden bg-muted/30">
+            <div className="flex-1 overflow-hidden bg-muted/20">
               {currentDoc.sourceType === 'pdf' ? (
                 currentDoc.fileKey ? (
-                  <div className="w-full h-full overflow-auto flex items-start justify-center p-4">
-                    <div className="bg-white shadow-xl rounded-lg overflow-hidden max-w-4xl w-full" style={{ transform: `scale(${zoom / 100})`, transformOrigin: 'top center' }}>
-                      <iframe
-                        src={`${window.location.origin}${currentDoc.fileKey}`}
-                        className="w-full border-0"
-                        style={{ minHeight: '800px' }}
-                        title={currentDoc.title}
-                        data-testid="pdf-iframe"
-                      />
-                    </div>
+                  <div className="w-full h-full flex items-center justify-center p-4 overflow-auto">
+                    <object
+                      data={`${getPdfUrl()}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
+                      type="application/pdf"
+                      className="rounded-lg shadow-xl bg-white"
+                      style={{ 
+                        width: `${Math.min(100, zoom)}%`, 
+                        height: '100%',
+                        minHeight: '600px',
+                        maxWidth: pdfExpanded ? '100%' : '900px'
+                      }}
+                      data-testid="pdf-object"
+                    >
+                      <div className="flex flex-col items-center justify-center h-full p-8 bg-card rounded-lg">
+                        <FileText className="w-16 h-16 text-primary/50 mb-4" />
+                        <p className="text-sm text-muted-foreground mb-4 text-center">
+                          Your browser cannot display this PDF directly.
+                        </p>
+                        <div className="flex gap-3">
+                          <a href={getPdfUrl() || '#'} target="_blank" rel="noopener noreferrer">
+                            <Button variant="outline" className="gap-2">
+                              <ExternalLink className="w-4 h-4" />
+                              Open in New Tab
+                            </Button>
+                          </a>
+                          <a href={getPdfUrl() || '#'} download>
+                            <Button className="gap-2 bg-gradient-to-r from-primary to-accent text-white">
+                              <Download className="w-4 h-4" />
+                              Download PDF
+                            </Button>
+                          </a>
+                        </div>
+                      </div>
+                    </object>
                   </div>
                 ) : (
                   <div className="flex items-center justify-center h-full">
@@ -489,7 +483,7 @@ export default function DocChatSession() {
                         
                         {currentDoc.metadata?.transcriptSegments && currentDoc.metadata.transcriptSegments.length > 0 && (
                           <div className="mt-6 bg-card rounded-xl border border-border/50 overflow-hidden">
-                            <div className="p-4 border-b border-border/50 flex items-center justify-between">
+                            <div className="p-4 border-b border-border/50 flex items-center justify-between flex-wrap gap-2">
                               <h4 className="font-semibold">Transcript</h4>
                               <div className="relative">
                                 <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
@@ -557,11 +551,11 @@ export default function DocChatSession() {
       </div>
 
       {/* Right Panel: Chat */}
-      <div className="w-[420px] border-l border-border/50 flex flex-col bg-card/30 backdrop-blur-sm">
+      <div className="w-[420px] flex flex-col bg-card/30 backdrop-blur-sm">
         {/* Header with Tabs and Actions */}
         <div className="border-b border-border/50">
-          <div className="px-4 pt-3 flex items-center justify-between">
-            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'insight' | 'research')} className="w-full">
+          <div className="px-4 pt-3 flex items-center justify-between gap-2">
+            <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'insight' | 'research')} className="flex-1">
               <TabsList className="h-9 bg-muted/50 p-0.5">
                 <TabsTrigger 
                   value="insight" 
@@ -582,7 +576,7 @@ export default function DocChatSession() {
             
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="ghost" size="sm" className="ml-2 text-xs gap-1.5 shrink-0" data-testid="button-source-actions">
+                <Button variant="ghost" size="sm" className="text-xs gap-1.5 shrink-0" data-testid="button-source-actions">
                   Source Quick Actions
                   <ChevronRight className="w-3 h-3" />
                 </Button>
