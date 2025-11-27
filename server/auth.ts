@@ -184,7 +184,8 @@ export function setupAuth(app: Express) {
         educationBoard,
         examTarget,
         currentClass,
-        subjects 
+        subjects,
+        languagePreference 
       } = req.body;
 
       // Update user profile
@@ -197,6 +198,7 @@ export function setupAuth(app: Express) {
         examTarget,
         currentClass,
         subjects,
+        languagePreference,
         updatedAt: new Date(),
       });
 

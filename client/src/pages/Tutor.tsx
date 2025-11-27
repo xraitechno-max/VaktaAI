@@ -6,6 +6,7 @@ import { useToast } from "@/hooks/use-toast";
 import TutorSetupWizard, { type TutorConfig } from "@/components/tutor/TutorSetupWizard";
 import TutorSession from "@/components/tutor/TutorSession";
 import UnityAvatar, { UnityAvatarHandle } from "@/components/tutor/UnityAvatar";
+import OnboardingWizard, { type OnboardingData } from "@/components/onboarding/OnboardingWizard";
 import { motion } from "framer-motion";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,8 @@ export default function Tutor() {
   const { t } = useLanguage();
   const [location, setLocation] = useLocation();
   const [showSetupWizard, setShowSetupWizard] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
+  const [onboardingSkipped, setOnboardingSkipped] = useState(false);
   const [currentSessionId, setCurrentSessionId] = useState<string | null>(null);
   const [isPreloadingAvatar, setIsPreloadingAvatar] = useState(false);
   const [avatarPreloaded, setAvatarPreloaded] = useState(false);
@@ -78,6 +81,19 @@ export default function Tutor() {
   const preloadAvatarRef = useRef<UnityAvatarHandle>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+
+  // Fetch current user to check onboarding status
+  const { data: user, isLoading: userLoading } = useQuery({
+    queryKey: ["/api/auth/user"],
+  });
+
+  // Check if user needs onboarding
+  useEffect(() => {
+    if (user && !userLoading && !onboardingSkipped) {
+      const needsOnboarding = !user.currentClass || !user.examTarget || !user.subjects || user.subjects.length === 0 || !user.languagePreference;
+      setShowOnboarding(needsOnboarding);
+    }
+  }, [user, userLoading, onboardingSkipped]);
 
   const triggerQuickStart = (subject: string = 'physics') => {
     const defaultConfig: TutorConfig = {
@@ -110,6 +126,37 @@ export default function Tutor() {
     select: (data: any[]) =>
       data?.filter((chat: any) => chat.mode === 'tutor')?.slice(0, 3) || [],
   });
+
+  // Handle onboarding completion
+  const saveOnboardingMutation = useMutation({
+    mutationFn: async (data: OnboardingData) => {
+      return await apiRequest("PATCH", "/api/auth/profile", data);
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
+      setShowOnboarding(false);
+      toast({
+        title: "Profile Updated! 🎉",
+        description: "Your learning preferences have been saved.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to save preferences",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleOnboardingComplete = (data: OnboardingData) => {
+    saveOnboardingMutation.mutate(data);
+  };
+
+  const handleOnboardingSkip = () => {
+    setOnboardingSkipped(true);
+    setShowOnboarding(false);
+  };
 
   const startSessionMutation = useMutation({
     mutationFn: async (config: TutorConfig) => {
@@ -198,6 +245,16 @@ export default function Tutor() {
       description: t('toast.sessionEndedDesc'),
     });
   };
+
+  // Show onboarding wizard if user needs onboarding
+  if (showOnboarding) {
+    return (
+      <OnboardingWizard
+        onComplete={handleOnboardingComplete}
+        onSkip={handleOnboardingSkip}
+      />
+    );
+  }
 
   if (currentSessionId) {
     return (

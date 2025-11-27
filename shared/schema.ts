@@ -53,6 +53,7 @@ export const users = pgTable("users", {
   examTarget: varchar("exam_target"), // 'JEE', 'NEET', 'Board Exams', 'Other'
   currentClass: varchar("current_class"), // '10th', '12th', 'BSc Year 1', etc.
   subjects: text("subjects").array(), // Array of subjects
+  languagePreference: varchar("language_preference").default('hinglish'), // 'english', 'hindi', 'hinglish'
   
   // Admin access control
   role: varchar("role").default('user'), // 'user', 'admin', 'super_admin'
