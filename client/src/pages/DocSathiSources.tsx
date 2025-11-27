@@ -306,41 +306,57 @@ export default function DocChatSources() {
 
                 {/* Upload Tab */}
                 <TabsContent value="upload" className="space-y-6">
-                  <div className="relative">
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 relative">
-                        <Paperclip className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                        <Input
-                          value={url}
-                          onChange={(e) => setUrl(e.target.value)}
-                          placeholder={t('docSathi.uploadPlaceholder')}
-                          className="pl-12 h-14 text-base rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500"
-                          onKeyDown={(e) => { if (e.key === 'Enter' && url.trim()) handleAddUrl(); }}
-                          data-testid="input-url"
-                        />
+                  {/* Clickable Icon Panel for File Upload */}
+                  <ObjectUploader
+                    onGetUploadParameters={handleGetUploadParams}
+                    onComplete={handleUploadComplete}
+                    maxNumberOfFiles={1}
+                    maxFileSize={52428800}
+                  >
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-all border-2 border-transparent hover:border-cyan-500">
+                      <p className="text-center text-slate-600 dark:text-slate-400 mb-4 text-sm">
+                        {t('docSathi.supports')}
+                      </p>
+                      <div className="flex items-center justify-center gap-4 flex-wrap">
+                        {supportedFormatDefs.map((format) => (
+                          <div key={format.nameKey} className="flex flex-col items-center gap-1">
+                            <div className="w-10 h-10 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center shadow-sm">
+                              <format.icon className={`w-5 h-5 ${format.color}`} />
+                            </div>
+                            <span className="text-xs text-slate-500">{t(format.nameKey)}</span>
+                          </div>
+                        ))}
                       </div>
-                      <ObjectUploader
-                        onGetUploadParameters={handleGetUploadParams}
-                        onComplete={handleUploadComplete}
-                        maxNumberOfFiles={1}
-                        maxFileSize={52428800}
-                        directPicker={true}
-                      >
-                        <Button
-                          variant="default"
-                          size="lg"
-                          disabled={uploadingFile}
-                          className="h-14 px-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
-                          data-testid="button-add-file"
-                        >
-                          {uploadingFile ? (
-                            <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{t('docSathi.uploading')}</>
-                          ) : (
-                            <><Plus className="w-5 h-5 mr-2" />{t('docSathi.add')}</>
-                          )}
-                        </Button>
-                      </ObjectUploader>
                     </div>
+                  </ObjectUploader>
+
+                  {/* URL Input with Add Button */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1 relative">
+                      <Paperclip className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Input
+                        value={url}
+                        onChange={(e) => setUrl(e.target.value)}
+                        placeholder={t('docSathi.uploadPlaceholder')}
+                        className="pl-12 h-14 text-base rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500"
+                        onKeyDown={(e) => { if (e.key === 'Enter' && url.trim()) handleAddUrl(); }}
+                        data-testid="input-url"
+                      />
+                    </div>
+                    <Button
+                      variant="default"
+                      size="lg"
+                      onClick={handleAddUrl}
+                      disabled={!url.trim() || addUrlMutation.isPending}
+                      className="h-14 px-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                      data-testid="button-add-url"
+                    >
+                      {addUrlMutation.isPending ? (
+                        <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{t('docSathi.adding')}</>
+                      ) : (
+                        <><Plus className="w-5 h-5 mr-2" />{t('docSathi.add')}</>
+                      )}
+                    </Button>
                   </div>
 
                   {/* Recently Uploaded */}
