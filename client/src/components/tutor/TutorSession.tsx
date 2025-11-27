@@ -1442,10 +1442,11 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-purple-900/20 via-transparent to-transparent pointer-events-none" />
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
 
-      <div className="relative flex-1 flex flex-col lg:flex-row min-h-0 overflow-hidden">
-        <div className={`relative flex flex-col min-h-0 ${
-          showChatPanel ? 'flex-1 lg:flex-[0_0_60%]' : 'flex-1'
-        }`}>
+      {/* Unity Avatar: 60% | Chat Panel: 40% */}
+      <div className={`relative flex-1 min-h-0 overflow-hidden ${
+        showChatPanel ? 'lg:grid lg:grid-cols-[60%_40%]' : 'flex flex-col'
+      }`}>
+        <div className="relative flex flex-col min-h-0">
           <div className="flex items-center justify-between px-4 py-3 lg:px-6 lg:py-4 bg-black/20 backdrop-blur-xl border-b border-white/5">
             <div className="flex items-center gap-3 flex-wrap">
               <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${
