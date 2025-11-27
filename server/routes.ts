@@ -464,14 +464,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
         return res.status(401).json({ message: "Unauthorized" });
       }
 
-      const { locale, educationBoard, currentClass, examTarget, subjects } = req.body;
+      const { firstName, locale, educationBoard, currentClass, examTarget, subjects, languagePreference } = req.body;
 
       // Update user in storage
       await storage.updateUser(userId, {
+        firstName: firstName || undefined,
         educationBoard: educationBoard || undefined,
         currentClass: currentClass || undefined,
         examTarget: examTarget || undefined,
         subjects: subjects || undefined,
+        languagePreference: languagePreference || undefined,
         locale: locale || 'en',
       });
 

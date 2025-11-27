@@ -3,6 +3,7 @@ import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { GraduationCap, Target, BookOpen, Languages, ArrowRight, ArrowLeft } from 'lucide-react';
+import WelcomeStep from './steps/WelcomeStep';
 import ClassSelection from './steps/ClassSelection';
 import ExamTargetSelection from './steps/ExamTargetSelection';
 import SubjectSelection from './steps/SubjectSelection';
@@ -31,14 +32,15 @@ export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizar
     languagePreference: 'hinglish',
   });
 
-  const totalSteps = 4;
+  const totalSteps = 5;
   const progress = (currentStep / totalSteps) * 100;
 
   const steps = [
-    { number: 1, title: 'Class', icon: GraduationCap },
-    { number: 2, title: 'Exam Target', icon: Target },
-    { number: 3, title: 'Subjects', icon: BookOpen },
-    { number: 4, title: 'Language', icon: Languages },
+    { number: 1, title: 'Welcome', icon: GraduationCap },
+    { number: 2, title: 'Class', icon: GraduationCap },
+    { number: 3, title: 'Exam Target', icon: Target },
+    { number: 4, title: 'Subjects', icon: BookOpen },
+    { number: 5, title: 'Language', icon: Languages },
   ];
 
   const updateFormData = (field: string, value: any) => {
@@ -105,16 +107,18 @@ export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizar
   const canProceed = () => {
     switch (currentStep) {
       case 1:
-        return formData.currentClass !== '';
+        return true; // Welcome step - always allow proceed
       case 2:
-        return formData.examTarget !== '';
+        return formData.currentClass !== '';
       case 3:
-        // For Step 3, enforce exam target for senior classes
+        return formData.examTarget !== '';
+      case 4:
+        // For Step 4, enforce exam target for senior classes
         if (['11', '12', 'dropper'].includes(formData.currentClass) && !formData.examTarget) {
-          return false; // Block Step 3 if exam target not set for seniors
+          return false; // Block Step 4 if exam target not set for seniors
         }
         return formData.subjects.length > 0;
-      case 4:
+      case 5:
         return formData.languagePreference !== '';
       default:
         return false;
@@ -127,10 +131,10 @@ export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizar
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
-            Welcome to VaktaAI! 🎓
+            Welcome to VaktaAI
           </h1>
           <p className="text-muted-foreground">
-            Let's personalize your learning experience in just 4 steps
+            Step {currentStep} of {totalSteps}: {steps[currentStep - 1].title}
           </p>
         </div>
 
@@ -170,13 +174,14 @@ export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizar
 
         {/* Step Content */}
         <div className="min-h-[400px] mb-8">
-          {currentStep === 1 && (
+          {currentStep === 1 && <WelcomeStep />}
+          {currentStep === 2 && (
             <ClassSelection
               value={formData.currentClass}
               onChange={(value: string) => updateFormData('currentClass', value)}
             />
           )}
-          {currentStep === 2 && (
+          {currentStep === 3 && (
             <ExamTargetSelection
               currentClass={formData.currentClass}
               value={formData.examTarget}
@@ -185,7 +190,7 @@ export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizar
               onBoardChange={(value: string) => updateFormData('educationBoard', value)}
             />
           )}
-          {currentStep === 3 && (
+          {currentStep === 4 && (
             <SubjectSelection
               currentClass={formData.currentClass}
               examTarget={formData.examTarget}
@@ -193,7 +198,7 @@ export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizar
               onChange={(value: string[]) => updateFormData('subjects', value)}
             />
           )}
-          {currentStep === 4 && (
+          {currentStep === 5 && (
             <LanguageSelection
               value={formData.languagePreference}
               onChange={(value: string) => updateFormData('languagePreference', value)}
