@@ -8,10 +8,9 @@ import { YoutubeTranscript } from "@danielxceron/youtube-transcript";
 import { Readability } from "@mozilla/readability";
 import { JSDOM } from "jsdom";
 import { encoding_for_model } from "tiktoken";
-import { createRequire } from "module";
 import { createWorker } from "tesseract.js";
+import { PDFParse } from "pdf-parse";
 
-const require = createRequire(import.meta.url);
 const tokenizer = encoding_for_model("gpt-3.5-turbo");
 
 export interface DocumentChunk {
@@ -48,22 +47,26 @@ export class DocumentService {
     }
   }
 
-  // PDF text extraction using pdf-parse (CommonJS)
+  // PDF text extraction using pdf-parse v2.x
   private async extractFromPDF(buffer: Buffer): Promise<{ text: string; metadata: any }> {
     try {
-      // pdf-parse exports a function directly, not as a named export
-      const pdfParse = require('pdf-parse');
-      const data = await pdfParse(buffer);
+      // PDFParse v2.x: pass data in constructor, then call getText()
+      const parser = new PDFParse({ data: buffer });
+      const textResult = await parser.getText();
+      const infoResult = await parser.getInfo();
       
-      if (!data.text || data.text.trim().length === 0) {
+      // Clean up resources
+      await parser.destroy();
+      
+      if (!textResult.text || textResult.text.trim().length === 0) {
         throw new Error('No text content extracted from PDF');
       }
       
       return {
-        text: data.text,
+        text: textResult.text,
         metadata: {
-          pages: data.numpages,
-          info: data.info,
+          pages: textResult.total,
+          info: infoResult.info,
           extractedAt: new Date().toISOString()
         }
       };
