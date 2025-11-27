@@ -66,6 +66,20 @@ const UnityAvatar = forwardRef<UnityAvatarHandle, UnityAvatarProps>(
       }
     }, [onError]);
 
+    // ⚡ Register service worker for Unity asset caching
+    useEffect(() => {
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker
+          .register('/unity-sw.js')
+          .then((registration) => {
+            console.log('[Unity SW] ✅ Service worker registered:', registration.scope);
+          })
+          .catch((error) => {
+            console.warn('[Unity SW] ⚠️ Service worker registration failed:', error);
+          });
+      }
+    }, []);
+
     // Simulate loading progress (Unity 97MB takes ~15-20s)
     useEffect(() => {
       if (!isLoading) return;

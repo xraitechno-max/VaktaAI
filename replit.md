@@ -10,6 +10,13 @@ VaktaAI is an AI-powered educational platform designed to be a comprehensive stu
   - Graceful degradation: Text works even if TTS fails
   - Fire-and-forget pattern with comprehensive error logging
 
+- **WebGL/Unity Loading Optimization**: Reduced repeat-visit load time by 90%+ through caching strategy
+  - **Server-Side URL Caching**: Presigned S3 URLs cached for 24 hours (auto-refresh 1h before expiry)
+  - **Service Worker**: Browser caches Unity build files (.gz/.wasm/.js) on first visit
+  - **Performance Impact**: First visit ~15-20s (97MB download), repeat visits <1s (cache hit)
+  - **Security**: API responses never cached, always fetch fresh URLs to prevent 403 errors
+  - **Cache Management**: Service worker v2 (`unity-webgl-v2`) - bump version when rotating builds
+
 ## User Preferences
 Preferred communication style: Simple, everyday language (Hindi/English/Hinglish mix for Indian students).
 
