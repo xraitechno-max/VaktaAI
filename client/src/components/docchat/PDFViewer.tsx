@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useMemo } from 'react';
 import { Document, Page, pdfjs } from 'react-pdf';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -31,48 +31,31 @@ export default function PDFViewer({ fileUrl, title, onPageChange }: PDFViewerPro
   const [numPages, setNumPages] = useState<number>(0);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [scale, setScale] = useState<number>(1.0);
-  const [pdfData, setPdfData] = useState<ArrayBuffer | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isFullWidth, setIsFullWidth] = useState(false);
   const [rotation, setRotation] = useState(0);
   const [pageInputValue, setPageInputValue] = useState('1');
 
-  useEffect(() => {
-    const fetchPdf = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const response = await fetch(fileUrl, {
-          credentials: 'include',
-        });
-        
-        if (!response.ok) {
-          throw new Error(`Failed to fetch PDF: ${response.status}`);
-        }
-        
-        const arrayBuffer = await response.arrayBuffer();
-        setPdfData(arrayBuffer);
-      } catch (err) {
-        console.error('Error fetching PDF:', err);
-        setError(err instanceof Error ? err.message : 'Failed to load PDF');
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    if (fileUrl) {
-      fetchPdf();
-    }
-  }, [fileUrl]);
+  const fileConfig = useMemo(() => ({
+    url: fileUrl,
+    withCredentials: true,
+  }), [fileUrl]);
 
   const onDocumentLoadSuccess = useCallback(({ numPages }: { numPages: number }) => {
     setNumPages(numPages);
     setCurrentPage(1);
     setPageInputValue('1');
+    setLoading(false);
+    setError(null);
     onPageChange?.(1, numPages);
   }, [onPageChange]);
+
+  const onDocumentLoadError = useCallback((err: Error) => {
+    console.error('PDF load error:', err);
+    setError(err.message || 'Failed to load PDF');
+    setLoading(false);
+  }, []);
 
   const goToPage = useCallback((page: number) => {
     const validPage = Math.max(1, Math.min(page, numPages));
@@ -110,21 +93,6 @@ export default function PDFViewer({ fileUrl, title, onPageChange }: PDFViewerPro
     }
   };
 
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-full bg-muted/20">
-        <div className="relative w-16 h-16 mb-4">
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary via-accent to-primary animate-spin" style={{ animationDuration: '2s' }} />
-          <div className="absolute inset-1 rounded-full bg-background" />
-          <div className="absolute inset-3 flex items-center justify-center">
-            <Loader2 className="w-6 h-6 text-primary animate-spin" />
-          </div>
-        </div>
-        <p className="text-sm text-muted-foreground">Loading PDF...</p>
-      </div>
-    );
-  }
-
   if (error) {
     return (
       <div className="flex flex-col items-center justify-center h-full bg-muted/20 p-8">
@@ -150,7 +118,7 @@ export default function PDFViewer({ fileUrl, title, onPageChange }: PDFViewerPro
             size="icon"
             className="h-8 w-8"
             onClick={() => goToPage(currentPage - 1)}
-            disabled={currentPage <= 1}
+            disabled={currentPage <= 1 || loading}
             data-testid="button-prev-page"
           >
             <ChevronLeft className="w-4 h-4" />
@@ -161,9 +129,10 @@ export default function PDFViewer({ fileUrl, title, onPageChange }: PDFViewerPro
               value={pageInputValue}
               onChange={(e) => handlePageInputChange(e.target.value)}
               className="w-12 h-7 text-center text-xs px-1"
+              disabled={loading}
               data-testid="input-page-number"
             />
-            <span className="text-muted-foreground text-xs">/ {numPages}</span>
+            <span className="text-muted-foreground text-xs">/ {numPages || 0}</span>
           </div>
           
           <Button
@@ -171,7 +140,7 @@ export default function PDFViewer({ fileUrl, title, onPageChange }: PDFViewerPro
             size="icon"
             className="h-8 w-8"
             onClick={() => goToPage(currentPage + 1)}
-            disabled={currentPage >= numPages}
+            disabled={currentPage >= numPages || loading}
             data-testid="button-next-page"
           >
             <ChevronRight className="w-4 h-4" />
@@ -246,39 +215,45 @@ export default function PDFViewer({ fileUrl, title, onPageChange }: PDFViewerPro
           className="flex justify-center py-4 px-2"
           style={{ minHeight: '100%' }}
         >
-          {pdfData && (
-            <Document
-              file={{ data: pdfData }}
-              onLoadSuccess={onDocumentLoadSuccess}
+          <Document
+            file={fileConfig}
+            onLoadSuccess={onDocumentLoadSuccess}
+            onLoadError={onDocumentLoadError}
+            loading={
+              <div className="flex flex-col items-center justify-center py-16">
+                <div className="relative w-16 h-16 mb-4">
+                  <div className="absolute inset-0 rounded-full bg-gradient-to-r from-primary via-accent to-primary animate-spin" style={{ animationDuration: '2s' }} />
+                  <div className="absolute inset-1 rounded-full bg-background" />
+                  <div className="absolute inset-3 flex items-center justify-center">
+                    <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                  </div>
+                </div>
+                <p className="text-sm text-muted-foreground">Loading PDF...</p>
+              </div>
+            }
+            error={
+              <div className="text-center py-8 text-destructive">
+                <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
+                <p>Failed to load PDF</p>
+              </div>
+            }
+            className="flex flex-col items-center gap-4"
+          >
+            <Page
+              pageNumber={currentPage}
+              scale={scale}
+              rotate={rotation}
+              className="shadow-xl rounded-lg overflow-hidden"
+              width={isFullWidth ? undefined : 800}
+              renderTextLayer={true}
+              renderAnnotationLayer={true}
               loading={
-                <div className="flex items-center justify-center py-8">
+                <div className="w-[600px] h-[800px] bg-white flex items-center justify-center">
                   <Loader2 className="w-8 h-8 text-primary animate-spin" />
                 </div>
               }
-              error={
-                <div className="text-center py-8 text-destructive">
-                  <FileText className="w-12 h-12 mx-auto mb-2 opacity-50" />
-                  <p>Failed to load PDF</p>
-                </div>
-              }
-              className="flex flex-col items-center gap-4"
-            >
-              <Page
-                pageNumber={currentPage}
-                scale={scale}
-                rotate={rotation}
-                className="shadow-xl rounded-lg overflow-hidden"
-                width={isFullWidth ? undefined : 800}
-                renderTextLayer={true}
-                renderAnnotationLayer={true}
-                loading={
-                  <div className="w-[600px] h-[800px] bg-white flex items-center justify-center">
-                    <Loader2 className="w-8 h-8 text-primary animate-spin" />
-                  </div>
-                }
-              />
-            </Document>
-          )}
+            />
+          </Document>
         </div>
       </ScrollArea>
 
