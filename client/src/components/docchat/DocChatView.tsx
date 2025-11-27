@@ -554,7 +554,7 @@ export default function DocChatView() {
                           }}
                           onComplete={(result) => {
                             const file = result.successful?.[0];
-                            if (file && file.uploadURL) {
+                            if (file && file.uploadURL && file.name && file.size && file.type) {
                               uploadDocumentMutation.mutate({
                                 uploadURL: file.uploadURL as string,
                                 fileName: file.name,
@@ -563,14 +563,16 @@ export default function DocChatView() {
                               });
                             }
                           }}
-                          directPicker
                         >
-                          <div
-                            className="w-14 h-14 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-500 hover:border-cyan-500 transition-all cursor-pointer"
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="h-14 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 hover:text-cyan-500 hover:border-cyan-500 transition-all gap-2"
                             data-testid="button-attach-file"
                           >
                             <Paperclip className="w-5 h-5" />
-                          </div>
+                            <span>Upload File</span>
+                          </Button>
                         </ObjectUploader>
                         <div className="flex-1">
                           <Input
