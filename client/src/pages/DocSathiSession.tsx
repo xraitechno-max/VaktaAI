@@ -29,7 +29,7 @@ import DocChatActionModal from "@/components/docchat/DocChatActionModal";
 type ActionType = 'summary' | 'highlights' | 'quiz' | 'flashcards';
 
 export default function DocChatSession() {
-  const [, params] = useRoute("/docchat/:chatId");
+  const [, params] = useRoute("/docsathi/:chatId");
   const chatId = params?.chatId || null;
   
   const [message, setMessage] = useState("");
