@@ -7,25 +7,11 @@
 
 import { promises as fs } from 'fs';
 import path from 'path';
-import { OpenAI } from 'openai';
+import { callGroqWithFallback } from './providers/groq';
 import { DualOutputSchema, type DualOutput } from '../schemas/dualOutput';
 import { sanitizeSSML, lintSSMLStrict, estimateSpeechSeconds, compressSpeakSSML } from '../utils/ssmlUtils';
 import { buildDevContext } from '../prompts/dualOutput.dev';
 import { generateFallbackDualOutput } from '../utils/chatToSpeechFallback';
-
-let openai: OpenAI | null = null;
-
-function getOpenAI(): OpenAI {
-  if (!openai) {
-    if (!process.env.OPENAI_API_KEY) {
-      throw new Error('OPENAI_API_KEY is not configured. Please add it to your secrets.');
-    }
-    openai = new OpenAI({
-      apiKey: process.env.OPENAI_API_KEY
-    });
-  }
-  return openai;
-}
 
 interface GenerateDualOutputOptions {
   userQuery: string;
@@ -102,18 +88,21 @@ export async function generateDualOutput(
 
   // Try primary generation
   try {
-    const response = await getOpenAI().chat.completions.create({
-      model: 'gpt-4o-mini',
-      temperature: 0.6,
-      response_format: { type: 'json_object' },
-      messages: [
+    const response = await callGroqWithFallback(
+      [
         { role: 'system', content: systemPrompt },
         { role: 'system', content: devContext },
         ...contextMessages,
         { role: 'user', content: userQuery }
       ],
-      max_tokens: 1800
-    });
+      {
+        model: 'llama-3.3-70b-versatile',
+        temperature: 0.6,
+        maxTokens: 1800,
+        responseFormat: 'json_object',
+        serviceName: 'DualOutput'
+      }
+    );
 
     const rawContent = response.choices[0]?.message?.content;
     if (!rawContent) {
@@ -194,11 +183,8 @@ async function repairDualOutput(
   console.log('[Dual Output] Repair attempt with malformed JSON:', malformedJson.substring(0, 200));
   
   try {
-    const repairResponse = await getOpenAI().chat.completions.create({
-      model: 'gpt-4o-mini',
-      temperature: 0.2,
-      response_format: { type: 'json_object' },
-      messages: [
+    const repairResponse = await callGroqWithFallback(
+      [
         {
           role: 'system',
           content: `You are a JSON repair assistant. Fix the structure to match this schema:
@@ -220,8 +206,14 @@ Only fix the JSON structure without adding new content. If fields are missing, u
           content: `Repair this JSON:\n${malformedJson}\n\nContext: persona=${context.persona}, language=${context.language}`
         }
       ],
-      max_tokens: 600
-    });
+      {
+        model: 'llama-3.3-70b-versatile',
+        temperature: 0.2,
+        maxTokens: 600,
+        responseFormat: 'json_object',
+        serviceName: 'DualOutputRepair'
+      }
+    );
 
     const repairedContent = repairResponse.choices[0]?.message?.content;
     if (!repairedContent) {
@@ -303,10 +295,8 @@ export async function generateChatOnly(
 ): Promise<string> {
   const { userQuery, contextMessages, persona = 'Priya', language = 'en' } = options;
 
-  const response = await getOpenAI().chat.completions.create({
-    model: 'gpt-4o-mini',
-    temperature: 0.5,
-    messages: [
+  const response = await callGroqWithFallback(
+    [
       {
         role: 'system',
         content: `You are ${persona}, a warm and helpful AI tutor. Respond in ${language === 'hi' ? 'Hindi' : language === 'hinglish' ? 'Hinglish (mix of Hindi and English)' : 'English'}.
@@ -320,8 +310,13 @@ Use KaTeX for equations (e.g., $$x^2 + y^2 = r^2$$). Be conversational and encou
       ...contextMessages,
       { role: 'user', content: userQuery }
     ],
-    max_tokens: 900
-  });
+    {
+      model: 'llama-3.3-70b-versatile',
+      temperature: 0.5,
+      maxTokens: 900,
+      serviceName: 'DualOutputChatOnly'
+    }
+  );
 
   return response.choices[0]?.message?.content || 'I apologize, I could not generate a response.';
 }
