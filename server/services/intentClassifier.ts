@@ -1,4 +1,4 @@
-import { optimizedAI } from './optimizedAIService';
+import { callGroqWithFallback } from './providers/groq';
 import { INTENT_PATTERNS, CONTEXT_SHORTCUTS } from '../config/intentPatterns';
 import type { IntentResult, IntentType } from '../types/intents';
 
@@ -79,12 +79,7 @@ export class IntentClassifier {
   }
   
   private async classifyWithLLM(message: string, context: ClassificationContext): Promise<IntentResult> {
-    const prompt = `Classify the following student message into ONE intent category.
-
-Student message: "${message}"
-Current topic: ${context.currentTopic || 'N/A'}
-Last AI message: "${context.lastAIMessage?.substring(0, 100) || 'N/A'}"
-Session phase: ${context.currentPhase || 'N/A'}
+    const systemPrompt = `You are an intent classifier for student messages. Classify into ONE intent category and return valid JSON.
 
 Intent categories:
 - request_explanation, request_example, request_simplification, ask_doubt
@@ -93,16 +88,30 @@ Intent categories:
 - frustration, needs_motivation, celebration
 - technical_issue, feature_query, feedback, casual_chat, inappropriate
 
-Return JSON: {"intent": "intent_name", "confidence": 0.85, "entities": {}}`;
+Return ONLY valid JSON: {"intent": "intent_name", "confidence": 0.85, "entities": {}}`;
+
+    const userPrompt = `Classify this student message:
+Message: "${message}"
+Topic: ${context.currentTopic || 'N/A'}
+Last AI: "${context.lastAIMessage?.substring(0, 100) || 'N/A'}"
+Phase: ${context.currentPhase || 'N/A'}`;
 
     try {
-      const result = await optimizedAI.generateResponse(
-        prompt,
-        undefined,
-        { useCache: false }
+      const response = await callGroqWithFallback(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        {
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.3,
+          maxTokens: 150,
+          responseFormat: 'json_object',
+          serviceName: 'IntentClassifier'
+        }
       );
       
-      const responseText = result.response.trim();
+      const responseText = response.choices[0].message.content?.trim() || '{}';
       let parsed: any;
       
       // Strategy 1: Try parsing entire response directly

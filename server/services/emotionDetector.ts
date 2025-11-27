@@ -1,19 +1,5 @@
-import OpenAI from 'openai';
+import { callGroqWithFallback } from './providers/groq';
 import { EMOTION_PATTERNS, type EmotionalState } from '../config/emotionPatterns';
-
-// Lazy initialization of OpenAI client
-let openai: OpenAI | null = null;
-
-function getOpenAI(): OpenAI {
-  if (!openai) {
-    const apiKey = process.env.OPENAI_API_KEY;
-    if (!apiKey) {
-      throw new Error('OPENAI_API_KEY is not configured. Please add your OpenAI API key to use emotion detection.');
-    }
-    openai = new OpenAI({ apiKey });
-  }
-  return openai;
-}
 
 export interface EmotionResult {
   emotion: EmotionalState;
@@ -151,15 +137,19 @@ Respond with JSON only:
         ? `Previous context:\n${contextMessages.map(m => `${m.role}: ${m.content}`).join('\n')}\n\nCurrent message: "${message}"`
         : `Student message: "${message}"`;
 
-      const completion = await getOpenAI().chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [
+      const completion = await callGroqWithFallback(
+        [
           { role: 'system', content: systemPrompt },
           { role: 'user', content: userPrompt }
         ],
-        temperature: 0.3,
-        response_format: { type: 'json_object' }
-      });
+        {
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.3,
+          maxTokens: 200,
+          responseFormat: 'json_object',
+          serviceName: 'EmotionDetector'
+        }
+      );
 
       const response = completion.choices[0]?.message?.content;
       if (!response) {
