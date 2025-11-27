@@ -1,11 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { ObjectUploader } from "@/components/ObjectUploader";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Upload,
   FileText,
@@ -24,6 +24,14 @@ import {
   X,
   ExternalLink,
   MessageSquare,
+  BookOpen,
+  FolderOpen,
+  Check,
+  ArrowLeft,
+  Zap,
+  Library,
+  PanelLeftClose,
+  PanelRightClose,
 } from "lucide-react";
 import { Document } from "@shared/schema";
 import { cn } from "@/lib/utils";
@@ -32,11 +40,64 @@ import { EnhancedDocChat } from "./EnhancedDocChat";
 
 type ActionType = 'summary' | 'highlights' | 'quiz' | 'flashcards';
 
+const particlePositions = [...Array(20)].map(() => ({
+  left: `${Math.random() * 100}%`,
+  top: `${Math.random() * 100}%`,
+  duration: 2 + Math.random() * 3,
+  delay: Math.random() * 2,
+}));
+
+function PremiumBackground() {
+  return (
+    <>
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-950 dark:via-slate-900 dark:to-indigo-950" />
+      <div className="absolute inset-0 bg-gradient-to-br from-cyan-400/20 via-blue-500/15 to-purple-500/20 animate-pulse-subtle pointer-events-none" />
+      <div className="absolute inset-0 opacity-20 dark:opacity-10 pointer-events-none">
+        <div
+          className="absolute inset-0"
+          style={{
+            backgroundImage: `
+              linear-gradient(90deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px),
+              linear-gradient(0deg, rgba(6, 182, 212, 0.1) 1px, transparent 1px)
+            `,
+            backgroundSize: '60px 60px',
+          }}
+        />
+      </div>
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {particlePositions.map((particle, i) => (
+          <div
+            key={i}
+            className="absolute w-1 h-1 bg-cyan-400 rounded-full opacity-40"
+            style={{
+              left: particle.left,
+              top: particle.top,
+              animation: `twinkle ${particle.duration}s ease-in-out infinite`,
+              animationDelay: `${particle.delay}s`,
+            }}
+          />
+        ))}
+      </div>
+    </>
+  );
+}
+
+function GlassCard({ children, className, ...props }: { children: React.ReactNode; className?: string; [key: string]: any }) {
+  return (
+    <div
+      className={cn(
+        "backdrop-blur-xl bg-white/80 dark:bg-slate-900/80 border border-white/20 dark:border-slate-700/30 rounded-2xl shadow-xl",
+        className
+      )}
+      {...props}
+    >
+      {children}
+    </div>
+  );
+}
+
 export default function DocChatView() {
-  // Mobile detection
   const [isMobile, setIsMobile] = useState(false);
-  
-  // State Management
   const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
   const [currentChatId, setCurrentChatId] = useState<string | null>(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
@@ -49,12 +110,10 @@ export default function DocChatView() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  // Mobile detection on mount and resize
   useEffect(() => {
     const checkMobile = () => {
       const mobile = window.innerWidth < 768;
       setIsMobile(mobile);
-      // Auto-close sidebars on mobile
       if (mobile) {
         setIsSidebarOpen(false);
         setIsActionsPanelOpen(false);
@@ -68,7 +127,6 @@ export default function DocChatView() {
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Touch gesture detection for swipe to close
   useEffect(() => {
     if (!isMobile) return;
 
@@ -86,13 +144,10 @@ export default function DocChatView() {
       const deltaX = touchEndX - touchStartX;
       const deltaY = touchEndY - touchStartY;
 
-      // Swipe threshold (50px) and ensure horizontal swipe
       if (Math.abs(deltaX) > 50 && Math.abs(deltaX) > Math.abs(deltaY)) {
-        // Swipe left to close actions panel (from right)
         if (deltaX < 0 && isActionsPanelOpen) {
           setIsActionsPanelOpen(false);
         }
-        // Swipe right to close sources sidebar (from left)
         if (deltaX > 0 && isSidebarOpen) {
           setIsSidebarOpen(false);
         }
@@ -108,7 +163,6 @@ export default function DocChatView() {
     };
   }, [isMobile, isSidebarOpen, isActionsPanelOpen]);
 
-  // Queries
   const { data: documents = [], isLoading: documentsLoading } = useQuery<Document[]>({
     queryKey: ["/api/documents"],
   });
@@ -117,7 +171,6 @@ export default function DocChatView() {
     queryKey: ["/api/auth/user"],
   });
 
-  // Mutations
   const uploadDocumentMutation = useMutation({
     mutationFn: async (uploadData: { uploadURL: string; fileName: string; fileSize: number; fileType: string }) => {
       const response = await apiRequest("POST", "/api/documents/from-upload", uploadData);
@@ -169,7 +222,7 @@ export default function DocChatView() {
   };
 
   const toggleDocumentSelection = (docId: string) => {
-    setSelectedDocuments(prev => 
+    setSelectedDocuments(prev =>
       prev.includes(docId) ? prev.filter(id => id !== docId) : [...prev, docId]
     );
   };
@@ -180,12 +233,18 @@ export default function DocChatView() {
     return <FileText className="w-4 h-4" />;
   };
 
+  const getDocumentTypeLabel = (doc: Document) => {
+    if (doc.sourceType === 'youtube') return 'Video';
+    if (doc.sourceType === 'web') return 'Article';
+    return 'Document';
+  };
+
   const selectedDocsData = documents.filter(d => selectedDocuments.includes(d.id));
 
   const handleActionSubmit = async (actionType: ActionType, formData: any) => {
     setActionProcessing(true);
     setActionContent("");
-    
+
     try {
       const response = await fetch(`/api/docchat/action/${actionType}`, {
         method: 'POST',
@@ -213,14 +272,9 @@ export default function DocChatView() {
         if (done) break;
 
         buffer += decoder.decode(value, { stream: true });
-        
-        // Split by double newline to get complete SSE events
         const events = buffer.split('\n\n');
-        
-        // Keep the last incomplete event in buffer
         buffer = events.pop() || "";
-        
-        // Process complete events
+
         for (const event of events) {
           const lines = event.split('\n');
           for (const line of lines) {
@@ -245,8 +299,7 @@ export default function DocChatView() {
           }
         }
       }
-      
-      // Process any remaining buffered data
+
       if (buffer.trim()) {
         const lines = buffer.split('\n');
         for (const line of lines) {
@@ -263,8 +316,7 @@ export default function DocChatView() {
           }
         }
       }
-      
-      // Only clear processing state after confirming done
+
       if (isDone) {
         setActionProcessing(false);
       }
@@ -274,328 +326,357 @@ export default function DocChatView() {
     }
   };
 
-  // Upload Screen
   if (activeView === 'upload') {
     return (
-      <div className="flex flex-col h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50">
-        {/* Modern Header with Indian EdTech Style */}
-        <div className="border-b border-gray-200 bg-gradient-to-r from-primary-50 to-secondary-50">
-          <div className="max-w-7xl mx-auto px-4 sm:px-8 py-6">
-            <motion.div
-              initial={{ opacity: 0, y: -20 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="flex items-center gap-3 mb-2"
-            >
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary-500 to-secondary-600 flex items-center justify-center shadow-lg">
-                <FileText className="w-5 h-5 text-white" />
-              </div>
-              <div>
-                <h1 className="text-2xl sm:text-3xl font-display font-bold bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-                  DocChat - Apne Documents Se Baat Karo 📄
-                </h1>
-                <p className="text-sm text-gray-600 mt-1">
-                  Upload करो, chat करो, aur AI se सीखो
-                </p>
-              </div>
-            </motion.div>
-          </div>
-        </div>
+      <div className="relative min-h-screen overflow-hidden">
+        <PremiumBackground />
 
-        {/* Main Content - Two Column Layout */}
-        <div className="flex-1 overflow-auto">
-          <div className="max-w-7xl mx-auto px-8 py-8">
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-              
-              {/* Left Column - Add Source */}
-              <div className="lg:col-span-2 space-y-6">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 }}
-                  className="flex items-center justify-between mb-4"
-                >
-                  <h2 className="text-xl font-bold flex items-center gap-2 bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-                    <Sparkles className="w-5 h-5 text-primary-600" />
-                    Documents Add Karo 📚
-                  </h2>
-                </motion.div>
+        <div className="relative z-10 flex flex-col min-h-screen">
+          <motion.header
+            initial={{ opacity: 0, y: -20 }}
+            animate={{ opacity: 1, y: 0 }}
+            className="p-4 sm:p-6 lg:p-8"
+          >
+            <GlassCard className="max-w-7xl mx-auto p-6 sm:p-8">
+              <div className="flex items-center gap-4">
+                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                  <Library className="w-7 h-7 text-white" />
+                </div>
+                <div>
+                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
+                    <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      Source Studio
+                    </span>
+                  </h1>
+                  <p className="text-slate-600 dark:text-slate-400 mt-1">
+                    Upload documents and build your knowledge base
+                  </p>
+                </div>
+              </div>
+            </GlassCard>
+          </motion.header>
 
-                {/* File Upload - Modern Dropzone */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.2 }}
-                  className="border-2 border-dashed border-gray-300 rounded-2xl p-8 sm:p-12 text-center hover:border-primary-400 hover:bg-primary-50/30 transition-all"
-                >
-                  <div className="w-16 h-16 mx-auto mb-4 rounded-xl bg-gradient-to-br from-primary-100 to-secondary-100 flex items-center justify-center">
-                    <Upload className="w-8 h-8 text-primary-600" />
-                  </div>
-                  <p className="text-base sm:text-lg font-semibold text-gray-900 mb-2">
-                    Files yaha drag karo ya click karke upload karo
-                  </p>
-                  <p className="text-sm text-gray-600 mb-6">
-                    PDF, DOCX, PPTX - upto 200MB
-                  </p>
-                  <ObjectUploader
-                    maxFileSize={50 * 1024 * 1024}
-                    onGetUploadParameters={async (file) => {
-                      const response = await fetch('/api/documents/upload', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        credentials: 'include',
-                        body: JSON.stringify({
-                          fileName: file.name,
-                          fileType: file.type,
-                          fileSize: file.size
-                        })
-                      });
-                      const { uploadURL } = await response.json();
-                      return { method: "PUT" as const, url: uploadURL };
-                    }}
-                    onComplete={(result) => {
-                      const file = result.meta as any;
-                      uploadDocumentMutation.mutate({
-                        uploadURL: result.uploadURL as string,
-                        fileName: file.name,
-                        fileSize: file.size,
-                        fileType: file.type
-                      });
-                    }}
+          <main className="flex-1 px-4 sm:px-6 lg:px-8 pb-8">
+            <div className="max-w-7xl mx-auto">
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
+                <div className="lg:col-span-2 space-y-6">
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.1 }}
                   >
-                    <Button className="bg-gradient-to-r from-primary-500 to-secondary-600 hover:from-primary-600 hover:to-secondary-700 text-white shadow-lg hover:shadow-xl transition-all" data-testid="button-browse-files">
-                      <Upload className="w-4 h-4 mr-2" />
-                      Browse Files
-                    </Button>
-                  </ObjectUploader>
-                </motion.div>
+                    <GlassCard className="p-8 sm:p-12">
+                      <ObjectUploader
+                        maxFileSize={50 * 1024 * 1024}
+                        onGetUploadParameters={async (file) => {
+                          const response = await fetch('/api/documents/upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                              fileName: file.name,
+                              fileType: file.type,
+                              fileSize: file.size
+                            })
+                          });
+                          const { uploadURL } = await response.json();
+                          return { method: "PUT" as const, url: uploadURL };
+                        }}
+                        onComplete={(result) => {
+                          const file = result.meta as any;
+                          uploadDocumentMutation.mutate({
+                            uploadURL: result.uploadURL as string,
+                            fileName: file.name,
+                            fileSize: file.size,
+                            fileType: file.type
+                          });
+                        }}
+                      >
+                        <div className="border-2 border-dashed border-cyan-300/50 dark:border-cyan-700/50 rounded-3xl p-8 sm:p-12 text-center cursor-pointer transition-all duration-300 hover:border-cyan-400 hover:bg-cyan-50/30 dark:hover:bg-cyan-950/30 group">
+                          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                            <Upload className="w-10 h-10 text-cyan-600 dark:text-cyan-400" />
+                          </div>
+                          <p className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">
+                            Drop files here or click to browse
+                          </p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
+                            Supports PDF, DOCX, PPTX - up to 50MB
+                          </p>
+                          <Button
+                            className="btn-gradient shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-all duration-300"
+                            data-testid="button-browse-files"
+                          >
+                            <Upload className="w-4 h-4 mr-2" />
+                            Browse Files
+                          </Button>
+                        </div>
+                      </ObjectUploader>
+                    </GlassCard>
+                  </motion.div>
 
-                <div className="text-center text-gray-500 text-sm font-semibold">YA PHIR</div>
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2 }}
+                    className="flex items-center gap-4"
+                  >
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
+                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400 px-4">OR ADD FROM URL</span>
+                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
+                  </motion.div>
 
-                {/* URL Inputs - Modern Design */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="space-y-3"
-                >
-                  <div className="flex flex-col sm:flex-row gap-3">
-                    <Button
-                      variant="outline"
-                      className="flex-1 border-2 border-gray-300 hover:border-primary-500 hover:bg-primary-50 transition-all h-12"
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.3 }}
+                    className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                  >
+                    <GlassCard
+                      className="p-6 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/20 hover:border-red-400/30 group"
                       onClick={() => {
-                        const url = prompt("YouTube URL paste karo:");
-                        if (url) {
-                          addUrlMutation.mutate({ url, title: '' });
-                        }
+                        const url = prompt("Enter YouTube URL:");
+                        if (url) addUrlMutation.mutate({ url, title: '' });
                       }}
                       data-testid="button-add-youtube"
                     >
-                      <Youtube className="w-5 h-5 mr-2 text-red-600" />
-                      YouTube Video Add Karo
-                    </Button>
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/30 group-hover:scale-110 transition-transform duration-300">
+                          <Youtube className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-800 dark:text-slate-200">YouTube Video</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">Add video transcript</p>
+                        </div>
+                      </div>
+                    </GlassCard>
 
-                    <Button
-                      variant="outline"
-                      className="flex-1 border-2 border-gray-300 hover:border-secondary-500 hover:bg-secondary-50 transition-all h-12"
+                    <GlassCard
+                      className="p-6 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 hover:border-blue-400/30 group"
                       onClick={() => {
-                        const url = prompt("Website URL paste karo:");
-                        if (url) {
-                          addUrlMutation.mutate({ url, title: '' });
-                        }
+                        const url = prompt("Enter website URL:");
+                        if (url) addUrlMutation.mutate({ url, title: '' });
                       }}
                       data-testid="button-add-website"
                     >
-                      <Globe className="w-5 h-5 mr-2 text-blue-600" />
-                      Website Article Add Karo
-                    </Button>
-                  </div>
-                </motion.div>
+                      <div className="flex items-center gap-4">
+                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300">
+                          <Globe className="w-6 h-6 text-white" />
+                        </div>
+                        <div>
+                          <p className="font-semibold text-slate-800 dark:text-slate-200">Web Article</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">Import web content</p>
+                        </div>
+                      </div>
+                    </GlassCard>
+                  </motion.div>
 
-                {/* All Documents Grid */}
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.4 }}
-                  className="mt-8"
-                >
-                  <h3 className="text-base font-bold mb-4 flex items-center justify-between">
-                    <span className="bg-gradient-to-r from-primary-600 to-secondary-600 bg-clip-text text-transparent">
-                      AAPKE DOCUMENTS 📑
-                    </span>
-                    <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full">
-                      {documents.length} files
-                    </span>
-                  </h3>
-
-                  {documentsLoading ? (
-                    <div className="text-center py-12">
-                      <Loader2 className="w-10 h-10 animate-spin mx-auto text-primary-600" />
-                      <p className="text-sm text-gray-600 mt-4">Loading...</p>
-                    </div>
-                  ) : documents.length === 0 ? (
-                    <div className="text-center py-12 bg-gray-50 rounded-2xl border-2 border-dashed border-gray-300">
-                      <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
-                      <p className="text-base font-medium text-gray-900 mb-2">Abhi koi documents nahi hai</p>
-                      <p className="text-sm text-gray-600">Upar se upload karo aur chat shuru karo!</p>
-                    </div>
-                  ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                      {documents.map((doc, index) => (
-                        <motion.div
-                          key={doc.id}
-                          initial={{ opacity: 0, scale: 0.9 }}
-                          animate={{ opacity: 1, scale: 1 }}
-                          transition={{ delay: 0.5 + index * 0.05 }}
-                          whileHover={{ scale: 1.05 }}
-                          className={cn(
-                            "relative p-4 rounded-xl border-2 cursor-pointer transition-all",
-                            selectedDocuments.includes(doc.id)
-                              ? "border-primary-500 bg-gradient-to-br from-primary-50 to-secondary-50 shadow-lg"
-                              : "border-gray-200 bg-white hover:border-primary-300 hover:shadow-md"
-                          )}
-                          onClick={() => toggleDocumentSelection(doc.id)}
-                          data-testid={`card-document-${doc.id}`}
-                        >
-                          <div className="flex items-start justify-between mb-3">
-                            <div className={cn(
-                              "w-10 h-10 rounded-lg flex items-center justify-center",
-                              selectedDocuments.includes(doc.id)
-                                ? "bg-gradient-to-br from-primary-500 to-secondary-600 text-white"
-                                : "bg-gray-100 text-gray-600"
-                            )}>
-                              {getDocumentIcon(doc)}
-                            </div>
-                            {selectedDocuments.includes(doc.id) && (
-                              <motion.div
-                                initial={{ scale: 0 }}
-                                animate={{ scale: 1 }}
-                                className="w-6 h-6 rounded-full bg-green-500 text-white flex items-center justify-center text-sm font-bold shadow-lg"
-                              >
-                                ✓
-                              </motion.div>
-                            )}
+                  <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                  >
+                    <GlassCard className="p-6">
+                      <div className="flex items-center justify-between mb-6">
+                        <div className="flex items-center gap-3">
+                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                            <FolderOpen className="w-5 h-5 text-white" />
                           </div>
-                          <p className="text-sm font-semibold line-clamp-2 mb-1 text-gray-900" title={doc.title}>
-                            {doc.title}
-                          </p>
-                          <p className="text-xs text-gray-600">
-                            {doc.sourceType === 'youtube' ? '🎥 Video' : doc.sourceType === 'web' ? '🌐 Article' : '📄 Document'}
-                          </p>
-                        </motion.div>
-                      ))}
-                    </div>
-                  )}
-                </motion.div>
-              </div>
+                          <div>
+                            <h3 className="font-semibold text-slate-800 dark:text-slate-200">Your Documents</h3>
+                            <p className="text-sm text-slate-500 dark:text-slate-400">Click to select for chat</p>
+                          </div>
+                        </div>
+                        <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-cyan-500/10 to-blue-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20">
+                          {documents.length} files
+                        </span>
+                      </div>
 
-              {/* Right Column - Selected Documents */}
-              <div className="lg:col-span-1">
+                      {documentsLoading ? (
+                        <div className="flex flex-col items-center justify-center py-16">
+                          <div className="w-12 h-12 rounded-full border-4 border-cyan-500/30 border-t-cyan-500 animate-spin" />
+                          <p className="text-sm text-slate-500 dark:text-slate-400 mt-4">Loading documents...</p>
+                        </div>
+                      ) : documents.length === 0 ? (
+                        <div className="text-center py-16 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+                          <FileText className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
+                          <p className="text-lg font-medium text-slate-600 dark:text-slate-300 mb-2">No documents yet</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">Upload files above to get started</p>
+                        </div>
+                      ) : (
+                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                          <AnimatePresence>
+                            {documents.map((doc, index) => (
+                              <motion.div
+                                key={doc.id}
+                                initial={{ opacity: 0, scale: 0.9 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.9 }}
+                                transition={{ delay: index * 0.05 }}
+                                whileHover={{ scale: 1.03 }}
+                                whileTap={{ scale: 0.98 }}
+                                className={cn(
+                                  "relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-300",
+                                  selectedDocuments.includes(doc.id)
+                                    ? "border-cyan-500 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/50 dark:to-blue-950/50 shadow-lg shadow-cyan-500/20"
+                                    : "border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 hover:border-cyan-300 dark:hover:border-cyan-700"
+                                )}
+                                onClick={() => toggleDocumentSelection(doc.id)}
+                                data-testid={`card-document-${doc.id}`}
+                              >
+                                <div className="flex items-start justify-between mb-3">
+                                  <div className={cn(
+                                    "w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300",
+                                    selectedDocuments.includes(doc.id)
+                                      ? "bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30"
+                                      : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
+                                  )}>
+                                    {getDocumentIcon(doc)}
+                                  </div>
+                                  <AnimatePresence>
+                                    {selectedDocuments.includes(doc.id) && (
+                                      <motion.div
+                                        initial={{ scale: 0, rotate: -180 }}
+                                        animate={{ scale: 1, rotate: 0 }}
+                                        exit={{ scale: 0, rotate: 180 }}
+                                        className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 text-white flex items-center justify-center shadow-lg"
+                                      >
+                                        <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                                      </motion.div>
+                                    )}
+                                  </AnimatePresence>
+                                </div>
+                                <p className="text-sm font-medium line-clamp-2 text-slate-800 dark:text-slate-200 mb-1" title={doc.title}>
+                                  {doc.title}
+                                </p>
+                                <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
+                                  {getDocumentIcon(doc)}
+                                  <span>{getDocumentTypeLabel(doc)}</span>
+                                </div>
+                              </motion.div>
+                            ))}
+                          </AnimatePresence>
+                        </div>
+                      )}
+                    </GlassCard>
+                  </motion.div>
+                </div>
+
                 <motion.div
                   initial={{ opacity: 0, x: 20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.3 }}
-                  className="sticky top-8"
+                  className="lg:col-span-1"
                 >
-                  <div className="bg-white rounded-2xl border-2 border-gray-200 p-6 shadow-lg">
-                    <h3 className="text-base font-bold mb-4 flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-primary-500 to-secondary-600 flex items-center justify-center">
-                        <FileText className="w-4 h-4 text-white" />
-                      </div>
-                      <span className="flex-1">Selected</span>
-                      {selectedDocuments.length > 0 && (
-                        <span className="text-xs bg-gradient-to-r from-primary-500 to-secondary-600 text-white px-3 py-1 rounded-full font-bold">
-                          {selectedDocuments.length}
-                        </span>
-                      )}
-                    </h3>
-
-                    {selectedDocuments.length === 0 ? (
-                      <div className="text-center py-8 border-2 border-dashed border-gray-300 rounded-xl bg-gray-50">
-                        <p className="text-sm text-gray-600 font-medium">Koi document select nahi kiya</p>
-                        <p className="text-xs text-gray-500 mt-2">Documents pe click karke select karo</p>
-                      </div>
-                    ) : (
-                      <>
-                        <div className="space-y-3 mb-6 max-h-96 overflow-y-auto">
-                          {selectedDocsData.map((doc, index) => (
-                            <motion.div
-                              key={doc.id}
-                              initial={{ opacity: 0, x: 20 }}
-                              animate={{ opacity: 1, x: 0 }}
-                              transition={{ delay: index * 0.1 }}
-                              className="flex items-center gap-3 p-3 bg-gradient-to-r from-primary-50 to-secondary-50 rounded-xl border border-primary-200"
-                            >
-                              <div className="w-8 h-8 rounded-lg bg-white flex items-center justify-center text-primary-600">
-                                {getDocumentIcon(doc)}
-                              </div>
-                              <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold truncate text-gray-900">{doc.title}</p>
-                                <p className="text-xs text-gray-600">
-                                  {doc.sourceType === 'youtube' ? '🎥 Video' : doc.sourceType === 'web' ? '🌐 Article' : '📄 Doc'}
-                                </p>
-                              </div>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  toggleDocumentSelection(doc.id);
-                                }}
-                                className="text-gray-400 hover:text-red-500 transition-colors flex-shrink-0"
-                                aria-label={`Remove ${doc.title}`}
-                                data-testid={`button-remove-doc-${doc.id}`}
-                              >
-                                <X className="w-5 h-5" />
-                              </button>
-                            </motion.div>
-                          ))}
+                  <div className="sticky top-8">
+                    <GlassCard className="p-6 border-2 border-cyan-500/20">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
+                          <BookOpen className="w-5 h-5 text-white" />
                         </div>
+                        <div className="flex-1">
+                          <h3 className="font-semibold text-slate-800 dark:text-slate-200">Selected Sources</h3>
+                        </div>
+                        {selectedDocuments.length > 0 && (
+                          <span className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30">
+                            {selectedDocuments.length}
+                          </span>
+                        )}
+                      </div>
 
-                        <motion.div
-                          whileHover={{ scale: 1.02 }}
-                          whileTap={{ scale: 0.98 }}
-                        >
-                          <Button
-                            onClick={handleStartChat}
-                            disabled={startChatMutation.isPending}
-                            className="w-full bg-gradient-to-r from-primary-500 to-secondary-600 hover:from-primary-600 hover:to-secondary-700 text-white py-6 text-base font-bold shadow-xl hover:shadow-2xl transition-all"
-                            data-testid="button-start-chat"
-                          >
-                            {startChatMutation.isPending ? (
-                              <>
-                                <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                                Starting...
-                              </>
-                            ) : (
-                              <>
-                                <MessageSquare className="w-5 h-5 mr-2" />
-                                Chat Shuru Karo 💬
-                              </>
-                            )}
-                          </Button>
-                        </motion.div>
+                      {selectedDocuments.length === 0 ? (
+                        <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
+                          <Sparkles className="w-10 h-10 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
+                          <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No sources selected</p>
+                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Click documents to add them</p>
+                        </div>
+                      ) : (
+                        <>
+                          <div className="space-y-3 mb-6 max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent">
+                            <AnimatePresence>
+                              {selectedDocsData.map((doc, index) => (
+                                <motion.div
+                                  key={doc.id}
+                                  initial={{ opacity: 0, x: 20 }}
+                                  animate={{ opacity: 1, x: 0 }}
+                                  exit={{ opacity: 0, x: -20 }}
+                                  transition={{ delay: index * 0.05 }}
+                                  className="flex items-center gap-3 p-3 bg-gradient-to-r from-cyan-50/80 to-blue-50/80 dark:from-cyan-950/50 dark:to-blue-950/50 rounded-xl border border-cyan-200/50 dark:border-cyan-800/50"
+                                >
+                                  <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center text-cyan-600 dark:text-cyan-400 shadow-sm">
+                                    {getDocumentIcon(doc)}
+                                  </div>
+                                  <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-medium truncate text-slate-800 dark:text-slate-200">{doc.title}</p>
+                                    <p className="text-xs text-slate-500 dark:text-slate-400">{getDocumentTypeLabel(doc)}</p>
+                                  </div>
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      toggleDocumentSelection(doc.id);
+                                    }}
+                                    className="text-slate-400 hover:text-red-500 transition-colors flex-shrink-0 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30"
+                                    aria-label={`Remove ${doc.title}`}
+                                    data-testid={`button-remove-doc-${doc.id}`}
+                                  >
+                                    <X className="w-4 h-4" />
+                                  </button>
+                                </motion.div>
+                              ))}
+                            </AnimatePresence>
+                          </div>
 
-                        <p className="text-xs text-center text-gray-500 mt-4">
-                          💡 Garima Ma'am will answer your questions in Hinglish
-                        </p>
-                      </>
-                    )}
+                          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+                            <Button
+                              onClick={handleStartChat}
+                              disabled={startChatMutation.isPending}
+                              className="w-full btn-gradient h-14 text-base font-bold shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-all duration-300"
+                              data-testid="button-start-chat"
+                            >
+                              {startChatMutation.isPending ? (
+                                <>
+                                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                                  Starting Session...
+                                </>
+                              ) : (
+                                <>
+                                  <MessageSquare className="w-5 h-5 mr-2" />
+                                  Start Knowledge Chat
+                                </>
+                              )}
+                            </Button>
+                          </motion.div>
+
+                          <div className="flex items-center gap-2 mt-4 justify-center text-xs text-slate-500 dark:text-slate-400">
+                            <Sparkles className="w-3.5 h-3.5 text-cyan-500" />
+                            <span>AI-powered document analysis</span>
+                          </div>
+                        </>
+                      )}
+                    </GlassCard>
                   </div>
                 </motion.div>
               </div>
-
             </div>
-          </div>
+          </main>
         </div>
+
+        <style>{`
+          @keyframes twinkle {
+            0%, 100% { opacity: 0.2; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.5); }
+          }
+        `}</style>
       </div>
     );
   }
 
-  // Chat Screen (Three-Panel Layout)
   return (
-    <div className="flex h-screen bg-gradient-to-br from-orange-50 via-white to-purple-50 relative">
-      {/* Mobile Overlay */}
+    <div className="relative flex h-screen overflow-hidden">
+      <PremiumBackground />
+
       {isMobile && (isSidebarOpen || isActionsPanelOpen) && (
         <div
-          className="absolute inset-0 bg-black/40 backdrop-blur-sm z-40 md:hidden"
+          className="absolute inset-0 bg-black/40 backdrop-blur-sm z-40"
           onClick={() => {
             setIsSidebarOpen(false);
             setIsActionsPanelOpen(false);
@@ -603,216 +684,260 @@ export default function DocChatView() {
         />
       )}
 
-      {/* Left Sidebar - Sources */}
-      <div className={cn(
-        "transition-all duration-300 border-r border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl flex flex-col",
-        // Desktop behavior - inline flex column
-        isSidebarOpen ? "w-64" : "w-0 overflow-hidden",
-        // Mobile behavior - fixed overlay (only on mobile)
-        isMobile && "fixed inset-y-0 left-0 w-80 max-w-[85vw] z-50",
-        isMobile && !isSidebarOpen && "-translate-x-full"
-      )}>
-        <div className="p-4 border-b border-slate-200/60 dark:border-slate-800/60">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-sm">Sources ({selectedDocuments.length})</h3>
-            <div className="flex gap-2">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setActiveView('upload')}
-                data-testid="button-change-sources"
+      <motion.div
+        initial={false}
+        animate={{
+          width: isSidebarOpen ? (isMobile ? '85vw' : '280px') : 0,
+          x: isMobile && !isSidebarOpen ? '-100%' : 0,
+        }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className={cn(
+          "relative z-50 flex flex-col border-r border-white/20 dark:border-slate-700/30",
+          isMobile && "fixed inset-y-0 left-0 max-w-[320px]"
+        )}
+      >
+        <GlassCard className="h-full rounded-none border-0 border-r border-white/20 dark:border-slate-700/30 flex flex-col">
+          <div className="p-4 border-b border-slate-200/50 dark:border-slate-700/50">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
+                  <FolderOpen className="w-4 h-4 text-white" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-200">Sources</h3>
+                  <p className="text-xs text-slate-500">{selectedDocuments.length} selected</p>
+                </div>
+              </div>
+              <div className="flex gap-1">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setActiveView('upload')}
+                  className="h-8 w-8"
+                  data-testid="button-change-sources"
+                >
+                  <ExternalLink className="w-4 h-4" />
+                </Button>
+                {isMobile && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsSidebarOpen(false)}
+                    className="h-8 w-8"
+                    data-testid="button-close-sidebar-mobile"
+                  >
+                    <X className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 overflow-auto p-3 space-y-2">
+            {selectedDocsData.map(doc => (
+              <motion.div
+                key={doc.id}
+                whileHover={{ x: 4 }}
+                className="p-3 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 transition-colors hover:bg-cyan-50/50 dark:hover:bg-cyan-950/30"
+                data-testid={`source-card-${doc.id}`}
               >
-                <ExternalLink className="w-4 h-4" />
-              </Button>
+                <div className="flex items-start gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500/20 to-blue-500/20 flex items-center justify-center text-cyan-600 dark:text-cyan-400">
+                    {getDocumentIcon(doc)}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-medium line-clamp-2 text-slate-800 dark:text-slate-200">{doc.title}</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">{getDocumentTypeLabel(doc)}</p>
+                  </div>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </GlassCard>
+      </motion.div>
+
+      <div className="relative z-10 flex-1 flex flex-col min-w-0">
+        <GlassCard className="m-2 sm:m-3 lg:m-4 rounded-2xl border-0 shadow-2xl flex flex-col flex-1 overflow-hidden">
+          <div className="border-b border-slate-200/50 dark:border-slate-700/50 p-3 sm:p-4">
+            <div className="flex items-center justify-between gap-3">
+              <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setIsSidebarOpen(!isSidebarOpen)}
+                  className="h-9 w-9 shrink-0"
+                  data-testid="button-toggle-sidebar"
+                >
+                  {isSidebarOpen ? <PanelLeftClose className="w-5 h-5" /> : <ChevronRight className="w-5 h-5" />}
+                </Button>
+
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => setActiveView('upload')}
+                  className="h-9 w-9 shrink-0"
+                  data-testid="button-back-to-upload"
+                >
+                  <ArrowLeft className="w-5 h-5" />
+                </Button>
+
+                <div className="min-w-0">
+                  <h2 className="font-bold text-base sm:text-lg truncate">
+                    <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
+                      Knowledge Workspace
+                    </span>
+                  </h2>
+                  <p className="text-xs text-slate-500 dark:text-slate-400 hidden sm:block">
+                    {selectedDocuments.length} document{selectedDocuments.length !== 1 ? 's' : ''} loaded
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                {isMobile && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsActionsPanelOpen(!isActionsPanelOpen)}
+                    className="h-9 w-9"
+                    data-testid="button-toggle-actions-mobile"
+                  >
+                    <Zap className="w-5 h-5 text-cyan-600" />
+                  </Button>
+                )}
+                {!isMobile && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    onClick={() => setIsActionsPanelOpen(!isActionsPanelOpen)}
+                    className="h-9 w-9"
+                    data-testid="button-toggle-actions"
+                  >
+                    {isActionsPanelOpen ? <PanelRightClose className="w-5 h-5" /> : <Sparkles className="w-5 h-5 text-purple-600" />}
+                  </Button>
+                )}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex-1 flex overflow-hidden">
+            <div className="flex-1 flex flex-col min-w-0 p-3 sm:p-4">
+              <EnhancedDocChat
+                chatId={currentChatId ? parseInt(currentChatId) : 0}
+                selectedDocuments={selectedDocuments.map(id => parseInt(id))}
+                onError={(error) => toast({
+                  title: "Error",
+                  description: error,
+                  variant: "destructive"
+                })}
+              />
+            </div>
+          </div>
+        </GlassCard>
+      </div>
+
+      <motion.div
+        initial={false}
+        animate={{
+          width: isActionsPanelOpen ? (isMobile ? '85vw' : '280px') : 0,
+          x: isMobile && !isActionsPanelOpen ? '100%' : 0,
+        }}
+        transition={{ type: 'spring', stiffness: 300, damping: 30 }}
+        className={cn(
+          "relative z-50 flex flex-col border-l border-white/20 dark:border-slate-700/30",
+          isMobile && "fixed inset-y-0 right-0 max-w-[320px]"
+        )}
+      >
+        <GlassCard className="h-full rounded-none border-0 border-l border-white/20 dark:border-slate-700/30 flex flex-col">
+          <div className="p-4 border-b border-slate-200/50 dark:border-slate-700/50">
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-purple-500 to-pink-600 flex items-center justify-center">
+                  <Zap className="w-4 h-4 text-white" />
+                </div>
+                <h3 className="font-semibold text-sm text-slate-800 dark:text-slate-200">Quick Actions</h3>
+              </div>
               {isMobile && (
                 <Button
                   variant="ghost"
-                  size="sm"
-                  onClick={() => setIsSidebarOpen(false)}
-                  data-testid="button-close-sidebar-mobile"
+                  size="icon"
+                  onClick={() => setIsActionsPanelOpen(false)}
+                  className="h-8 w-8"
+                  data-testid="button-close-actions-mobile"
                 >
                   <X className="w-4 h-4" />
                 </Button>
               )}
             </div>
           </div>
-        </div>
-        <div className="flex-1 overflow-auto p-3 space-y-2">
-          {selectedDocsData.map(doc => (
-            <Card key={doc.id} className="p-3 glass-card hover:bg-purple-50 dark:hover:bg-purple-950/30 transition-colors" data-testid={`source-card-${doc.id}`}>
-              <div className="flex items-start gap-2">
-                {getDocumentIcon(doc)}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium line-clamp-2">{doc.title}</p>
-                  <p className="text-xs text-slate-500 mt-1">
-                    {doc.sourceType === 'youtube' ? 'Video' : doc.sourceType === 'web' ? 'Article' : 'Document'}
-                  </p>
-                </div>
-              </div>
-            </Card>
-          ))}
-        </div>
-      </div>
 
-      {/* Center - Chat Area */}
-      <div className="flex-1 flex flex-col min-w-0">
-        {/* Chat Header - Mobile Optimized */}
-        <div className="border-b border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl p-3 md:p-4">
-          <div className="flex items-center justify-between gap-3">
-            <div className="flex items-center gap-2 md:gap-3 min-w-0">
+          <div className="flex-1 overflow-auto p-3 space-y-2">
+            {[
+              { type: 'summary' as ActionType, icon: FileText, label: 'Generate Summary', color: 'from-blue-500 to-cyan-500' },
+              { type: 'highlights' as ActionType, icon: Highlighter, label: 'Extract Highlights', color: 'from-amber-500 to-orange-500' },
+              { type: 'quiz' as ActionType, icon: Brain, label: 'Create Quiz', color: 'from-green-500 to-emerald-500' },
+              { type: 'flashcards' as ActionType, icon: Layers, label: 'Make Flashcards', color: 'from-purple-500 to-pink-500' },
+            ].map((action) => (
+              <motion.div
+                key={action.type}
+                whileHover={{ x: 4, scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+              >
+                <Button
+                  variant="ghost"
+                  className="w-full justify-start gap-3 h-14 rounded-xl bg-white/50 dark:bg-slate-800/50 border border-slate-200/50 dark:border-slate-700/50 hover:bg-gradient-to-r hover:from-slate-50 hover:to-transparent dark:hover:from-slate-800 dark:hover:to-transparent transition-all duration-300"
+                  onClick={() => setActiveActionModal(action.type)}
+                  data-testid={`action-${action.type}`}
+                >
+                  <div className={cn("w-10 h-10 rounded-xl bg-gradient-to-br flex items-center justify-center shadow-lg", action.color)}>
+                    <action.icon className="w-5 h-5 text-white" />
+                  </div>
+                  <span className="font-medium text-slate-700 dark:text-slate-300">{action.label}</span>
+                </Button>
+              </motion.div>
+            ))}
+
+            <div className="pt-4 border-t border-slate-200/50 dark:border-slate-700/50 mt-4">
+              <p className="text-xs text-slate-500 dark:text-slate-400 mb-3 px-1">More Tools</p>
               <Button
                 variant="ghost"
-                size="sm"
-                onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-                data-testid="button-toggle-sidebar"
-                className="h-9 w-9 md:h-auto md:w-auto p-0 md:px-3"
+                className="w-full justify-start gap-3 h-12 rounded-xl"
+                onClick={() => toast({ title: "Coming Soon", description: "Smart Notes feature is under development" })}
+                data-testid="action-notes"
               >
-                {isSidebarOpen ? <ChevronLeft className="w-5 h-5 md:w-4 md:h-4" /> : <ChevronRight className="w-5 h-5 md:w-4 md:h-4" />}
+                <StickyNote className="w-5 h-5 text-slate-400" />
+                <span className="text-sm text-slate-600 dark:text-slate-400">Smart Notes</span>
               </Button>
-              <div className="min-w-0">
-                <h2 className="font-semibold text-sm md:text-base truncate">Doc Chat: Garima Ma'am</h2>
-                <p className="text-xs text-slate-500 hidden md:block">{selectedDocuments.length} document{selectedDocuments.length !== 1 ? 's' : ''} selected</p>
-              </div>
+              <Button
+                variant="ghost"
+                className="w-full justify-start gap-3 h-12 rounded-xl"
+                onClick={() => toast({ title: "Coming Soon", description: "Search feature is under development" })}
+                data-testid="action-search"
+              >
+                <Search className="w-5 h-5 text-slate-400" />
+                <span className="text-sm text-slate-600 dark:text-slate-400">Deep Search</span>
+              </Button>
             </div>
-            {isMobile && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsActionsPanelOpen(!isActionsPanelOpen)}
-                data-testid="button-toggle-actions-mobile"
-                className="h-9 w-9 p-0 md:hidden"
-              >
-                <Sparkles className="w-5 h-5" />
-              </Button>
-            )}
           </div>
-        </div>
+        </GlassCard>
+      </motion.div>
 
-        {/* Enhanced DocChat Component */}
-        <div className="flex-1 flex flex-col overflow-hidden p-3 md:p-4">
-          <EnhancedDocChat
-            chatId={currentChatId ? parseInt(currentChatId) : 0}
-            selectedDocuments={selectedDocuments.map(id => parseInt(id))}
-            onError={(error) => toast({
-              title: "Error",
-              description: error,
-              variant: "destructive"
-            })}
-          />
-        </div>
-      </div>
-
-      {/* Right Sidebar - Quick Actions - Desktop & Mobile */}
-      <div className={cn(
-        "transition-all duration-300 border-l border-slate-200/60 dark:border-slate-800/60 bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl flex flex-col",
-        // Desktop behavior - inline flex column
-        isActionsPanelOpen ? "w-64" : "w-0 overflow-hidden",
-        // Mobile behavior - fixed overlay from right (only on mobile)
-        isMobile && "fixed inset-y-0 right-0 w-80 max-w-[85vw] z-50",
-        isMobile && !isActionsPanelOpen && "translate-x-full"
-      )}>
-        <div className="p-4 border-b border-slate-200/60 dark:border-slate-800/60">
-          <div className="flex items-center justify-between">
-            <h3 className="font-medium text-sm">Quick Actions</h3>
-            {isMobile && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsActionsPanelOpen(false)}
-                data-testid="button-close-actions-mobile"
-              >
-                <X className="w-4 h-4" />
-              </Button>
-            )}
-          </div>
-        </div>
-        <div className="flex-1 overflow-auto p-3 space-y-2">
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start gap-3 h-12 md:h-auto" 
-            onClick={() => setActiveActionModal('summary')}
-            data-testid="action-summary"
-          >
-            <FileText className="w-5 h-5 md:w-4 md:h-4" />
-            <span className="text-sm">Summary</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start gap-3 h-12 md:h-auto" 
-            onClick={() => setActiveActionModal('highlights')}
-            data-testid="action-highlights"
-          >
-            <Highlighter className="w-5 h-5 md:w-4 md:h-4" />
-            <span className="text-sm">Highlights</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start gap-3 h-12 md:h-auto" 
-            onClick={() => setActiveActionModal('quiz')}
-            data-testid="action-quiz"
-          >
-            <Brain className="w-5 h-5 md:w-4 md:h-4" />
-            <span className="text-sm">Generate Quiz</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start gap-3 h-12 md:h-auto" 
-            onClick={() => setActiveActionModal('flashcards')}
-            data-testid="action-flashcards"
-          >
-            <Layers className="w-5 h-5 md:w-4 md:h-4" />
-            <span className="text-sm">Flashcards</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start gap-2" 
-            onClick={() => toast({ title: "Coming Soon", description: "Smart Notes feature is under development" })}
-            data-testid="action-notes"
-          >
-            <StickyNote className="w-4 h-4" />
-            <span className="text-sm">Smart Notes</span>
-          </Button>
-          <Button 
-            variant="ghost" 
-            className="w-full justify-start gap-2" 
-            onClick={() => toast({ title: "Coming Soon", description: "Search feature is under development" })}
-            data-testid="action-search"
-          >
-            <Search className="w-4 h-4" />
-            <span className="text-sm">Search</span>
-          </Button>
-        </div>
-      </div>
-
-      {/* Toggle Actions Panel Button - Desktop only */}
-      {!isMobile && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={() => setIsActionsPanelOpen(!isActionsPanelOpen)}
-          className="fixed right-4 top-20 z-50 glass-card shadow-lg"
-          data-testid="button-toggle-actions"
-        >
-          {isActionsPanelOpen ? (
-            <ChevronRight className="w-5 h-5 text-purple-600" />
-          ) : (
-            <Sparkles className="w-5 h-5 text-purple-600" />
-          )}
-        </Button>
-      )}
-
-      {/* Mobile FAB - Floating Action Button for Quick Actions */}
       {isMobile && (
-        <Button
-          onClick={() => setIsActionsPanelOpen(!isActionsPanelOpen)}
-          className="fixed bottom-24 right-4 z-50 w-14 h-14 rounded-full btn-gradient shadow-2xl"
-          data-testid="button-mobile-fab"
+        <motion.div
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          className="fixed bottom-24 right-4 z-50"
         >
-          <Sparkles className="w-6 h-6 text-white" />
-        </Button>
+          <Button
+            onClick={() => setIsActionsPanelOpen(!isActionsPanelOpen)}
+            className="w-14 h-14 rounded-full btn-gradient shadow-2xl shadow-cyan-500/40"
+            data-testid="button-mobile-fab"
+          >
+            <Sparkles className="w-6 h-6 text-white" />
+          </Button>
+        </motion.div>
       )}
 
-      {/* Action Modal */}
       <DocChatActionModal
         open={activeActionModal !== null}
         onOpenChange={(open) => !open && setActiveActionModal(null)}
@@ -823,6 +948,13 @@ export default function DocChatView() {
         streamingContent={actionContent}
         userProfile={user as any}
       />
+
+      <style>{`
+        @keyframes twinkle {
+          0%, 100% { opacity: 0.2; transform: scale(1); }
+          50% { opacity: 0.8; transform: scale(1.5); }
+        }
+      `}</style>
     </div>
   );
 }
