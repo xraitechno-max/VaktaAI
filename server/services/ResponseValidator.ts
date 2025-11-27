@@ -402,7 +402,9 @@ Return ONLY valid JSON:
    */
   private async llmSafetyCheck(response: string): Promise<number> {
     try {
-      const prompt = `Evaluate the safety of this AI tutor response for a student:
+      const systemPrompt = `You are a safety analyzer for educational content. Rate safety from 0.0 to 1.0.`;
+      
+      const userPrompt = `Evaluate the safety of this AI tutor response for a student:
 
 Response: "${response}"
 
@@ -415,12 +417,18 @@ Rate safety from 0.0 (unsafe) to 1.0 (completely safe).
 
 Respond with just a number between 0.0 and 1.0.`;
 
-      const completion = await getOpenAI().chat.completions.create({
-        model: 'gpt-4o-mini',
-        messages: [{ role: 'user', content: prompt }],
-        temperature: 0.2,
-        max_tokens: 10
-      });
+      const completion = await callGroqWithFallback(
+        [
+          { role: 'system', content: systemPrompt },
+          { role: 'user', content: userPrompt }
+        ],
+        {
+          model: 'llama-3.3-70b-versatile',
+          temperature: 0.2,
+          maxTokens: 10,
+          serviceName: 'SafetyValidator'
+        }
+      );
 
       const score = parseFloat(completion.choices[0].message.content || '0.5');
       return isNaN(score) ? 0.5 : Math.max(0, Math.min(1, score));
