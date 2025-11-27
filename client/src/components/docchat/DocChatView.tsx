@@ -535,7 +535,7 @@ export default function DocChatView() {
                         </div>
                       </div>
 
-                      <div className="flex gap-3 items-center">
+                      <div className="flex gap-2 items-center flex-1">
                         <ObjectUploader
                           maxFileSize={50 * 1024 * 1024}
                           onGetUploadParameters={async (file) => {
@@ -564,53 +564,48 @@ export default function DocChatView() {
                             }
                           }}
                         >
-                          <Button
-                            type="button"
-                            variant="outline"
-                            className="h-14 px-4 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-600 hover:text-cyan-500 hover:border-cyan-500 transition-all gap-2"
+                          <div
+                            className="w-12 h-14 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 hover:text-cyan-500 hover:border-cyan-500 transition-all flex items-center justify-center cursor-pointer flex-shrink-0"
                             data-testid="button-attach-file"
                           >
                             <Paperclip className="w-5 h-5" />
-                            <span>Upload File</span>
-                          </Button>
+                          </div>
                         </ObjectUploader>
-                        <div className="flex-1">
-                          <Input
-                            type="text"
-                            placeholder="Paste a YouTube or website URL here"
-                            value={urlInput}
-                            onChange={(e) => setUrlInput(e.target.value)}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter' && isValidUrl(urlInput)) {
-                                e.preventDefault();
-                                handleAddUrl();
-                              }
-                            }}
-                            className="h-14 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-base focus:border-cyan-500 dark:focus:border-cyan-500 transition-colors"
-                            data-testid="input-url"
-                          />
-                        </div>
-                        <Button
-                          onClick={handleAddUrl}
-                          disabled={!urlInput.trim() || addUrlMutation.isPending}
-                          className={cn(
-                            "h-14 px-6 rounded-xl font-semibold transition-all duration-300",
-                            urlInput.trim() && isValidUrl(urlInput)
-                              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30 hover:shadow-xl"
-                              : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                          )}
-                          data-testid="button-add-url"
-                        >
-                          {addUrlMutation.isPending ? (
-                            <Loader2 className="w-5 h-5 animate-spin" />
-                          ) : (
-                            <>
-                              <Plus className="w-5 h-5 mr-1" />
-                              Add
-                            </>
-                          )}
-                        </Button>
+                        <Input
+                          type="text"
+                          placeholder="Upload PDFs, PPTs, Docx, MP3, MP4 or Paste a URL"
+                          value={urlInput}
+                          onChange={(e) => setUrlInput(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter' && isValidUrl(urlInput)) {
+                              e.preventDefault();
+                              handleAddUrl();
+                            }
+                          }}
+                          className="h-14 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-base focus:border-cyan-500 dark:focus:border-cyan-500 transition-colors flex-1"
+                          data-testid="input-url"
+                        />
                       </div>
+                      <Button
+                        onClick={handleAddUrl}
+                        disabled={!urlInput.trim() || addUrlMutation.isPending}
+                        className={cn(
+                          "h-14 px-6 rounded-xl font-semibold transition-all duration-300 flex-shrink-0",
+                          urlInput.trim() && isValidUrl(urlInput)
+                            ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30 hover:shadow-xl"
+                            : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+                        )}
+                        data-testid="button-add-url"
+                      >
+                        {addUrlMutation.isPending ? (
+                          <Loader2 className="w-5 h-5 animate-spin" />
+                        ) : (
+                          <>
+                            <Plus className="w-5 h-5 mr-1" />
+                            Add
+                          </>
+                        )}
+                      </Button>
                     </>
                   )}
 
