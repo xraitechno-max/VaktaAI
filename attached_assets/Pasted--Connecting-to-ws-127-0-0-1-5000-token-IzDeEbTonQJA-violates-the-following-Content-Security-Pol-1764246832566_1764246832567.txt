@@ -1,0 +1,804 @@
+ Connecting to 'ws://127.0.0.1:5000/?token=IzDeEbTonQJA' violates the following Content Security Policy directive: "connect-src 'self' https: wss: blob: data:". The action has been blocked.
+setupWebSocket @ client:536
+ Download the React DevTools for a better development experience: https://reactjs.org/link/react-devtools
+ [TTS Queue] 🔄 State updated: Object
+ [Voice Tutor] 🔄 Avatar state synced to TTS Queue: CLOSED
+ [TTS Queue] 🧹 Clearing queue: Object
+ [Smart TTS Queue] 🧹 Queue cleared - Avatar closed
+ [Smart TTS Queue] 📊 Final metrics: Object
+ [TutorSession] 🚀 Connecting WebSocket for chat: e29fdf2e-9e26-4c87-ae94-3a104e7105cb
+ [TTS] 🧹 Chat changed, clearing lastPlayedRef
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...
+index.html:1 An iframe which has both allow-scripts and allow-same-origin for its sandbox attribute can escape its sandboxing.
+ [VOICE] WebSocket connected
+ [VOICE] ✅ Global __wsService set for avatar state sync
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...
+ [Unity] 📡 Fetching S3 presigned URLs...
+ [Unity Bridge] Rejected message before handshake: forward-log
+handleMessage @ useUnityBridge.ts:96
+ [Unity Bridge] Rejected message before handshake: forward-network-request
+handleMessage @ useUnityBridge.ts:96
+ [Unity] ✅ S3 URLs fetched successfully
+ [Unity Bridge] Rejected message before handshake: forward-log
+handleMessage @ useUnityBridge.ts:96
+ navigator.mediaDevices support available
+ [Unity Bridge] Rejected message before handshake: forward-log
+handleMessage @ useUnityBridge.ts:96
+ [Unity Bridge] Starting handshake...
+ [Unity] Handshake complete with origin: https://6a418dd3-d389-4e64-aff2-b71d77a4ce2a-00-om530e86hnnk.pike.replit.dev
+ [Unity] Console forwarding enabled ✅
+ [Unity Bridge] Rejected message before handshake: forward-log
+handleMessage @ useUnityBridge.ts:96
+ [Unity Bridge] Rejected message before handshake: forward-log
+handleMessage @ useUnityBridge.ts:96
+ [Unity Bridge] Rejected message before handshake: forward-log
+handleMessage @ useUnityBridge.ts:96
+ [Unity Bridge] Rejected message before handshake: UNITY_LOG
+handleMessage @ useUnityBridge.ts:96
+ [Unity Bridge] Trusted origin established: https://6a418dd3-d389-4e64-aff2-b71d77a4ce2a-00-om530e86hnnk.pike.replit.dev
+ [Unity Bridge] Handshake complete ✅
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...
+ [UnityMemory] Configuration Parameters - Can be set up in boot.config
+
+     "memorysetup-allocator-temp-initial-block-size-main=262144"
+
+     "memorysetup-allocator-temp-initial-block-size-worker=262144"
+
+     "memorysetup-temp-allocator-size-audio-worker=65536"
+
+     "memorysetup-temp-allocator-size-background-worker=32768"
+
+     "memorysetup-bucket-allocator-granularity=16"
+
+     "memorysetup-bucket-allocator-bucket-count=8"
+
+     "memorysetup-bucket-allocator-block-size=4194304"
+
+     "memorysetup-bucket-allocator-block-count=1"
+
+     "memorysetup-main-allocator-block-size=16777216"
+
+     "memorysetup-thread-allocator-block-size=16777216"
+
+     "memorysetup-gfx-main-allocator-block-size=16777216"
+
+     "memorysetup-gfx-thread-allocator-block-size=16777216"
+
+     "memorysetup-cache-allocator-block-size=4194304"
+
+     "memorysetup-typetree-allocator-block-size=2097152"
+
+     "memorysetup-profiler-bucket-allocator-granularity=16"
+
+     "memorysetup-profiler-bucket-allocator-bucket-count=8"
+
+     "memorysetup-profiler-bucket-allocator-block-size=4194304"
+
+     "memorysetup-profiler-bucket-allocator-block-count=1"
+
+     "memorysetup-profiler-allocator-block-size=16777216"
+
+     "memorysetup-profiler-editor-allocator-block-size=1048576"
+
+     "memorysetup-temp-allocator-size-main=4194304"
+
+     "memorysetup-job-temp-allocator-block-size=2097152"
+
+     "memorysetup-job-temp-allocator-block-size-background=1048576"
+
+     "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+
+ [PhysX] Initialized SinglethreadedTaskDispatcher.
+
+ Loading player data from data.unity3d
+
+ Initialize engine version: 2022.3.53f1 (df4e529d20d3)
+
+ Creating WebGL 2.0 context.
+ Renderer: WebKit WebGL
+
+ Vendor:   WebKit
+
+ Version:  OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium))
+
+ GLES:     3
+
+  EXT_clip_control EXT_color_buffer_float EXT_color_buffer_half_float EXT_conservative_depth EXT_depth_clamp EXT_disjoint_timer_query_webgl2 EXT_float_blend EXT_polygon_offset_clamp EXT_render_snorm EXT_texture_compression_bptc EXT_texture_compression_rgtc EXT_texture_filter_anisotropic EXT_texture_mirror_clamp_to_edge EXT_texture_norm16 KHR_parallel_shader_compile NV_shader_noperspective_interpolation OES_draw_buffers_indexed OES_sample_variables OES_shader_multisample_interpolation OES_texture_float_linear WEBGL_blend_func_extended WEBGL_clip_cull_distance WEBGL_compressed_texture_astc WEBGL_compressed_texture_etc WEBGL_compressed_texture_etc1 WEBGL_compressed_texture_pvrtc WEBGL_compressed_texture_s3tc WEBGL_compressed_texture_s3tc_srgb WEBGL_debug_renderer_info WEBGL_debug_shaders WEBGL_lose_context WEBGL_multi_draw WEBGL_polygon_mode WEBGL_provoking_vertex WEBGL_render_shared_exponent WEBGL_stencil_texturing GL_EXT_clip_control GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_conservative_
+
+ depth GL_EXT_depth_clamp GL_EXT_disjoint_timer_query_webgl2 GL_EXT_float_blend GL_EXT_polygon_offset_clamp GL_EXT_render_snorm GL_EXT_texture_compression_bptc GL_EXT_texture_compression_rgtc GL_EXT_texture_filter_anisotropic GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_KHR_parallel_shader_compile GL_NV_shader_noperspective_interpolation GL_OES_draw_buffers_indexed GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_texture_float_linear GL_WEBGL_blend_func_extended GL_WEBGL_clip_cull_distance GL_WEBGL_compressed_texture_astc GL_WEBGL_compressed_texture_etc GL_WEBGL_compressed_texture_etc1 GL_WEBGL_compressed_texture_pvrtc GL_WEBGL_compressed_texture_s3tc GL_WEBGL_compressed_texture_s3tc_srgb GL_WEBGL_debug_renderer_info GL_WEBGL_debug_shaders GL_WEBGL_lose_context GL_WEBGL_multi_draw GL_WEBGL_polygon_mode GL_WEBGL_provoking_vertex GL_WEBGL_render_shared_exponent GL_WEBGL_stencil_texturing
+
+WebGL: INVALID_ENUM: getInternalformatParameter: invalid internalformat
+WebGL: INVALID_ENUM: getInternalformatParameter: invalid internalformat
+WebGL: INVALID_ENUM: getInternalformatParameter: invalid internalformat
+WebGL: INVALID_ENUM: getInternalformatParameter: invalid internalformat
+WebGL: INVALID_ENUM: getInternalformatParameter: invalid internalformat
+WebGL: INVALID_ENUM: getInternalformatParameter: invalid internalformat
+ OPENGL LOG: Creating OpenGL ES 3.0 graphics device ; Context level  <OpenGL ES 3.0> ; Context handle 1
+
+ Input Manager initialize...
+
+ [PhysX] Initialized SinglethreadedTaskDispatcher.
+
+ UnloadTime: 2.899999 ms
+
+ [Unity] Instance created successfully
+ [Unity] ⏰ Calling OnUnityReady directly...
+ [Unity] Avatar instance ready
+ [Unity] 🔓 Attempting audio unlock for phoneme lip-sync...
+ [Unity] 🔍 AudioContext state: running
+ [Unity] ✅ AudioContext already running - audio unlocked!
+ [Unity] Handshake complete, notifying React...
+ [Unity] [UnityMemory] Configuration Parameters - Can be set up in boot.config
+
+ [Unity]     "memorysetup-allocator-temp-initial-block-size-main=262144"
+
+ [Unity]     "memorysetup-allocator-temp-initial-block-size-worker=262144"
+
+ [Unity]     "memorysetup-temp-allocator-size-audio-worker=65536"
+
+ [Unity]     "memorysetup-temp-allocator-size-background-worker=32768"
+
+ [Unity]     "memorysetup-bucket-allocator-granularity=16"
+
+ [Unity]     "memorysetup-bucket-allocator-bucket-count=8"
+
+ [Unity]     "memorysetup-bucket-allocator-block-size=4194304"
+
+ [Unity]     "memorysetup-bucket-allocator-block-count=1"
+
+ [Unity]     "memorysetup-main-allocator-block-size=16777216"
+
+ [Unity]     "memorysetup-thread-allocator-block-size=16777216"
+
+ [Unity]     "memorysetup-gfx-main-allocator-block-size=16777216"
+
+ [Unity]     "memorysetup-gfx-thread-allocator-block-size=16777216"
+
+ [Unity]     "memorysetup-cache-allocator-block-size=4194304"
+
+ [Unity]     "memorysetup-typetree-allocator-block-size=2097152"
+
+ [Unity]     "memorysetup-profiler-bucket-allocator-granularity=16"
+
+ [Unity]     "memorysetup-profiler-bucket-allocator-bucket-count=8"
+
+ [Unity]     "memorysetup-profiler-bucket-allocator-block-size=4194304"
+
+ [Unity]     "memorysetup-profiler-bucket-allocator-block-count=1"
+
+ [Unity]     "memorysetup-profiler-allocator-block-size=16777216"
+
+ [Unity]     "memorysetup-profiler-editor-allocator-block-size=1048576"
+
+ [Unity]     "memorysetup-temp-allocator-size-main=4194304"
+
+ [Unity]     "memorysetup-job-temp-allocator-block-size=2097152"
+
+ [Unity]     "memorysetup-job-temp-allocator-block-size-background=1048576"
+
+ [Unity]     "memorysetup-job-temp-allocator-reduction-small-platforms=262144"
+
+ [Unity] [PhysX] Initialized SinglethreadedTaskDispatcher.
+
+ [Unity] Loading player data from data.unity3d
+
+ [Unity] Initialize engine version: 2022.3.53f1 (df4e529d20d3)
+
+ [Unity] Creating WebGL 2.0 context.
+ [Unity] Renderer: WebKit WebGL
+
+ [Unity] Vendor:   WebKit
+
+ [Unity] Version:  OpenGL ES 3.0 (WebGL 2.0 (OpenGL ES 3.0 Chromium))
+
+ [Unity] GLES:     3
+
+ [Unity]  EXT_clip_control EXT_color_buffer_float EXT_color_buffer_half_float EXT_conservative_depth EXT_depth_clamp EXT_disjoint_timer_query_webgl2 EXT_float_blend EXT_polygon_offset_clamp EXT_render_snorm EXT_texture_compression_bptc EXT_texture_compression_rgtc EXT_texture_filter_anisotropic EXT_texture_mirror_clamp_to_edge EXT_texture_norm16 KHR_parallel_shader_compile NV_shader_noperspective_interpolation OES_draw_buffers_indexed OES_sample_variables OES_shader_multisample_interpolation OES_texture_float_linear WEBGL_blend_func_extended WEBGL_clip_cull_distance WEBGL_compressed_texture_astc WEBGL_compressed_texture_etc WEBGL_compressed_texture_etc1 WEBGL_compressed_texture_pvrtc WEBGL_compressed_texture_s3tc WEBGL_compressed_texture_s3tc_srgb WEBGL_debug_renderer_info WEBGL_debug_shaders WEBGL_lose_context WEBGL_multi_draw WEBGL_polygon_mode WEBGL_provoking_vertex WEBGL_render_shared_exponent WEBGL_stencil_texturing GL_EXT_clip_control GL_EXT_color_buffer_float GL_EXT_color_buffer_half_float GL_EXT_conservative_
+
+ [Unity] depth GL_EXT_depth_clamp GL_EXT_disjoint_timer_query_webgl2 GL_EXT_float_blend GL_EXT_polygon_offset_clamp GL_EXT_render_snorm GL_EXT_texture_compression_bptc GL_EXT_texture_compression_rgtc GL_EXT_texture_filter_anisotropic GL_EXT_texture_mirror_clamp_to_edge GL_EXT_texture_norm16 GL_KHR_parallel_shader_compile GL_NV_shader_noperspective_interpolation GL_OES_draw_buffers_indexed GL_OES_sample_variables GL_OES_shader_multisample_interpolation GL_OES_texture_float_linear GL_WEBGL_blend_func_extended GL_WEBGL_clip_cull_distance GL_WEBGL_compressed_texture_astc GL_WEBGL_compressed_texture_etc GL_WEBGL_compressed_texture_etc1 GL_WEBGL_compressed_texture_pvrtc GL_WEBGL_compressed_texture_s3tc GL_WEBGL_compressed_texture_s3tc_srgb GL_WEBGL_debug_renderer_info GL_WEBGL_debug_shaders GL_WEBGL_lose_context GL_WEBGL_multi_draw GL_WEBGL_polygon_mode GL_WEBGL_provoking_vertex GL_WEBGL_render_shared_exponent GL_WEBGL_stencil_texturing
+
+ [Unity] OPENGL LOG: Creating OpenGL ES 3.0 graphics device ; Context level  <OpenGL ES 3.0> ; Context handle 1
+
+ [Unity] Input Manager initialize...
+
+ [Unity] [PhysX] Initialized SinglethreadedTaskDispatcher.
+
+ [Unity] UnloadTime: 2.899999 ms
+
+ [Unity] [Unity] Instance created successfully
+ [Unity] [Unity] ⏰ Calling OnUnityReady directly...
+ [Unity] [Unity] Avatar instance ready
+ [Unity] [Unity] 🔓 Attempting audio unlock for phoneme lip-sync...
+ [Unity] [Unity] 🔍 AudioContext state: running
+ [Unity] [Unity] ✅ AudioContext already running - audio unlocked!
+ [Unity Bridge] Audio unlocked successfully ✅
+ [Unity] [Unity] Handshake complete, notifying React...
+ [Unity Bridge] Unity is ready!
+ [Unity Avatar] Avatar ready!
+ [TutorSession] ✅ Avatar ready!
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Avatar] Audio unlocked detected, notifying parent
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ✅ All conditions met - Auto-playing: greeting-1764246668025
+ [TTS AUTO-PLAY] Chat mode: tutor - Will use PHONEME TTS
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [UnityCache] 'https://doc-sathi.s3.ap-south-1.amazonaws.com/unity-assets/Build.data.gz?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAXJWVZWH23Q7F3MP3%2F20251127%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20251127T123108Z&X-Amz-Expires=3600&X-Amz-Signature=c9fa32edaa0b45b05b05eb98805b6c30dfe9396c0504865ae67234ca5e89dd70&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject' successfully downloaded and stored in the indexedDB cache
+ [Unity] [UnityCache] 'https://doc-sathi.s3.ap-south-1.amazonaws.com/unity-assets/Build.data.gz?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAXJWVZWH23Q7F3MP3%2F20251127%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20251127T123108Z&X-Amz-Expires=3600&X-Amz-Signature=c9fa32edaa0b45b05b05eb98805b6c30dfe9396c0504865ae67234ca5e89dd70&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject' successfully downloaded and stored in the indexedDB cache
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [ExpressionManager] ExpressionManager initialized
+
+ [Unity] WebSocketBridge initialized
+
+ [Body] Controller initialized
+
+ [Eye] Controller initialized
+
+ [Emotion] Face mesh found with 155 blend shapes
+
+ [Unity] [ExpressionManager] ExpressionManager initialized
+
+ [Unity] [Unity] WebSocketBridge initialized
+
+ [Unity] [Body] Controller initialized
+
+ [Unity] [Eye] Controller initialized
+
+ [Unity] [Emotion] Face mesh found with 155 blend shapes
+
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TutorSession] Sending text query via WebSocket: hi
+ [TEXT QUERY] Sent: "hi..."
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Streaming in progress, waiting...
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Streaming in progress, waiting...
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Streaming in progress, waiting...
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Streaming in progress, waiting...
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Streaming in progress, waiting...
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Streaming in progress, waiting...
+ [Unity Bridge] Already initialized, skipping handshake
+ [VOICE] Server error [TEXT_QUERY_ERROR]: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.
+(anonymous) @ useVoiceTutor.ts:275
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ⏳ Streaming in progress, waiting...
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] ✅ All conditions met - Auto-playing: e86c3103-6b59-4d59-bb6d-03877125daa2
+ [TTS AUTO-PLAY] Chat mode: tutor - Will use PHONEME TTS
+ [TTS AUTO-PLAY] Using SSML with phonemes - persona: garima lang: hinglish
+ [TTS SSML] playSSMLAudio called for message: e86c3103-6b59-4d59-bb6d-03877125daa2
+ [TTS SSML] Setting playing audio to: e86c3103-6b59-4d59-bb6d-03877125daa2
+ [TTS SSML] Fetching SSML-based TTS - ChatId: e29fdf2e-9e26-4c87-ae94-3a104e7105cb SSML length: 210 Persona: garima Language: hinglish
+ [TTS SSML] 🔍 REQUEST BODY: {
+  "chatId": "e29fdf2e-9e26-4c87-ae94-3a104e7105cb",
+  "ssml": "<speak>Good afternoon Vakta! Time for some focused learning! 💪 I'm Garima, your physics guide. 11th and JEE Advanced prep - both are important! Today we'll make mixed interesting together! Let's begin?</speak>",
+  "persona": "garima",
+  "language": "hinglish"
+}
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS SSML] Response status: 200
+ [TTS SSML] Received - Phonemes: 161 Audio base64 length: 596736
+ [TTS SSML] Converted to blob, size: 447552
+ [Avatar] Status check - Ready: true Loading: false
+ [Avatar] ✅ Avatar ready - sending SSML audio to Unity WebGL with lip-sync
+ [Avatar] 🎵 Sending SSML phoneme-based lip-sync - Phonemes: 161
+ [Avatar] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay: Object
+ [Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes: 161
+ [Unity Bridge] ✅ Audio + phonemes sent to Unity iframe
+ [Avatar] ✅ SSML audio sent to Unity successfully - keeping playingAudio active until Unity confirms completion
+ [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 161 Audio unlocked: true
+ [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"viseme_0","weight":1},{"time":0,"blendshape":"viseme_20","weight":1},{"time":45,"blendshape":"viseme_4","weight":1}]
+ [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] 📤 Sending phonemes to AvatarController - Count: 161
+ [Unity] 📦 Phoneme JSON length: 8187 chars
+ [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"viseme_0","weight":1},{"time":0,"blendshape":"viseme_20","weight":1},{"time":45,"blendshape":"viseme_4","weight":1},{"time":145,"blendshape":"viseme_19","weight":1},{"time":207.5,"blendshape":"viseme_2","weight":1},{"time":357.5,"blendshape":"viseme_18","weight":1},{"time":432.5,"blendshape":"viseme_19","weight":1},{"time":495,"blendshape":"viseme_1","weight":1},{"time":532.5,"blendshape":"viseme_13","weight":1},{"time":570,"blendshape":"viseme_19","weight":1},{"time":607.5,"blendshape":"viseme_7","weight":1},{"time":695,"blendshape":"viseme_19","weight":1},{"time":770,"blendshape":"viseme_0","weight":1},{"time":782.5,"blendshape":"viseme_0","weight":1},{"time":832.5,"blendshape":"viseme_0","weight":1},{"time":907.5,"blendshape":"viseme_0","weight":1},{"time":970,"blendshape":"viseme_0","weight":1},{"time":1032.5,"blendshape":"viseme_0","weight":1},{"time":2145,"blendshape":"viseme_0","weight":1},{"time":2195,"blendshape":"viseme_19","weight":1},{"time":2257.5,"blendshape":"viseme_2","weight":1},{"time":2382.5,"blendshape":"viseme_6","weight":1},{"time":2445,"blendshape":"viseme_21","weight":1},{"time":2507.5,"blendshape":"viseme_18","weight":1},{"time":2582.5,"blendshape":"viseme_2","weight":1},{"time":2620,"blendshape":"viseme_13","weight":1},{"time":2670,"blendshape":"viseme_15","weight":1},{"time":2770,"blendshape":"viseme_1","weight":1},{"time":2857.5,"blendshape":"viseme_21","weight":1},{"time":2932.5,"blendshape":"viseme_18","weight":1},{"time":3057.5,"blendshape":"viseme_8","weight":1},{"time":3170,"blendshape":"viseme_20","weight":1},{"time":3245,"blendshape":"viseme_1","weight":1},{"time":3320,"blendshape":"viseme_15","weight":1},{"time":3395,"blendshape":"viseme_19","weight":1},{"time":3445,"blendshape":"viseme_14","weight":1},{"time":3545,"blendshape":"viseme_1","weight":1},{"time":3632.5,"blendshape":"viseme_13","weight":1},{"time":3682.5,"blendshape":"viseme_19","weight":1},{"time":3720,"blendshape":"viseme_6","weight":1},{"time":3782.5,"blendshape":"viseme_19","weight":1},{"time":3845,"blendshape":"viseme_20","weight":1},{"time":3970,"blendshape":"viseme_0","weight":1},{"time":4832.5,"blendshape":"viseme_0","weight":1},{"time":4882.5,"blendshape":"viseme_2","weight":1},{"time":5095,"blendshape":"viseme_6","weight":1},{"time":5282.5,"blendshape":"viseme_0","weight":1},{"time":5382.5,"blendshape":"viseme_4","weight":1},{"time":5532.5,"blendshape":"viseme_21","weight":1},{"time":5632.5,"blendshape":"viseme_0","weight":1},{"time":5645,"blendshape":"viseme_0","weight":1},{"time":5695,"blendshape":"viseme_0","weight":1},{"time":5757.5,"blendshape":"viseme_0","weight":1},{"time":5807.5,"blendshape":"viseme_0","weight":1},{"time":5870,"blendshape":"viseme_0","weight":1},{"time":5945,"blendshape":"viseme_0","weight":1},{"time":6282.5,"blendshape":"viseme_6","weight":1},{"time":6407.5,"blendshape":"viseme_8","weight":1},{"time":6470,"blendshape":"viseme_13","weight":1},{"time":6520,"blendshape":"viseme_18","weight":1},{"time":6620,"blendshape":"viseme_6","weight":1},{"time":6682.5,"blendshape":"viseme_15","weight":1},{"time":6770,"blendshape":"viseme_6","weight":1},{"time":6845,"blendshape":"viseme_20","weight":1},{"time":6907.5,"blendshape":"viseme_15","weight":1},{"time":6995,"blendshape":"viseme_20","weight":1},{"time":7070,"blendshape":"viseme_2","weight":1},{"time":7170,"blendshape":"viseme_6","weight":1},{"time":7270,"blendshape":"viseme_19","weight":1},{"time":7407.5,"blendshape":"viseme_0","weight":1},{"time":8270,"blendshape":"viseme_0","weight":1},{"time":8320,"blendshape":"viseme_6","weight":1},{"time":8432.5,"blendshape":"viseme_14","weight":1},{"time":8507.5,"blendshape":"viseme_4","weight":1},{"time":8620,"blendshape":"viseme_18","weight":1},{"time":8682.5,"blendshape":"viseme_1","weight":1},{"time":8732.5,"blendshape":"viseme_19","weight":1},{"time":8795,"blendshape":"viseme_19","weight":1},{"time":8870,"blendshape":"viseme_1","weight":1},{"time":8982.5,"blendshape":"viseme_19","weight":1},{"time":9020,"blendshape":"viseme_19","weight":1},{"time":9045,"blendshape":"viseme_0","weight":1},{"time":9057.5,"blendshape":"viseme_0","weight":1},{"time":9107.5,"blendshape":"viseme_1","weight":1},{"time":9245,"blendshape":"viseme_19","weight":1},{"time":9332.5,"blendshape":"viseme_18","weight":1},{"time":9457.5,"blendshape":"viseme_2","weight":1},{"time":9520,"blendshape":"viseme_19","weight":1},{"time":9657.5,"blendshape":"viseme_15","weight":1},{"time":9720,"blendshape":"viseme_19","weight":1},{"time":9795,"blendshape":"viseme_21","weight":1},{"time":9845,"blendshape":"viseme_13","weight":1},{"time":9920,"blendshape":"viseme_4","weight":1},{"time":9970,"blendshape":"viseme_21","weight":1},{"time":10082.5,"blendshape":"viseme_0","weight":1},{"time":10270,"blendshape":"viseme_21","weight":1},{"time":10395,"blendshape":"viseme_8","weight":1},{"time":10557.5,"blendshape":"viseme_19","weight":1},{"time":10632.5,"blendshape":"viseme_2","weight":1},{"time":10720,"blendshape":"viseme_13","weight":1},{"time":10782.5,"blendshape":"viseme_6","weight":1},{"time":10832.5,"blendshape":"viseme_21","weight":1},{"time":10907.5,"blendshape":"viseme_21","weight":1},{"time":10982.5,"blendshape":"viseme_8","weight":1},{"time":11070,"blendshape":"viseme_13","weight":1},{"time":11120,"blendshape":"viseme_19","weight":1},{"time":11182.5,"blendshape":"viseme_1","weight":1},{"time":11245,"blendshape":"viseme_19","weight":1},{"time":11357.5,"blendshape":"viseme_19","weight":1},{"time":11495,"blendshape":"viseme_0","weight":1},{"time":12370,"blendshape":"viseme_0","weight":1},{"time":12420,"blendshape":"viseme_19","weight":1},{"time":12482.5,"blendshape":"viseme_4","weight":1},{"time":12532.5,"blendshape":"viseme_19","weight":1},{"time":12582.5,"blendshape":"viseme_4","weight":1},{"time":12757.5,"blendshape":"viseme_18","weight":1},{"time":12857.5,"blendshape":"viseme_6","weight":1},{"time":13082,"blendshape":"viseme_0","weight":1},{"time":13182.5,"blendshape":"viseme_4","weight":1},{"time":13382.5,"blendshape":"viseme_14","weight":1},{"time":13445,"blendshape":"viseme_4","weight":1},{"time":13532.5,"blendshape":"viseme_14","weight":1},{"time":13607.5,"blendshape":"viseme_21","weight":1},{"time":13695,"blendshape":"viseme_4","weight":1},{"time":13807.5,"blendshape":"viseme_20","weight":1},{"time":13895,"blendshape":"viseme_21","weight":1},{"time":13995,"blendshape":"viseme_6","weight":1},{"time":14070,"blendshape":"viseme_20","weight":1},{"time":14132.5,"blendshape":"viseme_15","weight":1},{"time":14220,"blendshape":"viseme_19","weight":1},{"time":14282.5,"blendshape":"viseme_6","weight":1},{"time":14357.5,"blendshape":"viseme_19","weight":1},{"time":14432.5,"blendshape":"viseme_19","weight":1},{"time":14495,"blendshape":"viseme_13","weight":1},{"time":14532.5,"blendshape":"viseme_4","weight":1},{"time":14607.5,"blendshape":"viseme_15","weight":1},{"time":14695,"blendshape":"viseme_19","weight":1},{"time":14757.5,"blendshape":"viseme_6","weight":1},{"time":14820,"blendshape":"viseme_19","weight":1},{"time":14870,"blendshape":"viseme_20","weight":1},{"time":14945,"blendshape":"viseme_19","weight":1},{"time":15007.5,"blendshape":"viseme_4","weight":1},{"time":15070,"blendshape":"viseme_20","weight":1},{"time":15132.5,"blendshape":"viseme_4","weight":1},{"time":15245,"blendshape":"viseme_19","weight":1},{"time":15307.5,"blendshape":"viseme_1","weight":1},{"time":15370,"blendshape":"viseme_13","weight":1},{"time":15532,"blendshape":"viseme_0","weight":1},{"time":16407.5,"blendshape":"viseme_0","weight":1},{"time":16457.5,"blendshape":"viseme_14","weight":1},{"time":16582.5,"blendshape":"viseme_4","weight":1},{"time":16707.5,"blendshape":"viseme_19","weight":1},{"time":16832.5,"blendshape":"viseme_0","weight":1},{"time":16920,"blendshape":"viseme_4","weight":1},{"time":17057.5,"blendshape":"viseme_15","weight":1},{"time":17145,"blendshape":"viseme_21","weight":1},{"time":17220,"blendshape":"viseme_6","weight":1},{"time":17295,"blendshape":"viseme_20","weight":1},{"time":17370,"blendshape":"viseme_6","weight":1},{"time":17457.5,"blendshape":"viseme_19","weight":1},{"time":17619.5,"blendsha
+ [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 161 Audio unlocked: true
+ [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"viseme_0","weight":1},{"time":0,"blendshape":"viseme_20","weight":1},{"time":45,"blendshape":"viseme_4","weight":1}]
+ [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 161
+ [Unity] [Unity] 📦 Phoneme JSON length: 8187 chars
+ [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"viseme_0","weight":1},{"time":0,"blendshape":"viseme_20","weight":1},{"time":45,"blendshape":"viseme_4","weight":1},{"time":145,"blendshape":"viseme_19","weight":1},{"time":207.5,"blendshape":"viseme_2","weight":1},{"time":357.5,"blendshape":"viseme_18","weight":1},{"time":432.5,"blendshape":"viseme_19","weight":1},{"time":495,"blendshape":"viseme_1","weight":1},{"time":532.5,"blendshape":"viseme_13","weight":1},{"time":570,"blendshape":"viseme_19","weight":1},{"time":607.5,"blendshape":"viseme_7","weight":1},{"time":695,"blendshape":"viseme_19","weight":1},{"time":770,"blendshape":"viseme_0","weight":1},{"time":782.5,"blendshape":"viseme_0","weight":1},{"time":832.5,"blendshape":"viseme_0","weight":1},{"time":907.5,"blendshape":"viseme_0","weight":1},{"time":970,"blendshape":"viseme_0","weight":1},{"time":1032.5,"blendshape":"viseme_0","weight":1},{"time":2145,"blendshape":"viseme_0","weight":1},{"time":2195,"blendshape":"viseme_19","weight":1},{"time":2257.5,"blendshape":"viseme_2","weight":1},{"time":2382.5,"blendshape":"viseme_6","weight":1},{"time":2445,"blendshape":"viseme_21","weight":1},{"time":2507.5,"blendshape":"viseme_18","weight":1},{"time":2582.5,"blendshape":"viseme_2","weight":1},{"time":2620,"blendshape":"viseme_13","weight":1},{"time":2670,"blendshape":"viseme_15","weight":1},{"time":2770,"blendshape":"viseme_1","weight":1},{"time":2857.5,"blendshape":"viseme_21","weight":1},{"time":2932.5,"blendshape":"viseme_18","weight":1},{"time":3057.5,"blendshape":"viseme_8","weight":1},{"time":3170,"blendshape":"viseme_20","weight":1},{"time":3245,"blendshape":"viseme_1","weight":1},{"time":3320,"blendshape":"viseme_15","weight":1},{"time":3395,"blendshape":"viseme_19","weight":1},{"time":3445,"blendshape":"viseme_14","weight":1},{"time":3545,"blendshape":"viseme_1","weight":1},{"time":3632.5,"blendshape":"viseme_13","weight":1},{"time":3682.5,"blendshape":"viseme_19","weight":1},{"time":3720,"blendshape":"viseme_6","weight":1},{"time":3782.5,"blendshape":"viseme_19","weight":1},{"time":3845,"blendshape":"viseme_20","weight":1},{"time":3970,"blendshape":"viseme_0","weight":1},{"time":4832.5,"blendshape":"viseme_0","weight":1},{"time":4882.5,"blendshape":"viseme_2","weight":1},{"time":5095,"blendshape":"viseme_6","weight":1},{"time":5282.5,"blendshape":"viseme_0","weight":1},{"time":5382.5,"blendshape":"viseme_4","weight":1},{"time":5532.5,"blendshape":"viseme_21","weight":1},{"time":5632.5,"blendshape":"viseme_0","weight":1},{"time":5645,"blendshape":"viseme_0","weight":1},{"time":5695,"blendshape":"viseme_0","weight":1},{"time":5757.5,"blendshape":"viseme_0","weight":1},{"time":5807.5,"blendshape":"viseme_0","weight":1},{"time":5870,"blendshape":"viseme_0","weight":1},{"time":5945,"blendshape":"viseme_0","weight":1},{"time":6282.5,"blendshape":"viseme_6","weight":1},{"time":6407.5,"blendshape":"viseme_8","weight":1},{"time":6470,"blendshape":"viseme_13","weight":1},{"time":6520,"blendshape":"viseme_18","weight":1},{"time":6620,"blendshape":"viseme_6","weight":1},{"time":6682.5,"blendshape":"viseme_15","weight":1},{"time":6770,"blendshape":"viseme_6","weight":1},{"time":6845,"blendshape":"viseme_20","weight":1},{"time":6907.5,"blendshape":"viseme_15","weight":1},{"time":6995,"blendshape":"viseme_20","weight":1},{"time":7070,"blendshape":"viseme_2","weight":1},{"time":7170,"blendshape":"viseme_6","weight":1},{"time":7270,"blendshape":"viseme_19","weight":1},{"time":7407.5,"blendshape":"viseme_0","weight":1},{"time":8270,"blendshape":"viseme_0","weight":1},{"time":8320,"blendshape":"viseme_6","weight":1},{"time":8432.5,"blendshape":"viseme_14","weight":1},{"time":8507.5,"blendshape":"viseme_4","weight":1},{"time":8620,"blendshape":"viseme_18","weight":1},{"time":8682.5,"blendshape":"viseme_1","weight":1},{"time":8732.5,"blendshape":"viseme_19","weight":1},{"time":8795,"blendshape":"viseme_19","weight":1},{"time":8870,"blendshape":"viseme_1","weight":1},{"time":8982.5,"blendshape":"viseme_19","weight":1},{"time":9020,"blendshape":"viseme_19","weight":1},{"time":9045,"blendshape":"viseme_0","weight":1},{"time":9057.5,"blendshape":"viseme_0","weight":1},{"time":9107.5,"blendshape":"viseme_1","weight":1},{"time":9245,"blendshape":"viseme_19","weight":1},{"time":9332.5,"blendshape":"viseme_18","weight":1},{"time":9457.5,"blendshape":"viseme_2","weight":1},{"time":9520,"blendshape":"viseme_19","weight":1},{"time":9657.5,"blendshape":"viseme_15","weight":1},{"time":9720,"blendshape":"viseme_19","weight":1},{"time":9795,"blendshape":"viseme_21","weight":1},{"time":9845,"blendshape":"viseme_13","weight":1},{"time":9920,"blendshape":"viseme_4","weight":1},{"time":9970,"blendshape":"viseme_21","weight":1},{"time":10082.5,"blendshape":"viseme_0","weight":1},{"time":10270,"blendshape":"viseme_21","weight":1},{"time":10395,"blendshape":"viseme_8","weight":1},{"time":10557.5,"blendshape":"viseme_19","weight":1},{"time":10632.5,"blendshape":"viseme_2","weight":1},{"time":10720,"blendshape":"viseme_13","weight":1},{"time":10782.5,"blendshape":"viseme_6","weight":1},{"time":10832.5,"blendshape":"viseme_21","weight":1},{"time":10907.5,"blendshape":"viseme_21","weight":1},{"time":10982.5,"blendshape":"viseme_8","weight":1},{"time":11070,"blendshape":"viseme_13","weight":1},{"time":11120,"blendshape":"viseme_19","weight":1},{"time":11182.5,"blendshape":"viseme_1","weight":1},{"time":11245,"blendshape":"viseme_19","weight":1},{"time":11357.5,"blendshape":"viseme_19","weight":1},{"time":11495,"blendshape":"viseme_0","weight":1},{"time":12370,"blendshape":"viseme_0","weight":1},{"time":12420,"blendshape":"viseme_19","weight":1},{"time":12482.5,"blendshape":"viseme_4","weight":1},{"time":12532.5,"blendshape":"viseme_19","weight":1},{"time":12582.5,"blendshape":"viseme_4","weight":1},{"time":12757.5,"blendshape":"viseme_18","weight":1},{"time":12857.5,"blendshape":"viseme_6","weight":1},{"time":13082,"blendshape":"viseme_0","weight":1},{"time":13182.5,"blendshape":"viseme_4","weight":1},{"time":13382.5,"blendshape":"viseme_14","weight":1},{"time":13445,"blendshape":"viseme_4","weight":1},{"time":13532.5,"blendshape":"viseme_14","weight":1},{"time":13607.5,"blendshape":"viseme_21","weight":1},{"time":13695,"blendshape":"viseme_4","weight":1},{"time":13807.5,"blendshape":"viseme_20","weight":1},{"time":13895,"blendshape":"viseme_21","weight":1},{"time":13995,"blendshape":"viseme_6","weight":1},{"time":14070,"blendshape":"viseme_20","weight":1},{"time":14132.5,"blendshape":"viseme_15","weight":1},{"time":14220,"blendshape":"viseme_19","weight":1},{"time":14282.5,"blendshape":"viseme_6","weight":1},{"time":14357.5,"blendshape":"viseme_19","weight":1},{"time":14432.5,"blendshape":"viseme_19","weight":1},{"time":14495,"blendshape":"viseme_13","weight":1},{"time":14532.5,"blendshape":"viseme_4","weight":1},{"time":14607.5,"blendshape":"viseme_15","weight":1},{"time":14695,"blendshape":"viseme_19","weight":1},{"time":14757.5,"blendshape":"viseme_6","weight":1},{"time":14820,"blendshape":"viseme_19","weight":1},{"time":14870,"blendshape":"viseme_20","weight":1},{"time":14945,"blendshape":"viseme_19","weight":1},{"time":15007.5,"blendshape":"viseme_4","weight":1},{"time":15070,"blendshape":"viseme_20","weight":1},{"time":15132.5,"blendshape":"viseme_4","weight":1},{"time":15245,"blendshape":"viseme_19","weight":1},{"time":15307.5,"blendshape":"viseme_1","weight":1},{"time":15370,"blendshape":"viseme_13","weight":1},{"time":15532,"blendshape":"viseme_0","weight":1},{"time":16407.5,"blendshape":"viseme_0","weight":1},{"time":16457.5,"blendshape":"viseme_14","weight":1},{"time":16582.5,"blendshape":"viseme_4","weight":1},{"time":16707.5,"blendshape":"viseme_19","weight":1},{"time":16832.5,"blendshape":"viseme_0","weight":1},{"time":16920,"blendshape":"viseme_4","weight":1},{"time":17057.5,"blendshape":"viseme_15","weight":1},{"time":17145,"blendshape":"viseme_21","weight":1},{"time":17220,"blendshape":"viseme_6","weight":1},{"time":17295,"blendshape":"viseme_20","weight":1},{"time":17370,"blendshape":"viseme_6","weight":1},{"time":17457.5,"blendshape":"viseme_19","weight":1},{"time":17619.5,"blendsha
+ [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity Bridge] ✅ Audio playback started: e86c3103-6b59-4d59-bb6d-03877125daa2
+ [Unity] [Unity] HTML5 Audio playing, starting amplitude meter
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity] HTML5 Audio ended
+ [Unity] [Unity] HTML5 Audio ended
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS] ⚠️ Safety timeout: Unity did not send AUDIO_ENDED within 30 seconds
+(anonymous) @ TutorSession.tsx:68
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TutorSession] Sending text query via WebSocket: chalo star karte hai
+ [TEXT QUERY] Sent: "chalo star karte hai..."
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [VOICE] Server error [TEXT_QUERY_ERROR]: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.
+(anonymous) @ useVoiceTutor.ts:275
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TutorSession] Sending text query via WebSocket: I have a doubt about mixed
+ [TEXT QUERY] Sent: "I have a doubt about mixed..."
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [VOICE] Server error [TEXT_QUERY_ERROR]: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.
+(anonymous) @ useVoiceTutor.ts:275
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:281 [TutorSession] Sending text query via WebSocket: lets start
+useVoiceTutor.ts:768 [TEXT QUERY] Sent: "lets start..."
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useVoiceTutor.ts:465 [VOICE] Server error [TEXT_QUERY_ERROR]: 429 You exceeded your current quota, please check your plan and billing details. For more information on this error, read the docs: https://platform.openai.com/docs/guides/error-codes/api-errors.
+(anonymous) @ useVoiceTutor.ts:465
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: Object
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 Performance Warning: Recreating Offscreen FBO (1491x1362 => 1594x800)
+
+useUnityBridge.ts:184 [Unity] Performance Warning: Recreating Offscreen FBO (1491x1362 => 1594x800)
+
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: {messageCount: 4, lastMessageRole: 'user', lastMessageId: '68ba8eef-1cc7-4441-9015-4d0c4eb67388', alreadyPlayed: 'e86c3103-6b59-4d59-bb6d-03877125daa2', avatarReady: true, …}
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: {messageCount: 4, lastMessageRole: 'user', lastMessageId: '68ba8eef-1cc7-4441-9015-4d0c4eb67388', alreadyPlayed: 'e86c3103-6b59-4d59-bb6d-03877125daa2', avatarReady: true, …}
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: {messageCount: 4, lastMessageRole: 'user', lastMessageId: '68ba8eef-1cc7-4441-9015-4d0c4eb67388', alreadyPlayed: 'e86c3103-6b59-4d59-bb6d-03877125daa2', avatarReady: true, …}
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: {messageCount: 4, lastMessageRole: 'user', lastMessageId: '68ba8eef-1cc7-4441-9015-4d0c4eb67388', alreadyPlayed: 'e86c3103-6b59-4d59-bb6d-03877125daa2', avatarReady: true, …}
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: {messageCount: 4, lastMessageRole: 'user', lastMessageId: '68ba8eef-1cc7-4441-9015-4d0c4eb67388', alreadyPlayed: 'e86c3103-6b59-4d59-bb6d-03877125daa2', avatarReady: true, …}
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: {messageCount: 4, lastMessageRole: 'user', lastMessageId: '68ba8eef-1cc7-4441-9015-4d0c4eb67388', alreadyPlayed: 'e86c3103-6b59-4d59-bb6d-03877125daa2', avatarReady: true, …}
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: {messageCount: 4, lastMessageRole: 'user', lastMessageId: '68ba8eef-1cc7-4441-9015-4d0c4eb67388', alreadyPlayed: 'e86c3103-6b59-4d59-bb6d-03877125daa2', avatarReady: true, …}
+useUnityBridge.ts:76 [Unity Bridge] Already initialized, skipping handshake
+TutorSession.tsx:1167 [TTS AUTO-PLAY] Checking conditions: {messageCount: 4, lastMessageRole: 'user', lastMessageId: '68ba8eef-1cc7-4441-9015-4d0c4eb67388', alreadyPlayed: 'e86c3103-6b59-4d59-bb6d-03877125daa2', avatarReady: true, …}

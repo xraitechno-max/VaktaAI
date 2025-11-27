@@ -41,7 +41,7 @@ export class IntelligentModelRouter {
         throw new Error('GOOGLE_API_KEY is not configured. Please add your Google API key to use this feature.');
       }
       this.geminiFlash = new ChatGoogleGenerativeAI({
-        model: "gemini-1.5-flash",
+        model: "gemini-2.5-flash",
         temperature: 0.7,
         apiKey,
       });
@@ -136,7 +136,7 @@ export class IntelligentModelRouter {
         console.log(`[ROUTER] ✨ Gemini Flash ($0.07/M) - ${analysis.intent} | ${analysis.subject}`);
         return {
           model: this.getGeminiFlash(),
-          modelName: 'gemini-1.5-flash',
+          modelName: 'gemini-2.5-flash',
           costPerMillion: 0.07,
           analysis
         };
@@ -169,7 +169,7 @@ export class IntelligentModelRouter {
         console.log(`[ROUTER] ✨ Gemini Flash ($0.07/M) [OpenAI unavailable] - ${analysis.intent} | ${analysis.subject}`);
         return {
           model: this.getGeminiFlash(),
-          modelName: 'gemini-1.5-flash',
+          modelName: 'gemini-2.5-flash',
           costPerMillion: 0.07,
           analysis
         };
@@ -202,7 +202,7 @@ export class IntelligentModelRouter {
       console.log(`[ROUTER] ✨ Gemini Flash (fallback) - ${analysis.intent} | ${analysis.subject}`);
       return {
         model: this.getGeminiFlash(),
-        modelName: 'gemini-1.5-flash',
+        modelName: 'gemini-2.5-flash',
         costPerMillion: 0.07,
         analysis
       };
