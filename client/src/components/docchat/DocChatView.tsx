@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
@@ -504,7 +504,7 @@ export default function DocChatView() {
                         </div>
                       ) : (
                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                          <AnimatePresence>
+                          <AnimatePresence mode="popLayout">
                             {documents.map((doc, index) => (
                               <motion.div
                                 key={doc.id}
@@ -532,9 +532,10 @@ export default function DocChatView() {
                                   )}>
                                     {getDocumentIcon(doc)}
                                   </div>
-                                  <AnimatePresence>
+                                  <AnimatePresence mode="wait">
                                     {selectedDocuments.includes(doc.id) && (
                                       <motion.div
+                                        key="selection-check"
                                         initial={{ scale: 0, rotate: -180 }}
                                         animate={{ scale: 1, rotate: 0 }}
                                         exit={{ scale: 0, rotate: 180 }}
@@ -592,7 +593,7 @@ export default function DocChatView() {
                       ) : (
                         <>
                           <div className="space-y-3 mb-6 max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent">
-                            <AnimatePresence>
+                            <AnimatePresence mode="popLayout">
                               {selectedDocsData.map((doc, index) => (
                                 <motion.div
                                   key={doc.id}
