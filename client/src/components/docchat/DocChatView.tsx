@@ -485,127 +485,205 @@ export default function DocChatView() {
 
                   {activeTab === 'upload' && (
                     <>
-                      <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 mb-6">
-                        <p className="text-center text-slate-600 dark:text-slate-400 mb-4 text-sm">
-                          DocSathi now supports
-                        </p>
-                        <div className="flex items-center justify-center gap-4 flex-wrap">
-                          <div className="flex flex-col items-center gap-1" title="PDF">
-                            <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                              <FileText className="w-5 h-5 text-red-600 dark:text-red-400" />
+                      <ObjectUploader
+                        maxFileSize={50 * 1024 * 1024}
+                        onGetUploadParameters={async (file) => {
+                          const response = await fetch('/api/documents/upload', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            credentials: 'include',
+                            body: JSON.stringify({
+                              fileName: file.name,
+                              fileType: file.type,
+                              fileSize: file.size
+                            })
+                          });
+                          const { uploadURL } = await response.json();
+                          return { method: "PUT" as const, url: uploadURL };
+                        }}
+                        onComplete={(result) => {
+                          const file = result.successful?.[0];
+                          if (file && file.uploadURL && file.name && file.size && file.type) {
+                            uploadDocumentMutation.mutate({
+                              uploadURL: file.uploadURL as string,
+                              fileName: file.name,
+                              fileSize: file.size,
+                              fileType: file.type
+                            });
+                          }
+                        }}
+                      >
+                        <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 mb-6 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-all border-2 border-transparent hover:border-cyan-500">
+                          <p className="text-center text-slate-600 dark:text-slate-400 mb-4 text-sm">
+                            Shepherd now supports
+                          </p>
+                          <div className="flex items-center justify-center gap-4 flex-wrap">
+                            <div className="flex flex-col items-center gap-1" title="PDF">
+                              <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                                <FileText className="w-5 h-5 text-red-600 dark:text-red-400" />
+                              </div>
+                              <span className="text-xs text-slate-500">PDF</span>
                             </div>
-                            <span className="text-xs text-slate-500">PDF</span>
-                          </div>
-                          <div className="flex flex-col items-center gap-1" title="PowerPoint">
-                            <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
-                              <Presentation className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                            <div className="flex flex-col items-center gap-1" title="PowerPoint">
+                              <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                                <Presentation className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                              </div>
+                              <span className="text-xs text-slate-500">PPT</span>
                             </div>
-                            <span className="text-xs text-slate-500">PPT</span>
-                          </div>
-                          <div className="flex flex-col items-center gap-1" title="Word">
-                            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
-                              <FileType className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            <div className="flex flex-col items-center gap-1" title="Word">
+                              <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                                <FileType className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                              </div>
+                              <span className="text-xs text-slate-500">DOCX</span>
                             </div>
-                            <span className="text-xs text-slate-500">DOCX</span>
-                          </div>
-                          <div className="flex flex-col items-center gap-1" title="YouTube">
-                            <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
-                              <Youtube className="w-5 h-5 text-red-600 dark:text-red-400" />
+                            <div className="flex flex-col items-center gap-1" title="YouTube">
+                              <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                                <Youtube className="w-5 h-5 text-red-600 dark:text-red-400" />
+                              </div>
+                              <span className="text-xs text-slate-500">YouTube</span>
                             </div>
-                            <span className="text-xs text-slate-500">YouTube</span>
-                          </div>
-                          <div className="flex flex-col items-center gap-1" title="Audio">
-                            <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
-                              <Music className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            <div className="flex flex-col items-center gap-1" title="Audio">
+                              <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                                <Music className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                              </div>
+                              <span className="text-xs text-slate-500">MP3</span>
                             </div>
-                            <span className="text-xs text-slate-500">MP3</span>
-                          </div>
-                          <div className="flex flex-col items-center gap-1" title="Text">
-                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
-                              <FileText className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                            <div className="flex flex-col items-center gap-1" title="Text">
+                              <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                                <FileText className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                              </div>
+                              <span className="text-xs text-slate-500">TXT</span>
                             </div>
-                            <span className="text-xs text-slate-500">TXT</span>
-                          </div>
-                          <div className="flex flex-col items-center gap-1" title="Website">
-                            <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
-                              <Globe className="w-5 h-5 text-green-600 dark:text-green-400" />
+                            <div className="flex flex-col items-center gap-1" title="Website">
+                              <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                                <Globe className="w-5 h-5 text-green-600 dark:text-green-400" />
+                              </div>
+                              <span className="text-xs text-slate-500">WEB</span>
                             </div>
-                            <span className="text-xs text-slate-500">WEB</span>
                           </div>
                         </div>
-                      </div>
+                      </ObjectUploader>
 
-                      <div className="flex gap-2 items-center flex-1">
-                        <ObjectUploader
-                          maxFileSize={50 * 1024 * 1024}
-                          onGetUploadParameters={async (file) => {
-                            const response = await fetch('/api/documents/upload', {
-                              method: 'POST',
-                              headers: { 'Content-Type': 'application/json' },
-                              credentials: 'include',
-                              body: JSON.stringify({
-                                fileName: file.name,
-                                fileType: file.type,
-                                fileSize: file.size
-                              })
-                            });
-                            const { uploadURL } = await response.json();
-                            return { method: "PUT" as const, url: uploadURL };
-                          }}
-                          onComplete={(result) => {
-                            const file = result.successful?.[0];
-                            if (file && file.uploadURL && file.name && file.size && file.type) {
-                              uploadDocumentMutation.mutate({
-                                uploadURL: file.uploadURL as string,
-                                fileName: file.name,
-                                fileSize: file.size,
-                                fileType: file.type
-                              });
-                            }
-                          }}
-                        >
-                          <div
-                            className="w-12 h-14 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-slate-400 hover:text-cyan-500 hover:border-cyan-500 transition-all flex items-center justify-center cursor-pointer flex-shrink-0"
-                            data-testid="button-attach-file"
-                          >
+                      <div className="flex gap-3 items-start mb-6">
+                        <div className="relative flex-1">
+                          <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none">
                             <Paperclip className="w-5 h-5" />
                           </div>
-                        </ObjectUploader>
-                        <Input
-                          type="text"
-                          placeholder="Upload PDFs, PPTs, Docx, MP3, MP4 or Paste a URL"
-                          value={urlInput}
-                          onChange={(e) => setUrlInput(e.target.value)}
-                          onKeyDown={(e) => {
-                            if (e.key === 'Enter' && isValidUrl(urlInput)) {
-                              e.preventDefault();
+                          <Input
+                            type="text"
+                            placeholder="Upload PDFs, PPTx, Docx, MP3, MP4 or Paste a URL"
+                            value={urlInput}
+                            onChange={(e) => setUrlInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && isValidUrl(urlInput)) {
+                                e.preventDefault();
+                                handleAddUrl();
+                              }
+                            }}
+                            className="h-14 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-base focus:border-cyan-500 dark:focus:border-cyan-500 transition-colors pl-12 pr-4"
+                            data-testid="input-url"
+                          />
+                        </div>
+                        <Button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            if (urlInput.trim() && isValidUrl(urlInput)) {
                               handleAddUrl();
                             }
                           }}
-                          className="h-14 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-base focus:border-cyan-500 dark:focus:border-cyan-500 transition-colors flex-1"
-                          data-testid="input-url"
-                        />
+                          disabled={!urlInput.trim() || !isValidUrl(urlInput) || addUrlMutation.isPending}
+                          className={cn(
+                            "h-14 px-6 rounded-xl font-semibold transition-all duration-300 flex-shrink-0",
+                            urlInput.trim() && isValidUrl(urlInput)
+                              ? "bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+                          )}
+                          data-testid="button-add-url"
+                        >
+                          {addUrlMutation.isPending ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                          ) : (
+                            "+ Add"
+                          )}
+                        </Button>
                       </div>
-                      <Button
-                        onClick={handleAddUrl}
-                        disabled={!urlInput.trim() || addUrlMutation.isPending}
-                        className={cn(
-                          "h-14 px-6 rounded-xl font-semibold transition-all duration-300 flex-shrink-0",
-                          urlInput.trim() && isValidUrl(urlInput)
-                            ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30 hover:shadow-xl"
-                            : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                        )}
-                        data-testid="button-add-url"
-                      >
-                        {addUrlMutation.isPending ? (
-                          <Loader2 className="w-5 h-5 animate-spin" />
-                        ) : (
-                          <>
-                            <Plus className="w-5 h-5 mr-1" />
-                            Add
-                          </>
-                        )}
-                      </Button>
+
+                      {selectedDocuments.length > 0 && (
+                        <div className="mb-6">
+                          <div className="flex items-center justify-between mb-3">
+                            <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg">
+                              <span className="text-sm font-medium text-slate-600 dark:text-slate-400">
+                                Selected Documents
+                              </span>
+                            </div>
+                            <button
+                              onClick={() => setActiveTab('upload')}
+                              className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1"
+                              data-testid="button-add-more"
+                            >
+                              <Plus className="w-4 h-4" />
+                              Add new file to sources
+                            </button>
+                          </div>
+                          <div className="p-4 bg-gradient-to-br from-blue-50 to-cyan-50 dark:from-blue-950/30 dark:to-cyan-950/30 rounded-xl border border-blue-200 dark:border-blue-800">
+                            {selectedDocuments.length === 0 ? (
+                              <p className="text-center text-slate-500 dark:text-slate-400 text-sm py-4">
+                                No documents selected
+                              </p>
+                            ) : (
+                              <div className="space-y-2">
+                                {documents.filter(doc => selectedDocuments.includes(doc.id)).map((doc) => (
+                                  <div
+                                    key={doc.id}
+                                    className="flex items-center gap-3 p-3 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700"
+                                    data-testid={`selected-doc-${doc.id}`}
+                                  >
+                                    <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-cyan-500 to-blue-600 text-white flex items-center justify-center flex-shrink-0">
+                                      {getDocumentIcon(doc)}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="font-medium text-slate-800 dark:text-slate-200 truncate text-sm">{doc.title}</p>
+                                      <p className="text-xs text-slate-500 dark:text-slate-400">{getDocumentTypeLabel(doc)}</p>
+                                    </div>
+                                    <button
+                                      onClick={() => toggleDocumentSelection(doc.id)}
+                                      className="text-slate-400 hover:text-red-500 transition-colors flex-shrink-0"
+                                      data-testid={`remove-doc-${doc.id}`}
+                                    >
+                                      <X className="w-4 h-4" />
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      )}
+
+                      <div className="flex justify-end">
+                        <Button
+                          onClick={handleStartChat}
+                          disabled={selectedDocuments.length === 0 || startChatMutation.isPending}
+                          className={cn(
+                            "px-8 h-12 rounded-xl font-semibold transition-all duration-300",
+                            selectedDocuments.length > 0
+                              ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30 hover:shadow-xl"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+                          )}
+                          data-testid="button-start-chat"
+                        >
+                          {startChatMutation.isPending ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                              Starting...
+                            </>
+                          ) : (
+                            "Start Chat"
+                          )}
+                        </Button>
+                      </div>
                     </>
                   )}
 
@@ -662,82 +740,6 @@ export default function DocChatView() {
                   )}
                 </GlassCard>
               </motion.div>
-
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.2 }}
-                className="mt-6 flex items-center justify-between gap-4 flex-wrap"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-full border border-cyan-500/20">
-                    <FolderOpen className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
-                    <span className="text-sm font-medium text-cyan-700 dark:text-cyan-300">
-                      Selected Documents
-                    </span>
-                    {selectedDocuments.length > 0 && (
-                      <span className="px-2 py-0.5 bg-cyan-500 text-white text-xs font-bold rounded-full">
-                        {selectedDocuments.length}
-                      </span>
-                    )}
-                  </div>
-                  <button
-                    onClick={() => setActiveTab('upload')}
-                    className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
-                    data-testid="button-add-more"
-                  >
-                    + Add new file to sources
-                  </button>
-                </div>
-                <Button
-                  onClick={handleStartChat}
-                  disabled={selectedDocuments.length === 0 || startChatMutation.isPending}
-                  className={cn(
-                    "px-8 h-12 rounded-xl font-semibold transition-all duration-300",
-                    selectedDocuments.length > 0
-                      ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30 hover:shadow-xl"
-                      : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
-                  )}
-                  data-testid="button-start-chat"
-                >
-                  {startChatMutation.isPending ? (
-                    <>
-                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                      Starting...
-                    </>
-                  ) : (
-                    "Start Chat"
-                  )}
-                </Button>
-              </motion.div>
-
-              {selectedDocuments.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, height: 0 }}
-                  animate={{ opacity: 1, height: 'auto' }}
-                  className="mt-4"
-                >
-                  <div className="flex flex-wrap gap-2">
-                    {selectedDocsData.map((doc) => (
-                      <div
-                        key={doc.id}
-                        className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700"
-                      >
-                        <span className="text-sm text-slate-700 dark:text-slate-300 truncate max-w-[200px]">
-                          {doc.title}
-                        </span>
-                        <button
-                          onClick={() => toggleDocumentSelection(doc.id)}
-                          className="text-slate-400 hover:text-red-500 transition-colors"
-                          data-testid={`remove-selected-${doc.id}`}
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-                </motion.div>
-              )}
             </div>
           </main>
         </div>
