@@ -73,14 +73,24 @@ export class TutorSessionService {
       ? TUTOR_PERSONAS[personaId] || selectPersonaBySubject(subject)
       : selectPersonaBySubject(subject);
     
-    // Get chat to extract language preference
-    const chat = await storage.getChat(chatId);
-    const chatLanguage = chat?.language || 'en';
+    // Use language preference from user profile (from onboarding) first, fallback to chat language
+    // Priority: user.languagePreference > chat.language
+    let preferredLanguage: string;
     
-    // Convert chat language code to preferred language format
-    // 'en' → 'english' (pure English)
-    // 'hi' → 'hinglish' (Hindi with English mix)
-    const preferredLanguage = chatLanguage === 'hi' ? 'hinglish' : 'english';
+    if (user.languagePreference) {
+      // User completed onboarding and selected language
+      preferredLanguage = user.languagePreference; // 'english', 'hinglish', or 'hindi'
+      // Map 'hindi' to 'hinglish' for TTS compatibility
+      if (preferredLanguage === 'hindi') {
+        preferredLanguage = 'hinglish';
+      }
+    } else {
+      // Fallback to chat language if user hasn't set preference
+      const chat = await storage.getChat(chatId);
+      const chatLanguage = chat?.language || 'en';
+      // 'en' → 'english', 'hi' → 'hinglish'
+      preferredLanguage = chatLanguage === 'hi' ? 'hinglish' : 'english';
+    }
     
     // Create profile snapshot
     const profileSnapshot = {
@@ -139,7 +149,12 @@ export class TutorSessionService {
       case 'greeting':
         // Get language preference from profile (english or hinglish)
         const language = session.profileSnapshot?.preferredLanguage || 'hinglish';
-        return getGreetingTemplate(timeOfDay, language as 'english' | 'hinglish');
+        // Pass user profile for class-specific and exam-specific greetings
+        const userProfile = {
+          currentClass: session.profileSnapshot?.currentClass,
+          examTarget: session.profileSnapshot?.examTarget
+        };
+        return getGreetingTemplate(timeOfDay, language as 'english' | 'hinglish', userProfile);
       
       case 'rapport':
         const examTarget = session.profileSnapshot?.examTarget || 'JEE';

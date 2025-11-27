@@ -24,82 +24,158 @@ export const GREETING_TEMPLATES: PhaseTemplate = {
   duration: '0-30 seconds',
   goal: 'Warm welcome using profile data (name, class, exam goal)',
   variants: [
-    // English Morning
+    // English - Classes 6-8 (Foundation)
     {
       timeOfDay: 'morning',
       language: 'english',
-      text: `Good morning {studentName}! Perfect time for learning! 🌅
+      context: 'foundation',
+      text: `Hey {studentName}! I'm {teacherName}, your {subject} teacher.
 
-I'm {teacherName}, your {subject} teacher.
-You're in {currentClass} and preparing for {examTarget}, right?
+Class {currentClass} is the perfect time to build strong foundations that'll help you throughout your journey!
 
-Today we'll explore {topic} together!
-Ready to start?`,
+Today's topic is {topic}. Let's make it super clear and interesting!
+Ready to dive in?`,
       emotion: 'enthusiastic'
     },
-    // Hinglish Morning
+    // Hinglish - Classes 6-8 (Foundation)
     {
       timeOfDay: 'morning',
       language: 'hinglish',
-      text: `Subah ka waqt hai {studentName}! Perfect time for learning! 🌅
+      context: 'foundation',
+      text: `Hey {studentName}! Main {teacherName} hoon, tumhari {subject} teacher.
 
-Main {teacherName} hoon, aapki {subject} teacher.
-Aap {currentClass} mein ho aur {examTarget} ki prep kar rahe ho, right?
+Class {currentClass} mein strong foundation banana bahut important hai jo aage help karega!
 
-Aaj hum {topic} explore karenge saath mein!
+Aaj ka topic {topic} hai. Isko ekdum clear aur interesting banayenge!
 Ready to start?`,
       emotion: 'enthusiastic'
     },
-    // English Afternoon
+    // English - Classes 9-10 (Board Prep)
+    {
+      timeOfDay: 'morning',
+      language: 'english',
+      context: 'board_prep',
+      text: `{studentName}! I'm {teacherName}, and I'll help you ace Class {currentClass} boards!
+
+You're preparing for {examTarget}, which needs strong conceptual clarity.
+
+Today we're covering {topic}. This is frequently asked in board exams!
+Let's master it together, ready?`,
+      emotion: 'enthusiastic'
+    },
+    // Hinglish - Classes 9-10 (Board Prep)
+    {
+      timeOfDay: 'morning',
+      language: 'hinglish',
+      context: 'board_prep',
+      text: `{studentName}! Main {teacherName}, tumhe Class {currentClass} boards ace karne mein help karungi!
+
+Tum {examTarget} ki prep kar rahe ho, jisme concepts clear hone chahiye.
+
+Aaj {topic} cover karenge. Ye boards mein frequently puchha jata hai!
+Chalo master karte hain, ready?`,
+      emotion: 'enthusiastic'
+    },
+    // English - Classes 11-12 (Competitive)
+    {
+      timeOfDay: 'morning',
+      language: 'english',
+      context: 'competitive',
+      text: `{studentName}! I'm {teacherName}, your {subject} guide for Class {currentClass}.
+
+{examTarget} demands both depth and speed. We'll work on building both skills!
+
+Today's {topic} is crucial for competitive exams. Let's dive deep!
+Ready for some focused learning?`,
+      emotion: 'enthusiastic'
+    },
+    // Hinglish - Classes 11-12 (Competitive)
+    {
+      timeOfDay: 'morning',
+      language: 'hinglish',
+      context: 'competitive',
+      text: `{studentName}! Main {teacherName}, tumhara Class {currentClass} {subject} guide.
+
+{examTarget} mein depth aur speed dono chahiye. Hum dono skills pe kaam karenge!
+
+Aaj ka {topic} competitive exams mein bahut crucial hai. Let's dive deep!
+Ready for focused preparation?`,
+      emotion: 'enthusiastic'
+    },
+    // English - Dropper (Comeback)
+    {
+      timeOfDay: 'morning',
+      language: 'english',
+      context: 'dropper',
+      text: `{studentName}! I'm {teacherName}. This is YOUR year and we're going to make it count!
+
+I know droppers bring extra determination. {examTarget} is tough, but you have the time to master everything!
+
+Today we're tackling {topic}. With the right focus, you'll own this concept!
+Ready for this journey?`,
+      emotion: 'encouraging'
+    },
+    // Hinglish - Dropper (Comeback)
+    {
+      timeOfDay: 'morning',
+      language: 'hinglish',
+      context: 'dropper',
+      text: `{studentName}! Main {teacherName}. Ye TUMHARA saal hai aur hum isko count karne wale hain!
+
+Main jaanti hoon droppers extra determination laate hain. {examTarget} tough hai, par tumhare paas sab master karne ka time hai!
+
+Aaj {topic} tackle karenge. Sahi focus se ye concept tumhara ho jayega!
+Ready for this comeback?`,
+      emotion: 'encouraging'
+    },
+    // Afternoon/Evening variants use same context-based templates (foundation/board_prep/competitive/dropper)
+    // These are duplicates with different timeOfDay for selection logic
     {
       timeOfDay: 'afternoon',
       language: 'english',
-      text: `Good afternoon {studentName}! Time for some focused learning! 💪
+      context: 'foundation',
+      text: `Hey {studentName}! I'm {teacherName}, your {subject} teacher.
 
-I'm {teacherName}, your {subject} guide.
-{currentClass} and {examTarget} prep - both are important!
+Class {currentClass} is the perfect time to build strong foundations that'll help you throughout your journey!
 
-Today we'll make {topic} interesting together!
-Let's begin?`,
+Today's topic is {topic}. Let's make it super clear and interesting!
+Ready to dive in?`,
       emotion: 'friendly'
     },
-    // Hinglish Afternoon
     {
       timeOfDay: 'afternoon',
       language: 'hinglish',
-      text: `Dopahar ka time hai {studentName}! Thodi energy boost chahiye! 💪
+      context: 'foundation',
+      text: `Hey {studentName}! Main {teacherName} hoon, tumhari {subject} teacher.
 
-Main {teacherName}, tumhara {subject} guide.
-{currentClass} aur {examTarget} prep - both important hain!
+Class {currentClass} mein strong foundation banana bahut important hai jo aage help karega!
 
-Aaj {topic} ko interesting banayenge saath mein!
-Chalo shuru karte hain?`,
+Aaj ka topic {topic} hai. Isko ekdum clear aur interesting banayenge!
+Ready to start?`,
       emotion: 'friendly'
     },
-    // English Evening
     {
       timeOfDay: 'evening',
       language: 'english',
-      text: `Good evening {studentName}! Evening study session - the best time! 📚
+      context: 'competitive',
+      text: `{studentName}! I'm {teacherName}, your {subject} guide for Class {currentClass}.
 
-I'm {teacherName}. I've seen your profile - 
-{currentClass} student, {examTarget} target!
+{examTarget} demands both depth and speed. We'll work on building both skills!
 
-Today we'll explore some cool {topic} concepts together.
-Ready?`,
+Today's {topic} is crucial for competitive exams. Let's dive deep!
+Ready for some focused learning?`,
       emotion: 'excited'
     },
-    // Hinglish Evening
     {
       timeOfDay: 'evening',
       language: 'hinglish',
-      text: `Shaam ka study session {studentName}! Best time hota hai! 📚
+      context: 'competitive',
+      text: `{studentName}! Main {teacherName}, tumhara Class {currentClass} {subject} guide.
 
-Main {teacherName} hoon. Dekha maine profile - 
-{currentClass} student, {examTarget} target!
+{examTarget} mein depth aur speed dono chahiye. Hum dono skills pe kaam karenge!
 
-Aaj hum {topic} ke saath kuch cool concepts explore karenge.
-Ready?`,
+Aaj ka {topic} competitive exams mein bahut crucial hai. Let's dive deep!
+Ready for focused preparation?`,
       emotion: 'excited'
     }
   ]
@@ -400,14 +476,47 @@ Keep learning! 💫`,
   ]
 };
 
-// Template selection helpers
+// Template selection helpers with user profile awareness
 export function getGreetingTemplate(
   timeOfDay: 'morning' | 'afternoon' | 'evening',
-  language: 'english' | 'hinglish' = 'hinglish'
+  language: 'english' | 'hinglish' = 'hinglish',
+  userProfile?: {
+    currentClass?: string;
+    examTarget?: string;
+  }
 ): TemplateVariant {
+  // Determine context based on user profile
+  let context: string | undefined;
+  
+  if (userProfile?.currentClass) {
+    const classNum = userProfile.currentClass;
+    
+    if (classNum === 'dropper') {
+      context = 'dropper';
+    } else if (['6', '7', '8'].includes(classNum)) {
+      context = 'foundation';
+    } else if (['9', '10'].includes(classNum)) {
+      context = 'board_prep';
+    } else if (['11', '12'].includes(classNum)) {
+      context = 'competitive';
+    }
+  }
+  
+  // Filter templates by time, language, and context
   const templates = GREETING_TEMPLATES.variants.filter(
-    v => v.timeOfDay === timeOfDay && v.language === language
+    v => v.timeOfDay === timeOfDay && 
+         v.language === language &&
+         (!context || v.context === context)
   );
+  
+  // Fallback to any matching time+language if no context match
+  if (templates.length === 0) {
+    const fallback = GREETING_TEMPLATES.variants.filter(
+      v => v.timeOfDay === timeOfDay && v.language === language
+    );
+    return fallback[0] || GREETING_TEMPLATES.variants[0];
+  }
+  
   return templates[Math.floor(Math.random() * templates.length)];
 }
 
