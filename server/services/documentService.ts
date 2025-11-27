@@ -51,9 +51,9 @@ export class DocumentService {
   // PDF text extraction using pdf-parse (CommonJS)
   private async extractFromPDF(buffer: Buffer): Promise<{ text: string; metadata: any }> {
     try {
-      // Use main export - automatically resolves to dist/cjs/index.js via package.json exports
-      const { pdf } = require('pdf-parse');
-      const data = await pdf(buffer);
+      // pdf-parse exports a function directly, not as a named export
+      const pdfParse = require('pdf-parse');
+      const data = await pdfParse(buffer);
       
       if (!data.text || data.text.trim().length === 0) {
         throw new Error('No text content extracted from PDF');
