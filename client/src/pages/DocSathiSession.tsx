@@ -322,9 +322,48 @@ export default function DocChatSession() {
   };
 
   return (
-    <div className="h-full flex bg-gradient-to-br from-background via-background to-primary/5">
+    <div className="h-full flex flex-col lg:flex-row bg-gradient-to-br from-background via-background to-primary/5">
+      {/* Mobile Header */}
+      <div className="lg:hidden sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/50 px-4 py-3">
+        <div className="flex items-center justify-between gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setLocation('/docsathi')}
+            className="shrink-0"
+            data-testid="button-back-mobile"
+          >
+            <ArrowLeft className="w-5 h-5" />
+          </Button>
+          <div className="flex-1 min-w-0">
+            <h2 className="text-sm font-semibold truncate">{currentDoc?.title || 'DocSathi Chat'}</h2>
+            {currentDoc?.sourceType && (
+              <p className="text-xs text-muted-foreground capitalize truncate">{currentDoc.sourceType}</p>
+            )}
+          </div>
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button variant="ghost" size="icon" className="shrink-0" data-testid="button-mobile-actions">
+                <Sparkles className="w-5 h-5" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-48">
+              <DropdownMenuItem onClick={() => setActiveActionModal('summary')} data-testid="action-summary-mobile">
+                <FileText className="w-4 h-4 mr-2" /> Summary
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveActionModal('highlights')} data-testid="action-highlights-mobile">
+                <Highlighter className="w-4 h-4 mr-2" /> Highlights
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setActiveActionModal('quiz')} data-testid="action-quiz-mobile">
+                <BookOpen className="w-4 h-4 mr-2" /> Generate Quiz
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      </div>
+
       {/* Left: Document Viewer */}
-      <div className="flex-1 flex flex-col min-w-0 border-r border-border/50">
+      <div className="flex-1 flex flex-col min-w-0 lg:border-r border-border/50">
         {currentDoc ? (
           <>
             {/* Document Content */}
@@ -455,10 +494,10 @@ export default function DocChatSession() {
         )}
       </div>
 
-      {/* Right Panel: Chat */}
-      <div className="w-[420px] flex flex-col bg-card/30 backdrop-blur-sm">
-        {/* Header with Tabs and Actions */}
-        <div className="border-b border-border/50">
+      {/* Right Panel: Chat - Full Width on Mobile */}
+      <div className="w-full lg:w-[420px] flex flex-col bg-card/30 backdrop-blur-sm">
+        {/* Header with Tabs and Actions - Hidden on Mobile */}
+        <div className="hidden lg:block border-b border-border/50">
           <div className="px-4 pt-3 flex items-center justify-between gap-2">
             <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'insight' | 'research')} className="flex-1">
               <TabsList className="h-9 bg-muted/50 p-0.5">
@@ -597,16 +636,16 @@ export default function DocChatSession() {
           </div>
         )}
 
-        {/* Input Area */}
-        <div className="p-4 border-t border-border/50 bg-card/50">
+        {/* Input Area - Sticky on Mobile */}
+        <div className="sticky bottom-0 lg:relative p-3 sm:p-4 border-t border-border/50 bg-background/95 lg:bg-card/50 backdrop-blur-md z-10">
           <form onSubmit={handleSubmit} className="flex items-center gap-2">
             <div className="flex-1 relative">
               <Input
                 value={message}
                 onChange={(e) => setMessage(e.target.value)}
-                placeholder="Ask anything. Use @ to select docs"
+                placeholder="Ask anything..."
                 disabled={sendMessageMutation.isPending}
-                className="pr-10 bg-background/80 border-border/50 focus-visible:ring-primary/30"
+                className="h-11 sm:h-10 pr-10 bg-background/80 border-border/50 focus-visible:ring-primary/30 text-sm sm:text-base"
                 data-testid="input-chat-message"
               />
             </div>
@@ -614,7 +653,7 @@ export default function DocChatSession() {
               type="submit" 
               size="icon"
               disabled={!message.trim() || sendMessageMutation.isPending}
-              className="shrink-0 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white shadow-md"
+              className="h-11 w-11 sm:h-10 sm:w-10 shrink-0 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white shadow-md"
               data-testid="button-send-message"
             >
               <Send className="w-4 h-4" />

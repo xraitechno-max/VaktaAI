@@ -222,18 +222,18 @@ export default function DocChatSources() {
 
           <div className="relative max-w-6xl mx-auto px-4 sm:px-6 py-8 sm:py-12">
 
-        {/* Hero Section */}
-        <div className="text-center mb-10 sm:mb-14">
+        {/* Hero Section - Mobile Optimized */}
+        <div className="text-center mb-6 sm:mb-10">
           <motion.div
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.5 }}
-            className="inline-flex items-center justify-center mb-6"
+            className="inline-flex items-center justify-center mb-3 sm:mb-6"
           >
             <div className="relative">
               <div className="absolute inset-0 bg-gradient-to-br from-blue-500/30 to-cyan-500/30 blur-3xl rounded-full animate-pulse" />
-              <div className="relative w-20 h-20 sm:w-28 sm:h-28 rounded-3xl bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500 flex items-center justify-center shadow-2xl">
-                <FileText className="w-10 h-10 sm:w-14 sm:h-14 text-white" />
+              <div className="relative w-16 h-16 sm:w-20 sm:h-20 lg:w-28 lg:h-28 rounded-3xl bg-gradient-to-br from-blue-500 via-cyan-500 to-teal-500 flex items-center justify-center shadow-2xl">
+                <FileText className="w-8 h-8 sm:w-10 sm:h-10 lg:w-14 lg:h-14 text-white" />
               </div>
             </div>
           </motion.div>
@@ -242,48 +242,24 @@ export default function DocChatSources() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="space-y-3"
+            className="space-y-2 sm:space-y-3"
           >
-            <Badge className="mb-3 px-4 py-1.5 bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900/50 dark:to-cyan-900/50 text-blue-700 dark:text-blue-300 border-0">
-              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
+            <Badge className="mb-2 sm:mb-3 px-3 sm:px-4 py-1 sm:py-1.5 bg-gradient-to-r from-blue-100 to-cyan-100 dark:from-blue-900/50 dark:to-cyan-900/50 text-blue-700 dark:text-blue-300 border-0 text-xs sm:text-sm">
+              <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 mr-1 sm:mr-1.5" />
               {t('docSathi.subtitle')}
             </Badge>
 
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold">
+            <h1 className="text-2xl sm:text-4xl lg:text-5xl xl:text-6xl font-bold px-2">
               <span className="bg-gradient-to-r from-blue-600 via-cyan-600 to-teal-500 bg-clip-text text-transparent">
                 {t('docSathi.title')}
               </span>
             </h1>
 
-            <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
+            <p className="text-sm sm:text-base lg:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed px-4">
               {t('docSathi.description')}
             </p>
           </motion.div>
         </div>
-
-        {/* Supported Formats */}
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="flex items-center justify-center gap-4 sm:gap-6 mb-10 flex-wrap"
-        >
-          <span className="text-sm text-gray-500 dark:text-gray-400">{t('docSathi.supports')}</span>
-          <div className="flex items-center gap-3 sm:gap-4">
-            {supportedFormatDefs.map((format, index) => (
-              <motion.div
-                key={format.nameKey}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ delay: 0.4 + index * 0.05 }}
-                className="flex flex-col items-center gap-1"
-              >
-                <format.icon className={`w-6 h-6 sm:w-7 sm:h-7 ${format.color}`} />
-                <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">{t(format.nameKey)}</span>
-              </motion.div>
-            ))}
-          </div>
-        </motion.div>
 
         {/* Main Content Grid */}
         <div className="grid lg:grid-cols-3 gap-6 sm:gap-8">
@@ -306,39 +282,39 @@ export default function DocChatSources() {
 
                 {/* Upload Tab */}
                 <TabsContent value="upload" className="space-y-6">
-                  {/* Clickable Icon Panel for File Upload */}
+                  {/* Clickable Icon Panel for File Upload - Mobile Optimized */}
                   <ObjectUploader
                     onGetUploadParameters={handleGetUploadParams}
                     onComplete={handleUploadComplete}
                     maxNumberOfFiles={1}
                     maxFileSize={52428800}
                   >
-                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-all border-2 border-transparent hover:border-cyan-500">
-                      <p className="text-center text-slate-600 dark:text-slate-400 mb-4 text-sm">
+                    <div className="bg-slate-50 dark:bg-slate-800/50 rounded-xl sm:rounded-2xl p-4 sm:p-6 cursor-pointer hover:bg-slate-100 dark:hover:bg-slate-800/70 transition-all border-2 border-transparent hover:border-cyan-500 active:border-cyan-600">
+                      <p className="text-center text-slate-600 dark:text-slate-400 mb-3 sm:mb-4 text-xs sm:text-sm font-medium">
                         {t('docSathi.supports')}
                       </p>
-                      <div className="flex items-center justify-center gap-4 flex-wrap">
+                      <div className="grid grid-cols-3 sm:flex sm:flex-wrap items-center justify-center gap-3 sm:gap-4">
                         {supportedFormatDefs.map((format) => (
-                          <div key={format.nameKey} className="flex flex-col items-center gap-1">
-                            <div className="w-10 h-10 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center shadow-sm">
-                              <format.icon className={`w-5 h-5 ${format.color}`} />
+                          <div key={format.nameKey} className="flex flex-col items-center gap-1.5 min-w-0">
+                            <div className="w-12 h-12 sm:w-10 sm:h-10 rounded-lg bg-white dark:bg-slate-700 flex items-center justify-center shadow-sm hover:shadow-md transition-shadow">
+                              <format.icon className={`w-6 h-6 sm:w-5 sm:h-5 ${format.color}`} />
                             </div>
-                            <span className="text-xs text-slate-500">{t(format.nameKey)}</span>
+                            <span className="text-[10px] sm:text-xs text-slate-500 dark:text-slate-400 truncate max-w-full text-center">{t(format.nameKey)}</span>
                           </div>
                         ))}
                       </div>
                     </div>
                   </ObjectUploader>
 
-                  {/* URL Input with Add Button */}
-                  <div className="flex items-center gap-3">
+                  {/* URL Input with Add Button - Mobile Optimized */}
+                  <div className="flex items-center gap-2 sm:gap-3">
                     <div className="flex-1 relative">
-                      <Paperclip className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                      <Paperclip className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-gray-400" />
                       <Input
                         value={url}
                         onChange={(e) => setUrl(e.target.value)}
                         placeholder={t('docSathi.uploadPlaceholder')}
-                        className="pl-12 h-14 text-base rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500"
+                        className="pl-10 sm:pl-12 h-12 sm:h-14 text-sm sm:text-base rounded-xl border-2 border-gray-200 dark:border-gray-700 focus:border-blue-500"
                         onKeyDown={(e) => { if (e.key === 'Enter' && url.trim()) handleAddUrl(); }}
                         data-testid="input-url"
                       />
@@ -348,13 +324,13 @@ export default function DocChatSources() {
                       size="lg"
                       onClick={handleAddUrl}
                       disabled={!url.trim() || addUrlMutation.isPending}
-                      className="h-14 px-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600"
+                      className="h-12 sm:h-14 px-4 sm:px-6 bg-gradient-to-r from-blue-500 to-cyan-500 hover:from-blue-600 hover:to-cyan-600 text-sm sm:text-base shrink-0"
                       data-testid="button-add-url"
                     >
                       {addUrlMutation.isPending ? (
-                        <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{t('docSathi.adding')}</>
+                        <><Loader2 className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2 animate-spin" /><span className="hidden sm:inline">{t('docSathi.adding')}</span><span className="sm:hidden">...</span></>
                       ) : (
-                        <><Plus className="w-5 h-5 mr-2" />{t('docSathi.add')}</>
+                        <><Plus className="w-4 h-4 sm:w-5 sm:h-5 mr-1.5 sm:mr-2" />{t('docSathi.add')}</>
                       )}
                     </Button>
                   </div>
@@ -466,22 +442,22 @@ export default function DocChatSources() {
               </Tabs>
             </motion.div>
 
-            {/* Start Chat Section */}
+            {/* Start Chat Section - Sticky on Mobile */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.6 }}
-              className="bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-3xl p-6 sm:p-8 text-white shadow-xl"
+              className="bg-gradient-to-r from-blue-500 via-cyan-500 to-teal-500 rounded-2xl sm:rounded-3xl p-4 sm:p-6 lg:p-8 text-white shadow-xl sticky bottom-4 z-10 lg:static lg:z-auto"
             >
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div>
-                  <h3 className="font-bold text-xl mb-2">{t('docSathi.selectedDocs')}</h3>
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                <div className="hidden sm:block">
+                  <h3 className="font-bold text-lg sm:text-xl mb-2">{t('docSathi.selectedDocs')}</h3>
                   {selectedDocuments.length === 0 ? (
-                    <p className="text-white/80">{t('docSathi.noDocsSelected')}</p>
+                    <p className="text-white/80 text-sm">{t('docSathi.noDocsSelected')}</p>
                   ) : (
                     <div className="flex flex-wrap gap-2">
                       {selectedDocuments.map((doc) => (
-                        <Badge key={doc.id} className="bg-white/20 text-white border-0">
+                        <Badge key={doc.id} className="bg-white/20 text-white border-0 text-xs">
                           {doc.title}
                           <button onClick={() => toggleDocSelection(doc.id)} className="ml-2">
                             <X className="w-3 h-3" />
@@ -495,20 +471,28 @@ export default function DocChatSources() {
                   onClick={handleStartChat}
                   disabled={selectedDocIds.length === 0 || startChatMutation.isPending}
                   size="lg"
-                  className="bg-white text-blue-600 hover:bg-gray-100 shadow-lg min-w-[160px]"
+                  className="bg-white text-blue-600 hover:bg-gray-100 shadow-lg w-full sm:min-w-[160px] sm:w-auto h-12 sm:h-auto font-semibold"
                   data-testid="button-start-chat"
                 >
                   {startChatMutation.isPending ? (
                     <><Loader2 className="w-5 h-5 mr-2 animate-spin" />{t('docSathi.starting')}</>
                   ) : (
-                    <><MessageSquare className="w-5 h-5 mr-2" />{t('docSathi.startChat')}</>
+                    <>
+                      <MessageSquare className="w-5 h-5 mr-2" />
+                      {t('docSathi.startChat')}
+                      {selectedDocuments.length > 0 && (
+                        <Badge className="ml-2 bg-blue-600 text-white border-0 sm:hidden">
+                          {selectedDocuments.length}
+                        </Badge>
+                      )}
+                    </>
                   )}
                 </Button>
               </div>
             </motion.div>
 
-            {/* Features Grid */}
-            <div className="grid sm:grid-cols-2 gap-4">
+            {/* Features Grid - Hidden on Mobile */}
+            <div className="hidden lg:grid sm:grid-cols-2 gap-4">
               {features.map((feature, index) => (
                 <motion.div
                   key={index}
