@@ -29,6 +29,7 @@ export class IntelligentModelRouter {
   private geminiFlash: ChatGoogleGenerativeAI | null = null;
   private gpt4oMini: ChatOpenAI | null = null;
   private claudeHaiku: Anthropic | null = null;
+  private groqLlama: ChatOpenAI | null = null;
   
   constructor() {
     // Lazy initialization - models are created when first needed
@@ -75,6 +76,24 @@ export class IntelligentModelRouter {
       });
     }
     return this.claudeHaiku;
+  }
+  
+  private getGroqLlama(): ChatOpenAI {
+    if (!this.groqLlama) {
+      const apiKey = process.env.GROQ_API_KEY;
+      if (!apiKey) {
+        throw new Error('GROQ_API_KEY is not configured. Please add your Groq API key to use this feature.');
+      }
+      this.groqLlama = new ChatOpenAI({
+        modelName: "llama-3.3-70b-versatile", // Fast, versatile model for general conversation
+        temperature: 0.7,
+        apiKey,
+        configuration: {
+          baseURL: "https://api.groq.com/openai/v1",
+        },
+      });
+    }
+    return this.groqLlama;
   }
   
   // Fast intent classification (50ms)
@@ -128,6 +147,18 @@ export class IntelligentModelRouter {
     const hasGemini = !!process.env.GOOGLE_API_KEY;
     const hasOpenAI = !!process.env.OPENAI_API_KEY;
     const hasClaude = !!process.env.ANTHROPIC_API_KEY;
+    const hasGroq = !!process.env.GROQ_API_KEY;
+    
+    // Tier 0: Groq Llama for general conversation (ultra-fast, cheapest)
+    if (analysis.complexity === 1 && analysis.subject === 'general' && hasGroq) {
+      console.log(`[ROUTER] ⚡ Groq Llama ($0.05/M) - ULTRA-FAST general conversation`);
+      return {
+        model: this.getGroqLlama(),
+        modelName: 'llama-3.3-70b-versatile',
+        costPerMillion: 0.05,
+        analysis
+      };
+    }
     
     // Routing logic - optimized for cost vs accuracy with graceful fallbacks
     if (analysis.complexity <= 2 && analysis.intent !== 'numerical_solving') {
@@ -138,6 +169,16 @@ export class IntelligentModelRouter {
           model: this.getGeminiFlash(),
           modelName: 'gemini-2.5-flash',
           costPerMillion: 0.07,
+          analysis
+        };
+      }
+      // Fallback to Groq if Gemini not available
+      if (hasGroq) {
+        console.log(`[ROUTER] ⚡ Groq Llama ($0.05/M) [Gemini unavailable] - ${analysis.intent} | ${analysis.subject}`);
+        return {
+          model: this.getGroqLlama(),
+          modelName: 'llama-3.3-70b-versatile',
+          costPerMillion: 0.05,
           analysis
         };
       }
@@ -188,6 +229,16 @@ export class IntelligentModelRouter {
     }
     
     // Final fallback: use whatever is available
+    if (hasGroq) {
+      console.log(`[ROUTER] ⚡ Groq Llama (fallback) - ${analysis.intent} | ${analysis.subject}`);
+      return {
+        model: this.getGroqLlama(),
+        modelName: 'llama-3.3-70b-versatile',
+        costPerMillion: 0.05,
+        analysis
+      };
+    }
+    
     if (hasOpenAI) {
       console.log(`[ROUTER] 🧮 GPT-4o-mini (fallback) - ${analysis.intent} | ${analysis.subject}`);
       return {
@@ -209,7 +260,7 @@ export class IntelligentModelRouter {
     }
     
     // No API keys available
-    throw new Error('No AI API keys configured. Please add at least one of: OPENAI_API_KEY, GOOGLE_API_KEY, or ANTHROPIC_API_KEY');
+    throw new Error('No AI API keys configured. Please add at least one of: GROQ_API_KEY, OPENAI_API_KEY, GOOGLE_API_KEY, or ANTHROPIC_API_KEY');
   }
 }
 
