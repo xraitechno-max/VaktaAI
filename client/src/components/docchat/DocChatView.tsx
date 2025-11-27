@@ -1,8 +1,9 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiRequest } from "@/lib/queryClient";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
 import { useToast } from "@/hooks/use-toast";
 import { ObjectUploader } from "@/components/ObjectUploader";
 import { motion, AnimatePresence } from "framer-motion";
@@ -32,6 +33,12 @@ import {
   Library,
   PanelLeftClose,
   PanelRightClose,
+  Paperclip,
+  Plus,
+  Music,
+  FileType,
+  Presentation,
+  Clock,
 } from "lucide-react";
 import { Document } from "@shared/schema";
 import { cn } from "@/lib/utils";
@@ -106,6 +113,11 @@ export default function DocChatView() {
   const [activeActionModal, setActiveActionModal] = useState<ActionType | null>(null);
   const [actionProcessing, setActionProcessing] = useState(false);
   const [actionContent, setActionContent] = useState("");
+  const [activeTab, setActiveTab] = useState<'upload' | 'previous'>('upload');
+  const [urlInput, setUrlInput] = useState("");
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [processingMessage, setProcessingMessage] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -176,12 +188,24 @@ export default function DocChatView() {
       const response = await apiRequest("POST", "/api/documents/from-upload", uploadData);
       return response.json();
     },
-    onSuccess: () => {
+    onMutate: () => {
+      setIsProcessing(true);
+      setProcessingMessage("Processing your document. This may take a moment.");
+    },
+    onSuccess: (data) => {
       toast({ title: "Success", description: "Document uploaded successfully" });
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      setIsProcessing(false);
+      setProcessingMessage("");
+      if (data.id || data.documentId) {
+        const docId = String(data.id || data.documentId);
+        setSelectedDocuments(prev => prev.includes(docId) ? prev : [...prev, docId]);
+      }
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to upload document", variant: "destructive" });
+      setIsProcessing(false);
+      setProcessingMessage("");
     },
   });
 
@@ -190,12 +214,25 @@ export default function DocChatView() {
       const response = await apiRequest("POST", "/api/documents/by-url", { url, title });
       return response.json();
     },
-    onSuccess: () => {
+    onMutate: () => {
+      setIsProcessing(true);
+      setProcessingMessage("Dusting off the summarizer engine. Getting you the main points.");
+    },
+    onSuccess: (data) => {
       toast({ title: "Success", description: "URL added successfully" });
       queryClient.invalidateQueries({ queryKey: ["/api/documents"] });
+      setUrlInput("");
+      setIsProcessing(false);
+      setProcessingMessage("");
+      if (data.id || data.documentId) {
+        const docId = String(data.id || data.documentId);
+        setSelectedDocuments(prev => prev.includes(docId) ? prev : [...prev, docId]);
+      }
     },
     onError: () => {
       toast({ title: "Error", description: "Failed to add URL", variant: "destructive" });
+      setIsProcessing(false);
+      setProcessingMessage("");
     },
   });
 
@@ -219,6 +256,32 @@ export default function DocChatView() {
       return;
     }
     startChatMutation.mutate(selectedDocuments);
+  };
+
+  const handleAddUrl = () => {
+    if (!urlInput.trim()) return;
+    const url = urlInput.trim();
+    let title = url;
+    if (url.includes('youtube.com') || url.includes('youtu.be')) {
+      title = 'YouTube Video';
+    } else {
+      try {
+        const urlObj = new URL(url);
+        title = urlObj.hostname;
+      } catch (e) {
+        title = url;
+      }
+    }
+    addUrlMutation.mutate({ url, title });
+  };
+
+  const isValidUrl = (str: string) => {
+    try {
+      new URL(str);
+      return true;
+    } catch {
+      return false;
+    }
   };
 
   const toggleDocumentSelection = (docId: string) => {
@@ -331,166 +394,226 @@ export default function DocChatView() {
       <div className="relative min-h-screen overflow-hidden">
         <PremiumBackground />
 
+        {isProcessing && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-white/90 dark:bg-slate-900/90 backdrop-blur-sm"
+          >
+            <div className="text-center">
+              <motion.div
+                animate={{ rotate: 360 }}
+                transition={{ duration: 2, repeat: Infinity, ease: "linear" }}
+                className="w-24 h-24 mx-auto mb-6"
+              >
+                <div className="w-full h-full rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-600 flex items-center justify-center shadow-2xl">
+                  <Loader2 className="w-12 h-12 text-white animate-spin" />
+                </div>
+              </motion.div>
+              <p className="text-lg font-semibold text-slate-800 dark:text-slate-200 mb-2">
+                {processingMessage}
+              </p>
+              <p className="text-sm text-slate-500 dark:text-slate-400">
+                Please wait while we process your content...
+              </p>
+            </div>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="absolute top-4 right-4"
+              onClick={() => {
+                setIsProcessing(false);
+                setProcessingMessage("");
+              }}
+              data-testid="button-close-processing"
+            >
+              <X className="w-5 h-5" />
+            </Button>
+          </motion.div>
+        )}
+
         <div className="relative z-10 flex flex-col min-h-screen">
           <motion.header
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="p-4 sm:p-6 lg:p-8"
+            className="p-4 sm:p-6 lg:p-8 text-center"
           >
-            <GlassCard className="max-w-7xl mx-auto p-6 sm:p-8">
-              <div className="flex items-center gap-4">
-                <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
-                  <Library className="w-7 h-7 text-white" />
-                </div>
-                <div>
-                  <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold">
-                    <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
-                      Source Studio
-                    </span>
-                  </h1>
-                  <p className="text-slate-600 dark:text-slate-400 mt-1">
-                    Upload documents and build your knowledge base
-                  </p>
-                </div>
-              </div>
-            </GlassCard>
+            <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-2">
+              <span className="bg-gradient-to-r from-cyan-600 via-blue-600 to-purple-600 bg-clip-text text-transparent">
+                Hello {(user as any)?.firstName || 'there'}, Upload and chat with your documents
+              </span>
+            </h1>
+            <p className="text-slate-600 dark:text-slate-400 max-w-2xl mx-auto">
+              Upload lecture notes, articles, any document, really, and DocSathi will help you understand them. You can chat with multiple documents at the same time.
+            </p>
           </motion.header>
 
           <main className="flex-1 px-4 sm:px-6 lg:px-8 pb-8">
-            <div className="max-w-7xl mx-auto">
-              <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-                <div className="lg:col-span-2 space-y-6">
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.1 }}
-                  >
-                    <GlassCard className="p-8 sm:p-12">
-                      <ObjectUploader
-                        maxFileSize={50 * 1024 * 1024}
-                        onGetUploadParameters={async (file) => {
-                          const response = await fetch('/api/documents/upload', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                            credentials: 'include',
-                            body: JSON.stringify({
-                              fileName: file.name,
-                              fileType: file.type,
-                              fileSize: file.size
-                            })
-                          });
-                          const { uploadURL } = await response.json();
-                          return { method: "PUT" as const, url: uploadURL };
-                        }}
-                        onComplete={(result) => {
-                          const file = result.meta as any;
-                          uploadDocumentMutation.mutate({
-                            uploadURL: result.uploadURL as string,
-                            fileName: file.name,
-                            fileSize: file.size,
-                            fileType: file.type
-                          });
-                        }}
-                      >
-                        <div className="border-2 border-dashed border-cyan-300/50 dark:border-cyan-700/50 rounded-3xl p-8 sm:p-12 text-center cursor-pointer transition-all duration-300 hover:border-cyan-400 hover:bg-cyan-50/30 dark:hover:bg-cyan-950/30 group">
-                          <div className="w-20 h-20 mx-auto mb-6 rounded-2xl bg-gradient-to-br from-cyan-500/20 via-blue-500/20 to-purple-500/20 flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                            <Upload className="w-10 h-10 text-cyan-600 dark:text-cyan-400" />
+            <div className="max-w-3xl mx-auto">
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.1 }}
+              >
+                <GlassCard className="p-6 sm:p-8">
+                  <div className="flex gap-4 mb-6">
+                    <button
+                      onClick={() => setActiveTab('upload')}
+                      className={cn(
+                        "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300",
+                        activeTab === 'upload'
+                          ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                      )}
+                      data-testid="tab-upload"
+                    >
+                      Upload
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('previous')}
+                      className={cn(
+                        "px-4 py-2 text-sm font-medium rounded-lg transition-all duration-300",
+                        activeTab === 'previous'
+                          ? "text-blue-600 dark:text-blue-400 bg-blue-50 dark:bg-blue-950/50"
+                          : "text-slate-600 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200"
+                      )}
+                      data-testid="tab-previous"
+                    >
+                      Previous Sources
+                    </button>
+                  </div>
+
+                  {activeTab === 'upload' && (
+                    <>
+                      <div className="bg-slate-50 dark:bg-slate-800/50 rounded-2xl p-6 mb-6">
+                        <p className="text-center text-slate-600 dark:text-slate-400 mb-4 text-sm">
+                          DocSathi now supports
+                        </p>
+                        <div className="flex items-center justify-center gap-4 flex-wrap">
+                          <div className="flex flex-col items-center gap-1" title="PDF">
+                            <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                              <FileText className="w-5 h-5 text-red-600 dark:text-red-400" />
+                            </div>
+                            <span className="text-xs text-slate-500">PDF</span>
                           </div>
-                          <p className="text-lg sm:text-xl font-semibold text-slate-800 dark:text-slate-200 mb-2">
-                            Drop files here or click to browse
-                          </p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400 mb-6">
-                            Supports PDF, DOCX, PPTX - up to 50MB
-                          </p>
-                          <Button
-                            className="btn-gradient shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-all duration-300"
-                            data-testid="button-browse-files"
+                          <div className="flex flex-col items-center gap-1" title="PowerPoint">
+                            <div className="w-10 h-10 rounded-lg bg-orange-100 dark:bg-orange-900/30 flex items-center justify-center">
+                              <Presentation className="w-5 h-5 text-orange-600 dark:text-orange-400" />
+                            </div>
+                            <span className="text-xs text-slate-500">PPT</span>
+                          </div>
+                          <div className="flex flex-col items-center gap-1" title="Word">
+                            <div className="w-10 h-10 rounded-lg bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center">
+                              <FileType className="w-5 h-5 text-blue-600 dark:text-blue-400" />
+                            </div>
+                            <span className="text-xs text-slate-500">DOCX</span>
+                          </div>
+                          <div className="flex flex-col items-center gap-1" title="YouTube">
+                            <div className="w-10 h-10 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center">
+                              <Youtube className="w-5 h-5 text-red-600 dark:text-red-400" />
+                            </div>
+                            <span className="text-xs text-slate-500">YouTube</span>
+                          </div>
+                          <div className="flex flex-col items-center gap-1" title="Audio">
+                            <div className="w-10 h-10 rounded-lg bg-purple-100 dark:bg-purple-900/30 flex items-center justify-center">
+                              <Music className="w-5 h-5 text-purple-600 dark:text-purple-400" />
+                            </div>
+                            <span className="text-xs text-slate-500">MP3</span>
+                          </div>
+                          <div className="flex flex-col items-center gap-1" title="Text">
+                            <div className="w-10 h-10 rounded-lg bg-slate-100 dark:bg-slate-700 flex items-center justify-center">
+                              <FileText className="w-5 h-5 text-slate-600 dark:text-slate-400" />
+                            </div>
+                            <span className="text-xs text-slate-500">TXT</span>
+                          </div>
+                          <div className="flex flex-col items-center gap-1" title="Website">
+                            <div className="w-10 h-10 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center">
+                              <Globe className="w-5 h-5 text-green-600 dark:text-green-400" />
+                            </div>
+                            <span className="text-xs text-slate-500">WEB</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="flex gap-3 items-center">
+                        <ObjectUploader
+                          maxFileSize={50 * 1024 * 1024}
+                          onGetUploadParameters={async (file) => {
+                            const response = await fetch('/api/documents/upload', {
+                              method: 'POST',
+                              headers: { 'Content-Type': 'application/json' },
+                              credentials: 'include',
+                              body: JSON.stringify({
+                                fileName: file.name,
+                                fileType: file.type,
+                                fileSize: file.size
+                              })
+                            });
+                            const { uploadURL } = await response.json();
+                            return { method: "PUT" as const, url: uploadURL };
+                          }}
+                          onComplete={(result) => {
+                            const file = result.successful?.[0];
+                            if (file && file.uploadURL) {
+                              uploadDocumentMutation.mutate({
+                                uploadURL: file.uploadURL as string,
+                                fileName: file.name,
+                                fileSize: file.size,
+                                fileType: file.type
+                              });
+                            }
+                          }}
+                          directPicker
+                        >
+                          <div
+                            className="w-14 h-14 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 flex items-center justify-center text-slate-400 hover:text-cyan-500 hover:border-cyan-500 transition-all cursor-pointer"
+                            data-testid="button-attach-file"
                           >
-                            <Upload className="w-4 h-4 mr-2" />
-                            Browse Files
-                          </Button>
-                        </div>
-                      </ObjectUploader>
-                    </GlassCard>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.2 }}
-                    className="flex items-center gap-4"
-                  >
-                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
-                    <span className="text-sm font-medium text-slate-500 dark:text-slate-400 px-4">OR ADD FROM URL</span>
-                    <div className="flex-1 h-px bg-gradient-to-r from-transparent via-slate-300 dark:via-slate-700 to-transparent" />
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="grid grid-cols-1 sm:grid-cols-2 gap-4"
-                  >
-                    <GlassCard
-                      className="p-6 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:shadow-red-500/20 hover:border-red-400/30 group"
-                      onClick={() => {
-                        const url = prompt("Enter YouTube URL:");
-                        if (url) addUrlMutation.mutate({ url, title: '' });
-                      }}
-                      data-testid="button-add-youtube"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-lg shadow-red-500/30 group-hover:scale-110 transition-transform duration-300">
-                          <Youtube className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-800 dark:text-slate-200">YouTube Video</p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">Add video transcript</p>
-                        </div>
-                      </div>
-                    </GlassCard>
-
-                    <GlassCard
-                      className="p-6 cursor-pointer transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/20 hover:border-blue-400/30 group"
-                      onClick={() => {
-                        const url = prompt("Enter website URL:");
-                        if (url) addUrlMutation.mutate({ url, title: '' });
-                      }}
-                      data-testid="button-add-website"
-                    >
-                      <div className="flex items-center gap-4">
-                        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-blue-500/30 group-hover:scale-110 transition-transform duration-300">
-                          <Globe className="w-6 h-6 text-white" />
-                        </div>
-                        <div>
-                          <p className="font-semibold text-slate-800 dark:text-slate-200">Web Article</p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">Import web content</p>
-                        </div>
-                      </div>
-                    </GlassCard>
-                  </motion.div>
-
-                  <motion.div
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4 }}
-                  >
-                    <GlassCard className="p-6">
-                      <div className="flex items-center justify-between mb-6">
-                        <div className="flex items-center gap-3">
-                          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center">
-                            <FolderOpen className="w-5 h-5 text-white" />
+                            <Paperclip className="w-5 h-5" />
                           </div>
-                          <div>
-                            <h3 className="font-semibold text-slate-800 dark:text-slate-200">Your Documents</h3>
-                            <p className="text-sm text-slate-500 dark:text-slate-400">Click to select for chat</p>
-                          </div>
+                        </ObjectUploader>
+                        <div className="flex-1">
+                          <Input
+                            type="text"
+                            placeholder="Paste a YouTube or website URL here"
+                            value={urlInput}
+                            onChange={(e) => setUrlInput(e.target.value)}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter' && isValidUrl(urlInput)) {
+                                e.preventDefault();
+                                handleAddUrl();
+                              }
+                            }}
+                            className="h-14 rounded-xl border-2 border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 text-base focus:border-cyan-500 dark:focus:border-cyan-500 transition-colors"
+                            data-testid="input-url"
+                          />
                         </div>
-                        <span className="px-3 py-1.5 rounded-full text-xs font-medium bg-gradient-to-r from-cyan-500/10 to-blue-500/10 text-cyan-700 dark:text-cyan-300 border border-cyan-500/20">
-                          {documents.length} files
-                        </span>
+                        <Button
+                          onClick={handleAddUrl}
+                          disabled={!urlInput.trim() || addUrlMutation.isPending}
+                          className={cn(
+                            "h-14 px-6 rounded-xl font-semibold transition-all duration-300",
+                            urlInput.trim() && isValidUrl(urlInput)
+                              ? "bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg shadow-green-500/30 hover:shadow-xl"
+                              : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+                          )}
+                          data-testid="button-add-url"
+                        >
+                          {addUrlMutation.isPending ? (
+                            <Loader2 className="w-5 h-5 animate-spin" />
+                          ) : (
+                            <>
+                              <Plus className="w-5 h-5 mr-1" />
+                              Add
+                            </>
+                          )}
+                        </Button>
                       </div>
+                    </>
+                  )}
 
+                  {activeTab === 'previous' && (
+                    <div className="space-y-4">
                       {documentsLoading ? (
                         <div className="flex flex-col items-center justify-center py-16">
                           <div className="w-12 h-12 rounded-full border-4 border-cyan-500/30 border-t-cyan-500 animate-spin" />
@@ -500,163 +623,124 @@ export default function DocChatView() {
                         <div className="text-center py-16 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
                           <FileText className="w-16 h-16 mx-auto mb-4 text-slate-300 dark:text-slate-600" />
                           <p className="text-lg font-medium text-slate-600 dark:text-slate-300 mb-2">No documents yet</p>
-                          <p className="text-sm text-slate-500 dark:text-slate-400">Upload files above to get started</p>
+                          <p className="text-sm text-slate-500 dark:text-slate-400">Upload files to get started</p>
                         </div>
                       ) : (
-                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                          <AnimatePresence mode="popLayout">
-                            {documents.map((doc, index) => (
-                              <motion.div
-                                key={doc.id}
-                                initial={{ opacity: 0, scale: 0.9 }}
-                                animate={{ opacity: 1, scale: 1 }}
-                                exit={{ opacity: 0, scale: 0.9 }}
-                                transition={{ delay: index * 0.05 }}
-                                whileHover={{ scale: 1.03 }}
-                                whileTap={{ scale: 0.98 }}
-                                className={cn(
-                                  "relative p-4 rounded-xl border-2 cursor-pointer transition-all duration-300",
-                                  selectedDocuments.includes(doc.id)
-                                    ? "border-cyan-500 bg-gradient-to-br from-cyan-50 to-blue-50 dark:from-cyan-950/50 dark:to-blue-950/50 shadow-lg shadow-cyan-500/20"
-                                    : "border-slate-200 dark:border-slate-700 bg-white/50 dark:bg-slate-800/50 hover:border-cyan-300 dark:hover:border-cyan-700"
-                                )}
-                                onClick={() => toggleDocumentSelection(doc.id)}
-                                data-testid={`card-document-${doc.id}`}
-                              >
-                                <div className="flex items-start justify-between mb-3">
-                                  <div className={cn(
-                                    "w-10 h-10 rounded-xl flex items-center justify-center transition-colors duration-300",
-                                    selectedDocuments.includes(doc.id)
-                                      ? "bg-gradient-to-br from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30"
-                                      : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
-                                  )}>
-                                    {getDocumentIcon(doc)}
-                                  </div>
-                                  <AnimatePresence mode="wait">
-                                    {selectedDocuments.includes(doc.id) && (
-                                      <motion.div
-                                        key="selection-check"
-                                        initial={{ scale: 0, rotate: -180 }}
-                                        animate={{ scale: 1, rotate: 0 }}
-                                        exit={{ scale: 0, rotate: 180 }}
-                                        className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 text-white flex items-center justify-center shadow-lg"
-                                      >
-                                        <Check className="w-3.5 h-3.5" strokeWidth={3} />
-                                      </motion.div>
-                                    )}
-                                  </AnimatePresence>
-                                </div>
-                                <p className="text-sm font-medium line-clamp-2 text-slate-800 dark:text-slate-200 mb-1" title={doc.title}>
-                                  {doc.title}
-                                </p>
-                                <div className="flex items-center gap-1.5 text-xs text-slate-500 dark:text-slate-400">
-                                  {getDocumentIcon(doc)}
-                                  <span>{getDocumentTypeLabel(doc)}</span>
-                                </div>
-                              </motion.div>
-                            ))}
-                          </AnimatePresence>
-                        </div>
-                      )}
-                    </GlassCard>
-                  </motion.div>
-                </div>
-
-                <motion.div
-                  initial={{ opacity: 0, x: 20 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: 0.3 }}
-                  className="lg:col-span-1"
-                >
-                  <div className="sticky top-8">
-                    <GlassCard className="p-6 border-2 border-cyan-500/20">
-                      <div className="flex items-center gap-3 mb-6">
-                        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-cyan-500 via-blue-500 to-purple-600 flex items-center justify-center shadow-lg shadow-cyan-500/30">
-                          <BookOpen className="w-5 h-5 text-white" />
-                        </div>
-                        <div className="flex-1">
-                          <h3 className="font-semibold text-slate-800 dark:text-slate-200">Selected Sources</h3>
-                        </div>
-                        {selectedDocuments.length > 0 && (
-                          <span className="px-3 py-1 rounded-full text-xs font-bold bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30">
-                            {selectedDocuments.length}
-                          </span>
-                        )}
-                      </div>
-
-                      {selectedDocuments.length === 0 ? (
-                        <div className="text-center py-10 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-2xl">
-                          <Sparkles className="w-10 h-10 mx-auto mb-3 text-slate-300 dark:text-slate-600" />
-                          <p className="text-sm font-medium text-slate-600 dark:text-slate-300">No sources selected</p>
-                          <p className="text-xs text-slate-500 dark:text-slate-400 mt-1">Click documents to add them</p>
-                        </div>
-                      ) : (
-                        <>
-                          <div className="space-y-3 mb-6 max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-cyan-500/20 scrollbar-track-transparent">
-                            <AnimatePresence mode="popLayout">
-                              {selectedDocsData.map((doc, index) => (
-                                <motion.div
-                                  key={doc.id}
-                                  initial={{ opacity: 0, x: 20 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  exit={{ opacity: 0, x: -20 }}
-                                  transition={{ delay: index * 0.05 }}
-                                  className="flex items-center gap-3 p-3 bg-gradient-to-r from-cyan-50/80 to-blue-50/80 dark:from-cyan-950/50 dark:to-blue-950/50 rounded-xl border border-cyan-200/50 dark:border-cyan-800/50"
-                                >
-                                  <div className="w-8 h-8 rounded-lg bg-white dark:bg-slate-800 flex items-center justify-center text-cyan-600 dark:text-cyan-400 shadow-sm">
-                                    {getDocumentIcon(doc)}
-                                  </div>
-                                  <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-medium truncate text-slate-800 dark:text-slate-200">{doc.title}</p>
-                                    <p className="text-xs text-slate-500 dark:text-slate-400">{getDocumentTypeLabel(doc)}</p>
-                                  </div>
-                                  <button
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      toggleDocumentSelection(doc.id);
-                                    }}
-                                    className="text-slate-400 hover:text-red-500 transition-colors flex-shrink-0 p-1 rounded-lg hover:bg-red-50 dark:hover:bg-red-950/30"
-                                    aria-label={`Remove ${doc.title}`}
-                                    data-testid={`button-remove-doc-${doc.id}`}
-                                  >
-                                    <X className="w-4 h-4" />
-                                  </button>
-                                </motion.div>
-                              ))}
-                            </AnimatePresence>
-                          </div>
-
-                          <motion.div whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.98 }}>
-                            <Button
-                              onClick={handleStartChat}
-                              disabled={startChatMutation.isPending}
-                              className="w-full btn-gradient h-14 text-base font-bold shadow-lg shadow-cyan-500/30 hover:shadow-xl hover:shadow-cyan-500/40 transition-all duration-300"
-                              data-testid="button-start-chat"
-                            >
-                              {startChatMutation.isPending ? (
-                                <>
-                                  <Loader2 className="w-5 h-5 animate-spin mr-2" />
-                                  Starting Session...
-                                </>
-                              ) : (
-                                <>
-                                  <MessageSquare className="w-5 h-5 mr-2" />
-                                  Start Knowledge Chat
-                                </>
+                        <div className="space-y-3 max-h-96 overflow-y-auto pr-2">
+                          {documents.map((doc) => (
+                            <motion.div
+                              key={doc.id}
+                              whileHover={{ x: 4 }}
+                              className={cn(
+                                "flex items-center gap-3 p-4 rounded-xl border-2 cursor-pointer transition-all duration-300",
+                                selectedDocuments.includes(doc.id)
+                                  ? "border-cyan-500 bg-cyan-50/50 dark:bg-cyan-950/30"
+                                  : "border-slate-200 dark:border-slate-700 hover:border-cyan-300"
                               )}
-                            </Button>
-                          </motion.div>
-
-                          <div className="flex items-center gap-2 mt-4 justify-center text-xs text-slate-500 dark:text-slate-400">
-                            <Sparkles className="w-3.5 h-3.5 text-cyan-500" />
-                            <span>AI-powered document analysis</span>
-                          </div>
-                        </>
+                              onClick={() => toggleDocumentSelection(doc.id)}
+                              data-testid={`previous-doc-${doc.id}`}
+                            >
+                              <div className={cn(
+                                "w-10 h-10 rounded-lg flex items-center justify-center",
+                                selectedDocuments.includes(doc.id)
+                                  ? "bg-gradient-to-br from-cyan-500 to-blue-600 text-white"
+                                  : "bg-slate-100 dark:bg-slate-700 text-slate-600 dark:text-slate-400"
+                              )}>
+                                {getDocumentIcon(doc)}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="font-medium text-slate-800 dark:text-slate-200 truncate">{doc.title}</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">{getDocumentTypeLabel(doc)}</p>
+                              </div>
+                              {selectedDocuments.includes(doc.id) && (
+                                <div className="w-6 h-6 rounded-full bg-gradient-to-br from-green-400 to-emerald-500 text-white flex items-center justify-center">
+                                  <Check className="w-3.5 h-3.5" strokeWidth={3} />
+                                </div>
+                              )}
+                            </motion.div>
+                          ))}
+                        </div>
                       )}
-                    </GlassCard>
+                    </div>
+                  )}
+                </GlassCard>
+              </motion.div>
+
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.2 }}
+                className="mt-6 flex items-center justify-between gap-4 flex-wrap"
+              >
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-cyan-500/10 to-blue-500/10 rounded-full border border-cyan-500/20">
+                    <FolderOpen className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                    <span className="text-sm font-medium text-cyan-700 dark:text-cyan-300">
+                      Selected Documents
+                    </span>
+                    {selectedDocuments.length > 0 && (
+                      <span className="px-2 py-0.5 bg-cyan-500 text-white text-xs font-bold rounded-full">
+                        {selectedDocuments.length}
+                      </span>
+                    )}
+                  </div>
+                  <button
+                    onClick={() => setActiveTab('upload')}
+                    className="text-sm font-medium text-blue-600 dark:text-blue-400 hover:underline"
+                    data-testid="button-add-more"
+                  >
+                    + Add new file to sources
+                  </button>
+                </div>
+                <Button
+                  onClick={handleStartChat}
+                  disabled={selectedDocuments.length === 0 || startChatMutation.isPending}
+                  className={cn(
+                    "px-8 h-12 rounded-xl font-semibold transition-all duration-300",
+                    selectedDocuments.length > 0
+                      ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white shadow-lg shadow-cyan-500/30 hover:shadow-xl"
+                      : "bg-slate-100 dark:bg-slate-800 text-slate-400 cursor-not-allowed"
+                  )}
+                  data-testid="button-start-chat"
+                >
+                  {startChatMutation.isPending ? (
+                    <>
+                      <Loader2 className="w-5 h-5 animate-spin mr-2" />
+                      Starting...
+                    </>
+                  ) : (
+                    "Start Chat"
+                  )}
+                </Button>
+              </motion.div>
+
+              {selectedDocuments.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, height: 0 }}
+                  animate={{ opacity: 1, height: 'auto' }}
+                  className="mt-4"
+                >
+                  <div className="flex flex-wrap gap-2">
+                    {selectedDocsData.map((doc) => (
+                      <div
+                        key={doc.id}
+                        className="flex items-center gap-2 px-3 py-2 bg-white dark:bg-slate-800 rounded-lg border border-slate-200 dark:border-slate-700"
+                      >
+                        <span className="text-sm text-slate-700 dark:text-slate-300 truncate max-w-[200px]">
+                          {doc.title}
+                        </span>
+                        <button
+                          onClick={() => toggleDocumentSelection(doc.id)}
+                          className="text-slate-400 hover:text-red-500 transition-colors"
+                          data-testid={`remove-selected-${doc.id}`}
+                        >
+                          <X className="w-4 h-4" />
+                        </button>
+                      </div>
+                    ))}
                   </div>
                 </motion.div>
-              </div>
+              )}
             </div>
           </main>
         </div>
