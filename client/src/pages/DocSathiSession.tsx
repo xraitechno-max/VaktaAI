@@ -14,11 +14,7 @@ import {
   Send,
   Bot,
   User,
-  ChevronLeft,
   ChevronRight,
-  ZoomIn,
-  ZoomOut,
-  Download,
   Highlighter,
   Layers,
   BookOpen,
@@ -27,16 +23,13 @@ import {
   Pin,
   RotateCcw,
   Search,
-  ExternalLink,
   ArrowLeft,
   MessageSquare,
   Quote,
-  Image as ImageIcon,
-  Maximize2,
-  Minimize2,
 } from "lucide-react";
 import { Document, Chat, Message } from "@shared/schema";
 import DocChatActionModal from "@/components/docchat/DocChatActionModal";
+import PDFViewer from "@/components/docchat/PDFViewer";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -61,13 +54,11 @@ export default function DocChatSession() {
   
   const [message, setMessage] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [zoom, setZoom] = useState(100);
   const [activeActionModal, setActiveActionModal] = useState<ActionType | null>(null);
   const [actionProcessing, setActionProcessing] = useState(false);
   const [actionContent, setActionContent] = useState("");
   const [activeTab, setActiveTab] = useState<'insight' | 'research'>('insight');
   const [transcriptSearch, setTranscriptSearch] = useState("");
-  const [pdfExpanded, setPdfExpanded] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -332,107 +323,17 @@ export default function DocChatSession() {
       <div className="flex-1 flex flex-col min-w-0 border-r border-border/50">
         {currentDoc ? (
           <>
-            {/* Document Toolbar */}
-            <div className="h-12 border-b border-border/50 flex items-center justify-between px-4 bg-card/30 backdrop-blur-sm">
-              <div className="flex items-center gap-2">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8" 
-                  onClick={() => setZoom(Math.max(50, zoom - 25))}
-                  disabled={zoom <= 50}
-                  data-testid="button-zoom-out-toolbar"
-                >
-                  <ZoomOut className="w-4 h-4" />
-                </Button>
-                <span className="text-xs text-muted-foreground min-w-[3rem] text-center bg-muted/50 px-2 py-1 rounded">
-                  {zoom}%
-                </span>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8"
-                  onClick={() => setZoom(Math.min(200, zoom + 25))}
-                  disabled={zoom >= 200}
-                  data-testid="button-zoom-in-toolbar"
-                >
-                  <ZoomIn className="w-4 h-4" />
-                </Button>
-              </div>
-              
-              <div className="flex items-center gap-1">
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-8 w-8"
-                  onClick={() => setPdfExpanded(!pdfExpanded)}
-                  data-testid="button-expand-doc"
-                >
-                  {pdfExpanded ? <Minimize2 className="w-4 h-4" /> : <Maximize2 className="w-4 h-4" />}
-                </Button>
-                {currentDoc.fileKey && (
-                  <a 
-                    href={getPdfUrl() || '#'} 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="inline-flex"
-                  >
-                    <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-open-new-tab">
-                      <ExternalLink className="w-4 h-4" />
-                    </Button>
-                  </a>
-                )}
-                {currentDoc.fileKey && (
-                  <a href={getPdfUrl() || '#'} download>
-                    <Button variant="ghost" size="icon" className="h-8 w-8" data-testid="button-download-doc">
-                      <Download className="w-4 h-4" />
-                    </Button>
-                  </a>
-                )}
-              </div>
-            </div>
-
             {/* Document Content */}
-            <div className="flex-1 overflow-hidden bg-muted/20">
+            <div className="flex-1 overflow-hidden">
               {currentDoc.sourceType === 'pdf' ? (
                 currentDoc.fileKey ? (
-                  <div className="w-full h-full flex items-center justify-center p-4 overflow-auto">
-                    <object
-                      data={`${getPdfUrl()}#toolbar=1&navpanes=0&scrollbar=1&view=FitH`}
-                      type="application/pdf"
-                      className="rounded-lg shadow-xl bg-white"
-                      style={{ 
-                        width: `${Math.min(100, zoom)}%`, 
-                        height: '100%',
-                        minHeight: '600px',
-                        maxWidth: pdfExpanded ? '100%' : '900px'
-                      }}
-                      data-testid="pdf-object"
-                    >
-                      <div className="flex flex-col items-center justify-center h-full p-8 bg-card rounded-lg">
-                        <FileText className="w-16 h-16 text-primary/50 mb-4" />
-                        <p className="text-sm text-muted-foreground mb-4 text-center">
-                          Your browser cannot display this PDF directly.
-                        </p>
-                        <div className="flex gap-3">
-                          <a href={getPdfUrl() || '#'} target="_blank" rel="noopener noreferrer">
-                            <Button variant="outline" className="gap-2">
-                              <ExternalLink className="w-4 h-4" />
-                              Open in New Tab
-                            </Button>
-                          </a>
-                          <a href={getPdfUrl() || '#'} download>
-                            <Button className="gap-2 bg-gradient-to-r from-primary to-accent text-white">
-                              <Download className="w-4 h-4" />
-                              Download PDF
-                            </Button>
-                          </a>
-                        </div>
-                      </div>
-                    </object>
-                  </div>
+                  <PDFViewer 
+                    fileUrl={getPdfUrl() || ''} 
+                    title={currentDoc.title}
+                    onPageChange={(page, total) => setCurrentPage(page)}
+                  />
                 ) : (
-                  <div className="flex items-center justify-center h-full">
+                  <div className="flex items-center justify-center h-full bg-muted/20">
                     <div className="text-center">
                       <FileText className="w-16 h-16 text-muted-foreground/30 mx-auto mb-4" />
                       <p className="text-sm text-muted-foreground">PDF file not available</p>
