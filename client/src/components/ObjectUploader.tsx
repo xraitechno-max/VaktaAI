@@ -114,7 +114,7 @@ export function ObjectUploader({
   };
 
   return (
-    <div>
+    <>
       <div onClick={handleButtonClick} className={buttonClassName}>
         {children}
       </div>
@@ -140,6 +140,6 @@ export function ObjectUploader({
           proudlyDisplayPoweredByUppy={false}
         />
       )}
-    </div>
+    </>
   );
 }
