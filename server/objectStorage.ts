@@ -104,12 +104,25 @@ export class ObjectStorageService {
       const aclPolicy = this.parseAclFromMetadata(response.Metadata);
       const isPublic = aclPolicy?.visibility === "public";
 
+      const contentType = response.ContentType || "application/octet-stream";
+      
+      // Extract filename from key
+      const filename = s3Object.key.split('/').pop() || 'document';
+      
+      // Set Content-Disposition based on content type
+      // PDFs and images should display inline, others should download
+      const inlineTypes = ['application/pdf', 'image/png', 'image/jpeg', 'image/gif', 'image/webp', 'text/plain', 'text/html'];
+      const isInlineType = inlineTypes.some(type => contentType.startsWith(type));
+      const disposition = isInlineType ? `inline; filename="${filename}"` : `attachment; filename="${filename}"`;
+
       // Set response headers
       res.set({
-        "Content-Type": response.ContentType || "application/octet-stream",
+        "Content-Type": contentType,
         "Content-Length": response.ContentLength?.toString() || "0",
+        "Content-Disposition": disposition,
         "Cache-Control": `${isPublic ? "public" : "private"}, max-age=${cacheTtlSec}`,
         "ETag": response.ETag,
+        "X-Content-Type-Options": "nosniff",
       });
 
       // Stream the body to response

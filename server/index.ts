@@ -46,9 +46,9 @@ app.use(helmet({
       imgSrc: ["'self'", "data:", "https:", "blob:"],
       connectSrc: ["'self'", "https:", "wss:"],
       fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"], // Google Fonts
-      objectSrc: ["'none'"],
+      objectSrc: ["'self'"], // Allow PDF display via object tag
       mediaSrc: ["'self'", "blob:"],
-      frameSrc: ["'self'", "https://www.youtube.com"], // Allow YouTube embeds
+      frameSrc: ["'self'", "https://www.youtube.com", "blob:"], // Allow YouTube embeds + PDF iframes
     },
   } : {
     directives: {
@@ -58,9 +58,9 @@ app.use(helmet({
       imgSrc: ["'self'", "data:", "https:", "blob:"],
       connectSrc: ["'self'", "https:", "wss:", "blob:", "data:"], // Unity WebGL WASM loading
       fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"], // Google Fonts
-      objectSrc: ["'none'"],
+      objectSrc: ["'self'"], // Allow PDF display via object tag
       mediaSrc: ["'self'", "blob:", "data:"], // Unity audio/video
-      frameSrc: ["'self'", "https://www.youtube.com"], // Allow YouTube embeds
+      frameSrc: ["'self'", "https://www.youtube.com", "blob:"], // Allow YouTube embeds + PDF iframes
       workerSrc: ["'self'", "blob:"], // Unity Web Workers
       frameAncestors: ["'self'"], // Allow iframe embedding
     },
