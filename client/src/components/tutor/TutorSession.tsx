@@ -1443,10 +1443,8 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
 
       {/* Unity Avatar: 60% LEFT | Chat Panel: 40% RIGHT */}
-      <div className={`relative flex-1 min-h-0 overflow-hidden ${
-        showChatPanel ? 'grid grid-cols-1 lg:grid-cols-[60%_40%]' : 'flex flex-col'
-      }`}>
-        <div className="relative flex flex-col min-h-0">
+      <div className={`relative flex-1 min-h-0 overflow-hidden flex flex-col ${showChatPanel ? 'lg:flex-row' : ''}`}>
+        <div className={`relative flex flex-col min-h-0 ${showChatPanel ? 'lg:w-[60%]' : 'flex-1'}`}>
           <div className="flex items-center justify-between px-4 py-3 lg:px-6 lg:py-4 bg-black/20 backdrop-blur-xl border-b border-white/5">
             <div className="flex items-center gap-3 flex-wrap">
               <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${
@@ -1637,7 +1635,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
         </div>
 
         {showChatPanel && (
-          <div className="flex flex-col bg-slate-900/50 backdrop-blur-xl border-t lg:border-t-0 lg:border-l border-white/5 min-h-[200px] max-h-[40vh] lg:max-h-none overflow-hidden">
+          <div className="flex flex-col lg:w-[40%] bg-slate-900/50 backdrop-blur-xl border-t lg:border-t-0 lg:border-l border-white/5 min-h-[200px] max-h-[40vh] lg:max-h-none overflow-hidden">
             <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-4 py-4 lg:px-5 lg:py-5 space-y-4 scrollbar-thin scrollbar-thumb-white/10">
               {messages.map((msg) => (
                 <div key={msg.id} className={`flex gap-2.5 lg:gap-3 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
