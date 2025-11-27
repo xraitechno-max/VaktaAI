@@ -400,7 +400,7 @@ const translations: Translations = {
   // DOCSATHI PAGE (formerly DocChat)
   // ============================================
   'docSathi.title': { en: 'DocSathi', hi: 'डॉकसाथी' },
-  'docSathi.subtitle': { en: 'Your Document Study Partner', hi: 'आपका डॉक्यूमेंट स्टडी पार्टनर' },
+  'docSathi.shortSubtitle': { en: 'Your Document Study Partner', hi: 'आपका डॉक्यूमेंट स्टडी पार्टनर' },
   'docSathi.description': { en: 'Upload PDFs, lecture notes, YouTube videos - ask questions and get instant answers with citations!', hi: 'PDF, लेक्चर नोट्स, YouTube वीडियो अपलोड करें - सवाल पूछें और सोर्स के साथ तुरंत जवाब पाएं!' },
   'docSathi.uploadHello': { en: 'Upload and chat with your documents', hi: 'अपने डॉक्यूमेंट अपलोड करें और चैट करें' },
   'docSathi.uploadSubtitle': { en: 'Upload lecture notes, articles, any document, and VaktaAI will help you understand them.', hi: 'लेक्चर नोट्स, आर्टिकल्स, कोई भी डॉक्यूमेंट अपलोड करें, और VaktaAI आपको समझने में मदद करेगा।' },

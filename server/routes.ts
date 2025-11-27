@@ -303,6 +303,44 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // DocSathi session route - creates a docchat session with selected documents
+  app.post('/api/docsathi/session', isAuthenticated, async (req: any, res) => {
+    try {
+      const userId = req.user?.id;
+      const { docIds } = req.body;
+
+      if (!docIds || !Array.isArray(docIds) || docIds.length === 0) {
+        return res.status(400).json({ message: "At least one document ID is required" });
+      }
+
+      // Verify all documents belong to the user and are ready
+      for (const docId of docIds) {
+        const doc = await storage.getDocument(docId);
+        if (!doc || doc.userId !== userId) {
+          return res.status(404).json({ message: `Document ${docId} not found` });
+        }
+        if (doc.status !== 'ready') {
+          return res.status(400).json({ message: `Document ${doc.title} is still processing` });
+        }
+      }
+
+      // Create a docchat session
+      const chatData = insertChatSchema.parse({
+        userId,
+        mode: 'docchat',
+        title: 'DocSathi Chat',
+        docIds: docIds,
+        language: 'en',
+      });
+
+      const chat = await storage.createChat(chatData);
+      res.json({ id: chat.id, chatId: chat.id });
+    } catch (error) {
+      console.error("Error creating DocSathi session:", error);
+      res.status(500).json({ message: "Failed to create chat session" });
+    }
+  });
+
   // Chat routes
   app.post('/api/chats', isAuthenticated, async (req: any, res) => {
     try {
