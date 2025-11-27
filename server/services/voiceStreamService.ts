@@ -1407,12 +1407,25 @@ export class VoiceStreamService {
               for (let i = 0; i < parts.length - 1; i++) {
                 const sentence = parts[i].trim();
                 if (sentence) {
-                  // Check if avatar is ready for TTS
-                  const canGenerateTTS = avatarStateService.canGenerateTTS(ws.sessionId || '');
+                  // ⚡ ALWAYS send text chunk FIRST (for instant display)
+                  const chunkMsg: VoiceMessage = {
+                    type: 'AI_RESPONSE_CHUNK',
+                    timestamp: new Date().toISOString(),
+                    sessionId: ws.sessionId,
+                    content: sentence + ' ',
+                    messageId,
+                    isFirst: sentenceIndex === 0,
+                    chunkIndex: sentenceIndex // 🔢 Add sequence number for deduplication
+                  };
+                  ws.send(JSON.stringify(chunkMsg));
 
+                  // 🎵 THEN generate TTS in parallel (don't block text streaming!)
+                  const canGenerateTTS = avatarStateService.canGenerateTTS(ws.sessionId || '');
                   if (canGenerateTTS) {
-                    // Generate TTS with phonemes
-                    await this.generateAndStreamSentenceTTS(
+                    // Fire-and-forget: TTS generation happens in background
+                    // Note: generateAndStreamSentenceTTS returns immediately (line 673)
+                    // The actual TTS work runs async in the ttsInFlightMap
+                    this.generateAndStreamSentenceTTS(
                       ws,
                       sentence,
                       sentenceIndex,
@@ -1428,20 +1441,11 @@ export class VoiceStreamService {
                         enablePhonemes: true
                       },
                       ws.ttsInFlightMap  // 🔥 Pass SHARED in-flight Map (atomic dedup)
-                    );
+                    ).catch(err => {
+                      console.error(`[TEXT QUERY] ❌ Background TTS failed for sentence ${sentenceIndex}:`, err);
+                      // Don't throw - text is already sent, TTS is optional enhancement
+                    });
                   }
-
-                  // Always send text chunk (for display in chat)
-                  const chunkMsg: VoiceMessage = {
-                    type: 'AI_RESPONSE_CHUNK',
-                    timestamp: new Date().toISOString(),
-                    sessionId: ws.sessionId,
-                    content: sentence + ' ',
-                    messageId,
-                    isFirst: sentenceIndex === 0,
-                    chunkIndex: sentenceIndex // 🔢 Add sequence number for deduplication
-                  };
-                  ws.send(JSON.stringify(chunkMsg));
 
                   sentenceIndex++;
                 }
@@ -1454,9 +1458,25 @@ export class VoiceStreamService {
 
       // Handle remaining text
       if (currentSentence.trim()) {
+        // ⚡ ALWAYS send text chunk FIRST (for instant display)
+        const chunkMsg: VoiceMessage = {
+          type: 'AI_RESPONSE_CHUNK',
+          timestamp: new Date().toISOString(),
+          sessionId: ws.sessionId,
+          content: currentSentence.trim(),
+          messageId,
+          isFirst: sentenceIndex === 0,
+          chunkIndex: sentenceIndex // 🔢 Add sequence number for deduplication
+        };
+        ws.send(JSON.stringify(chunkMsg));
+
+        // 🎵 THEN generate TTS in parallel (don't block text streaming!)
         const canGenerateTTS = avatarStateService.canGenerateTTS(ws.sessionId || '');
         if (canGenerateTTS) {
-          await this.generateAndStreamSentenceTTS(
+          // Fire-and-forget: TTS generation happens in background
+          // Note: generateAndStreamSentenceTTS returns immediately (line 673)
+          // The actual TTS work runs async in the ttsInFlightMap
+          this.generateAndStreamSentenceTTS(
             ws,
             currentSentence.trim(),
             sentenceIndex,
@@ -1472,19 +1492,11 @@ export class VoiceStreamService {
               enablePhonemes: true
             },
             ws.ttsInFlightMap  // 🔥 Pass SHARED in-flight Map (atomic dedup)
-          );
+          ).catch(err => {
+            console.error(`[TEXT QUERY] ❌ Background TTS failed for final sentence ${sentenceIndex}:`, err);
+            // Don't throw - text is already sent, TTS is optional enhancement
+          });
         }
-
-        const chunkMsg: VoiceMessage = {
-          type: 'AI_RESPONSE_CHUNK',
-          timestamp: new Date().toISOString(),
-          sessionId: ws.sessionId,
-          content: currentSentence.trim(),
-          messageId,
-          isFirst: sentenceIndex === 0,
-          chunkIndex: sentenceIndex // 🔢 Add sequence number for deduplication
-        };
-        ws.send(JSON.stringify(chunkMsg));
       }
 
       // Send TTS_END if TTS was generated
