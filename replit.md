@@ -3,6 +3,13 @@
 ## Overview
 VaktaAI is an AI-powered educational platform designed to be a comprehensive study companion, offering an AI Mentor, Document Chat, Quiz Generation, Study Plan Management, and Smart Notes. It supports multilingual learning (English, Hindi) across various content formats (PDFs, videos, audio, web content). The platform aims to provide grounded, citation-based AI responses to prevent hallucination, alongside a "fast, calm UI" with minimal navigation, real-time streaming, keyboard-first interactions, and strong accessibility. VaktaAI's vision is to revolutionize personalized education through adaptive AI.
 
+## Recent Performance Optimizations (Nov 27, 2025)
+- **Parallel Text + TTS Streaming**: Text chunks now stream instantly to users while TTS generates in parallel background. Previously, text was blocked waiting for TTS completion, causing perceived lag. This fix delivers:
+  - Instant text response visibility (no waiting for audio)
+  - Background TTS generation with atomic deduplication (ttsInFlightMap)
+  - Graceful degradation: Text works even if TTS fails
+  - Fire-and-forget pattern with comprehensive error logging
+
 ## User Preferences
 Preferred communication style: Simple, everyday language (Hindi/English/Hinglish mix for Indian students).
 
