@@ -590,6 +590,14 @@ optimizedTutorRouter.post('/session/ask', async (req, res) => {
       // Intent context
       intent: intentResult.intent,
       
+      // User profile context (from onboarding)
+      userProfile: session.profileSnapshot ? {
+        currentClass: session.profileSnapshot.currentClass,
+        examTarget: session.profileSnapshot.examTarget,
+        educationBoard: session.profileSnapshot.educationBoard,
+        firstName: session.profileSnapshot.firstName
+      } : undefined,
+      
       // Session context
       messageCount: sessionCtx?.messageCount || 0,
       misconceptions: session.adaptiveMetrics?.misconceptions || [],

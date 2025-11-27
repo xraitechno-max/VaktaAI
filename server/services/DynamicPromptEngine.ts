@@ -28,6 +28,14 @@ export interface PromptContext {
   // Exam type context
   examType?: 'board' | 'competitive';
   
+  // User profile context (from onboarding)
+  userProfile?: {
+    currentClass?: string;
+    examTarget?: string;
+    educationBoard?: string;
+    firstName?: string;
+  };
+  
   // Session context
   messageCount?: number;
   misconceptions?: string[];
@@ -167,16 +175,64 @@ export class DynamicPromptEngine {
   }
 
   /**
-   * Get learning context section
+   * Get learning context section with user profile
    */
   private getLearningContext(context: PromptContext): string {
-    return `
+    let contextStr = `
 CURRENT LEARNING CONTEXT:
 Subject: ${context.subject}
 Topic: ${context.topic}
 Student Level: ${context.level}
 Session Phase: ${context.currentPhase}
 ${context.messageCount ? `Messages in Session: ${context.messageCount}` : ''}`;
+
+    // Add user profile context for personalized teaching
+    if (context.userProfile) {
+      const { currentClass, examTarget, educationBoard, firstName } = context.userProfile;
+      
+      if (currentClass || examTarget) {
+        contextStr += '\n\nSTUDENT PROFILE:';
+        
+        if (firstName) {
+          contextStr += `\nName: ${firstName}`;
+        }
+        
+        if (currentClass) {
+          contextStr += `\nClass: ${currentClass}`;
+          
+          // Class-specific teaching guidance
+          const classNum = currentClass;
+          if (classNum === 'dropper') {
+            contextStr += '\n- DROPPER STUDENT: This is their second attempt. They have determination and need focused, exam-oriented preparation. Build confidence while addressing gaps.';
+          } else if (['6', '7', '8'].includes(classNum)) {
+            contextStr += '\n- FOUNDATION STAGE: Focus on building strong fundamentals. Use simple explanations and interesting examples. Avoid overwhelming with advanced concepts.';
+          } else if (['9', '10'].includes(classNum)) {
+            contextStr += '\n- BOARD PREPARATION: Balance conceptual clarity with board exam patterns. Emphasize NCERT concepts and scoring strategies.';
+          } else if (['11', '12'].includes(classNum)) {
+            contextStr += '\n- ADVANCED STAGE: Prepare for both boards and competitive exams. Go deeper into concepts, include problem-solving techniques and exam shortcuts.';
+          }
+        }
+        
+        if (examTarget) {
+          contextStr += `\nExam Goal: ${examTarget}`;
+          
+          // Exam-specific guidance
+          if (examTarget.includes('JEE')) {
+            contextStr += '\n- JEE FOCUS: Emphasize conceptual depth, multiple approaches, and tricky problem patterns. Include time-saving techniques.';
+          } else if (examTarget.includes('NEET')) {
+            contextStr += '\n- NEET FOCUS: Balance theory with NCERT-based application questions. Include memory techniques and high-yield topics.';
+          } else if (examTarget.includes('Board')) {
+            contextStr += '\n- BOARD FOCUS: Stick to NCERT patterns. Focus on scoring well with clear, step-by-step solutions.';
+          }
+        }
+        
+        if (educationBoard) {
+          contextStr += `\nBoard: ${educationBoard}`;
+        }
+      }
+    }
+
+    return contextStr;
   }
 
   /**
