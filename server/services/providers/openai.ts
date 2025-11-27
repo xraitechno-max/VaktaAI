@@ -4,7 +4,7 @@ import { AIProvider, Summary, Quiz, Note } from "../aiProvider";
 // Lazy initialization of OpenAI client
 let openai: OpenAI | null = null;
 
-function getOpenAI(): OpenAI {
+export function getOpenAI(): OpenAI {
   if (!openai) {
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
