@@ -1,137 +1,49 @@
 # VaktaAI - AI-Powered Study Companion
 
 ## Overview
-VaktaAI is an AI-powered educational platform designed to be a comprehensive study companion, offering an AI Mentor, Document Chat, Quiz Generation, Study Plan Management, and Smart Notes. It supports multilingual learning (English, Hindi) across various content formats (PDFs, videos, audio, web content). The platform aims to provide grounded, citation-based AI responses to prevent hallucination, alongside a "fast, calm UI" with minimal navigation, real-time streaming, keyboard-first interactions, and strong accessibility. VaktaAI's vision is to revolutionize personalized education through adaptive AI.
-
-## Recent Updates (Nov 28, 2025)
-
-### AI Mentor Response Strategy Enhancement
-VaktaAI AI Mentor now implements Socratic teaching methodology inspired by best practices from Shepherd.study and Indian AI tutoring platforms:
-
-**New Structured Greeting Format (24 variants)**:
-- Personal introduction with methodology explanation
-- Session workflow explanation (focused questions, thinking together, understanding checks)
-- Initial assessment questions (prior knowledge + session goal)
-- Complete coverage: 4 contexts x 3 times x 2 languages
-
-**Socratic Teaching Method**:
-- Never give direct answers to problems
-- Guide through questioning, not telling
-- Progressive hint system (4 levels)
-- Subject-specific hooks (Physics, Chemistry, Biology, Math)
-
-**Subject-Specific Strategies**:
-- Physics: Real-world phenomena (phone, car, sports)
-- Chemistry: Daily life connections (cooking, health)
-- Biology: Body/nature examples
-- Math: Problem-solving scenarios
-
-**Documentation**: `docs/AI_MENTOR_RESPONSE_PLAN.md`
-
----
-
-## Previous Updates (Nov 27, 2025)
-
-### AI Mentor Personalization System (Task 9 - COMPLETED)
-VaktaAI now delivers fully personalized AI Mentor greetings and teaching strategies based on user onboarding data:
-
-**Greeting Personalization**:
-- **Context-Based Templates**: 4 student contexts (Foundation/Board Prep/Competitive/Dropper) × 2 languages (English/Hinglish) × 3 times (Morning/Afternoon/Evening)
-- **Direct & Professional**: Removed generic greetings ("Good morning", "Namaste") and informal terms ("beta", "baccho")
-- **Class-Specific Motivation**:
-  - Classes 6-8 (Foundation): Focus on building strong basics
-  - Classes 9-10 (Board Prep): Balance concepts with board exam patterns
-  - Classes 11-12 (Competitive): Deep concepts + JEE/NEET preparation
-  - Dropper: Comeback motivation with focused exam preparation
-
-**System Prompt Intelligence**:
-- **Class-Aware Teaching**: Difficulty level, explanation depth, and example complexity adapt to student's class
-- **Exam-Specific Focus**: JEE demands conceptual depth + shortcuts, NEET emphasizes NCERT + memory techniques, Boards focus on scoring strategies
-- **Profile Integration**: Student name, class, exam target, and board all influence AI behavior
-
-**Technical Implementation**:
-- `normalizeClass()`: Robust parsing of "Class 11", "Grade 10", "11th", "Dropper", etc.
-- `getGreetingTemplate()`: Context detection based on normalized class (foundation/board_prep/competitive/dropper)
-- `DynamicPromptEngine`: Enhanced with userProfile context for personalized teaching guidance
-- `tutorSessionService`: Language preference priority (user.languagePreference > chat.language)
-- `optimizedTutor.ts`: Automatic examType detection (competitive vs board) from examTarget
-
-**Data Flow**: Onboarding → User Profile → Session Snapshot → Greeting Selection + System Prompt → Personalized AI Response
-
-### Performance Optimizations
-- **Parallel Text + TTS Streaming**: Text chunks now stream instantly to users while TTS generates in parallel background. Previously, text was blocked waiting for TTS completion, causing perceived lag. This fix delivers:
-  - Instant text response visibility (no waiting for audio)
-  - Background TTS generation with atomic deduplication (ttsInFlightMap)
-  - Graceful degradation: Text works even if TTS fails
-  - Fire-and-forget pattern with comprehensive error logging
-
-- **WebGL/Unity Loading Optimization**: Server-side URL caching for browser cache enablement
-  - **Server-Side URL Caching**: Presigned S3 URLs cached for 24 hours (auto-refresh 1h before expiry)
-  - **Browser Caching**: All clients get same URLs, enabling standard HTTP caching  
-  - **Performance Impact**: First visit ~15-20s (97MB download), repeat visits benefit from browser cache
-  - **Implementation**: Cache-Control headers on Unity asset responses
+VaktaAI is an AI-powered educational platform designed to be a comprehensive study companion, offering an AI Mentor, Document Chat, Quiz Generation, Study Plan Management, and Smart Notes. It supports multilingual learning (English, Hindi) across various content formats (PDFs, videos, audio, web content). The platform aims to provide grounded, citation-based AI responses to prevent hallucination, alongside a "fast, calm UI" with minimal navigation, real-time streaming, keyboard-first interactions, and strong accessibility. VaktaAI's vision is to revolutionize personalized education through adaptive AI, providing curriculum-aligned tutoring for Indian students (Classes 6-12 and Droppers) with personalized greetings and teaching strategies.
 
 ## User Preferences
 Preferred communication style: Simple, everyday language (Hindi/English/Hinglish mix for Indian students).
-
-## Unity Integration Requirements
-
-### Audio Playback Completion Tracking
-The Unity WebGL avatar build **must** send completion messages when TTS audio finishes playing:
-
-1. **AUDIO_ENDED** message: Send when audio playback completes successfully
-   ```javascript
-   // Unity C# example:
-   SendMessageToReact("AUDIO_ENDED", JSON.stringify({ id: audioId }));
-   ```
-
-2. **AUDIO_FAILED** message: Send when audio playback fails
-   ```javascript
-   // Unity C# example:
-   SendMessageToReact("AUDIO_FAILED", JSON.stringify({ error: errorMessage }));
-   ```
-
-**Why this is critical**: React keeps `playingAudio` state active until Unity confirms completion. Without these messages, a 30-second safety timeout will fire, but proper completion tracking ensures smooth UX and prevents stuck UI states.
-
-**React-side implementation** (already complete):
-- `useUnityBridge.ts` handles AUDIO_ENDED/AUDIO_FAILED messages
-- `TutorSession.tsx` clears `playingAudio` state when messages received
-- 30-second safety timeout prevents permanent stuck states if Unity crashes
 
 ## System Architecture
 
 ### Frontend
 - **Framework & Build System**: React with TypeScript, Vite, Wouter, TanStack Query.
 - **UI Component System**: Radix UI, shadcn/ui (New York style), Tailwind CSS, Lucide icons.
-- **Design System**: Sarvam AI-Inspired Modern Design with a purple/indigo gradient palette, glassmorphism, enhanced shadows, and custom animation tokens. It is fully responsive and mobile-first.
-- **UI/UX Decisions**: Material Design compliant global modal system, premium gradient-based chat UI. A 7-phase conversational mentor system with visual indicators, adaptive learning, and emotion detection. Voice mentor interactions include real-time waveform visualization. Document chat features an upload-first layout, OCR, suggested questions, and citation preview. Integration of a Unity 3D Avatar for interactive experiences with **server-side Azure viseme generation for Unity lip-sync**.
-- **Mobile-First Responsive Design**: Breakpoints for mobile (<640px), tablet (640-1024px), and desktop (>1024px) to ensure optimal layout and functionality across devices, especially targeting low-end Indian smartphones. Performance and accessibility are critical considerations for mobile.
+- **Design System**: Sarvam AI-Inspired Modern Design with a purple/indigo gradient palette, glassmorphism, enhanced shadows, and custom animation tokens.
+- **UI/UX Decisions**: Fully responsive and mobile-first design targeting low-end Indian smartphones. Material Design compliant global modal system, premium gradient-based chat UI, 7-phase conversational mentor system with visual indicators, adaptive learning, and emotion detection. Voice mentor interactions include real-time waveform visualization. Document chat features an upload-first layout, OCR, suggested questions, and citation preview. Integration of a Unity 3D Avatar for interactive experiences with server-side Azure viseme generation for Unity lip-sync.
 
 ### Backend
 - **Server Framework**: Express.js with TypeScript, RESTful API, session-based authentication.
 - **Database Layer**: PostgreSQL with pgvector, Drizzle ORM, Neon serverless driver, supporting multi-tenant design.
-- **AI Integration**: **Multi-provider model routing** with Groq (Llama 3.3 70B), OpenAI (GPT-4o, GPT-4o-mini), Google Gemini 2.5 Flash, and Anthropic Claude Haiku. **Groq Integration** powers 5 fast services: Intent Classification, Emotion Detection, Tone Validation, Educational Quality Check, and AI Dual Output (SSML+Markdown) - delivering 3-5x faster responses and 60-66% cost reduction vs OpenAI with automatic OpenAI fallback for reliability. Features include streaming responses, structured output, document processing, citation tracking (RAG), and local embedding generation (all-MiniLM-L6-v2). Agentic RAG for DocChat incorporates planning agents, specialized tools, multi-step reasoning, self-reflection, and confidence scoring. Includes intelligent model routing, semantic caching, dynamic token management, and a Dynamic Language System. AI Mentor optimizes with intent classification, language-aware prompt engineering, emotion detection, dynamic response adaptation, and progressive hinting.
-- **Voice Services & Unified WebSocket Protocol**: All AI Mentor interactions use a unified WebSocket protocol for real-time streaming. **Primary TTS**: **Azure Cognitive Services EXCLUSIVELY for Unity Avatar** (en-IN-NeerjaNeural with empathetic style for English, hi-IN-AartiNeural for Hindi - latest 2025 HD voices with 48kHz quality). **SSML Support**: Azure TTS supports SSML prosody controls (rate, pitch, emphasis) for expressive speech. **Fallback TTS for Avatar**: Sarvam → Google → Polly (SSML tags automatically stripped for non-Azure providers). **Text-Only TTS**: Sarvam AI Bulbul v2 (primary) with Google/Polly fallbacks. **STT**: Sarvam AI Saarika v2 (primary) with AssemblyAI (fallback). The enhanced TTS pipeline includes Indian English math pronunciation, Hinglish math terms, physics unit normalization, intent+emotion prosody, Hinglish code-switching, and technical term capitalization. Streaming TTS uses real-time sentence-by-sentence generation with parallel synthesis, optimized with phrase-level TTS caching and gzip audio compression. **Azure Viseme Generation**: Server-side viseme timing data (audioOffset + visemeId 0-21) generated by Azure TTS for Unity lip-sync. Reliability includes circuit breaker patterns and avatar-aware TTS queueing.
+- **AI Integration**: Multi-provider model routing (Groq, OpenAI, Google Gemini, Anthropic Claude). Groq powers fast services (Intent Classification, Emotion Detection, Tone Validation, Educational Quality Check, AI Dual Output - SSML+Markdown) with automatic OpenAI fallback. Features include streaming responses, structured output, document processing, citation tracking (RAG), and local embedding generation. Agentic RAG for DocChat incorporates planning agents, specialized tools, multi-step reasoning, self-reflection, and confidence scoring. AI Mentor optimizes with intent classification, language-aware prompt engineering, emotion detection, dynamic response adaptation, and progressive hinting.
+- **AI Mentor Curriculum-Aligned Tutoring**: Implements a pedagogically-sound system with 5 teaching modes (socratic, direct, scaffolded_direct, revision_mode, worked_example), a 6-level hint ladder system, and a demotivation monitor. Integrates NCERT RAG, class-level adaptations (foundation, bridge, board, competitive, dropper), and subject-specific strategies. Uses an EnhancedPromptEngine to build dynamic prompts based on user profile and session context. Critical policies include no emojis and strict use of "AI Mentor" terminology.
+- **Voice Services & Unified WebSocket Protocol**: All AI Mentor interactions use a unified WebSocket protocol. Primary TTS is Azure Cognitive Services (en-IN-NeerjaNeural, hi-IN-AartiNeural) with SSML support for Unity Avatar. Fallback TTS includes Sarvam, Google, Polly. STT uses Sarvam AI Saarika v2 with AssemblyAI fallback. Enhanced TTS pipeline includes Indian English/Hinglish math pronunciation, physics unit normalization, intent+emotion prosody, and technical term capitalization. Streaming TTS uses real-time sentence-by-sentence generation with phrase-level caching and gzip audio compression. Azure Viseme Generation provides server-side timing data for Unity lip-sync.
 - **File Storage**: AWS S3 for object storage, using presigned URLs.
 - **Authentication and Authorization**: Custom email/password with bcrypt, server-side sessions in PostgreSQL, HTTP-only secure cookies, and session-based middleware.
 - **Security Hardening**: Global and specific API rate limiting, Helmet.js, and environment-aware Content Security Policy (CSP).
 
+### Unity Integration
+- **Audio Playback Completion Tracking**: Unity WebGL avatar build **must** send `AUDIO_ENDED` and `AUDIO_FAILED` messages to React when TTS audio finishes or fails. This is crucial for maintaining `playingAudio` state and smooth UX.
+- **Unity Avatar Lip-Sync**: Server-side Azure TTS generates viseme IDs (0-21) with timing data. Unity C# code maps these visemes to ARKit blend shapes for lip-sync.
+
 ## External Dependencies
 
 ### Third-Party APIs
-- **Groq API** - Ultra-fast LLM inference (Llama 3.3 70B) for Intent, Emotion, Validation, SSML generation
-- OpenAI API - GPT-4o/mini for complex reasoning, embeddings, and Agentic RAG
+- Groq API
+- OpenAI API
 - AWS S3
 - Google Gemini API
 - Anthropic API
-- **Azure Cognitive Services (Speech)** - Primary TTS with Indian voices
+- Azure Cognitive Services (Speech)
 - Sarvam AI (STT/TTS)
 - AssemblyAI (STT)
-- AWS Polly (TTS - Fallback)
+- AWS Polly (TTS)
+- GitHub API
 
 ### Database Services
 - Neon PostgreSQL
-- Drizzle Kit
 - Upstash Redis
 
 ### Frontend Libraries
@@ -154,16 +66,4 @@ The Unity WebGL avatar build **must** send completion messages when TTS audio fi
 - @langchain/*
 - ioredis
 - @xenova/transformers
-- microsoft-cognitiveservices-speech-sdk (Azure TTS)
-- @octokit/rest (GitHub API integration)
-
-## GitHub Integration
-- **Repository**: https://github.com/xraitechno-max/VaktaAI-Unity-Docs
-- **Unity Viseme Mapping Documentation**: `docs/UNITY_AVATAR_VISEME_MAPPING.md`
-- **GitHub Client**: `server/services/github-client.ts` - Replit connector-based GitHub OAuth
-
-### Unity Avatar Lip-Sync Architecture
-1. **Server-side**: Azure TTS generates viseme IDs 0-21 with timing data
-2. **API Response**: `{time: 50, blendshape: "viseme_0", weight: 1.0}`
-3. **Unity C# Mapping Required**: Convert viseme_0-21 to ARKit blend shapes (jawOpen, mouthPucker, etc.)
-4. **Full mapping table**: See `docs/UNITY_AVATAR_VISEME_MAPPING.md`
+- microsoft-cognitiveservices-speech-sdk
