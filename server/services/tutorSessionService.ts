@@ -604,7 +604,7 @@ Chalo wahi se continue karte hain!`;
     const needsIntervention = demotivationMonitor.needsIntervention(signals);
 
     if (needsIntervention) {
-      const level = demotivationMonitor.determineInterventionLevel(signals);
+      const level = demotivationMonitor.determineInterventionLevel(signals, metrics);
       const intervention = demotivationMonitor.getIntervention(level, subject);
       
       // Record the event
