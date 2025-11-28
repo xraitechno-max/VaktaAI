@@ -3,7 +3,34 @@
 ## Overview
 VaktaAI is an AI-powered educational platform designed to be a comprehensive study companion, offering an AI Mentor, Document Chat, Quiz Generation, Study Plan Management, and Smart Notes. It supports multilingual learning (English, Hindi) across various content formats (PDFs, videos, audio, web content). The platform aims to provide grounded, citation-based AI responses to prevent hallucination, alongside a "fast, calm UI" with minimal navigation, real-time streaming, keyboard-first interactions, and strong accessibility. VaktaAI's vision is to revolutionize personalized education through adaptive AI.
 
-## Recent Updates (Nov 27, 2025)
+## Recent Updates (Nov 28, 2025)
+
+### AI Mentor Response Strategy Enhancement
+VaktaAI AI Mentor now implements Socratic teaching methodology inspired by best practices from Shepherd.study and Indian AI tutoring platforms:
+
+**New Structured Greeting Format (24 variants)**:
+- Personal introduction with methodology explanation
+- Session workflow explanation (focused questions, thinking together, understanding checks)
+- Initial assessment questions (prior knowledge + session goal)
+- Complete coverage: 4 contexts x 3 times x 2 languages
+
+**Socratic Teaching Method**:
+- Never give direct answers to problems
+- Guide through questioning, not telling
+- Progressive hint system (4 levels)
+- Subject-specific hooks (Physics, Chemistry, Biology, Math)
+
+**Subject-Specific Strategies**:
+- Physics: Real-world phenomena (phone, car, sports)
+- Chemistry: Daily life connections (cooking, health)
+- Biology: Body/nature examples
+- Math: Problem-solving scenarios
+
+**Documentation**: `docs/AI_MENTOR_RESPONSE_PLAN.md`
+
+---
+
+## Previous Updates (Nov 27, 2025)
 
 ### AI Mentor Personalization System (Task 9 - COMPLETED)
 VaktaAI now delivers fully personalized AI Mentor greetings and teaching strategies based on user onboarding data:

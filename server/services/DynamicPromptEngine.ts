@@ -94,7 +94,12 @@ export class DynamicPromptEngine {
       }
     }
     
-    // 5. Misconceptions and strengths adaptation
+    // 5. Socratic teaching strategy
+    const socraticStrategy = this.getSocraticTeachingStrategy(context);
+    systemPrompt += '\n\n' + socraticStrategy;
+    adaptations.push('Socratic method enabled');
+    
+    // 6. Misconceptions and strengths adaptation
     if (context.misconceptions && context.misconceptions.length > 0) {
       const misconceptionGuidance = this.getMisconceptionGuidance(context.misconceptions);
       systemPrompt += '\n\n' + misconceptionGuidance;
@@ -107,13 +112,13 @@ export class DynamicPromptEngine {
       adaptations.push(`Building on ${context.strongConcepts.length} strong concepts`);
     }
     
-    // 6. Response time adaptation (if slow responses, keep it concise)
+    // 7. Response time adaptation (if slow responses, keep it concise)
     if (context.avgResponseTime && context.avgResponseTime > 3000) {
       systemPrompt += '\n\nIMPORTANT: Keep responses concise and focused (user has slow response times).';
       adaptations.push('Optimized for slow connection');
     }
     
-    // 7. Language consistency reminder
+    // 8. Language consistency reminder
     if (context.preferredLanguage && context.preferredLanguage !== context.detectedLanguage) {
       systemPrompt += `\n\nNOTE: User typically uses ${context.preferredLanguage} but current message is in ${context.detectedLanguage}. Match current message language unless user explicitly requests change.`;
       adaptations.push('Language switch detected');
@@ -282,6 +287,62 @@ IMPORTANT: Build on these strengths when teaching new concepts. Use these as anc
   }
 
   /**
+   * Get Socratic teaching strategy based on context
+   */
+  private getSocraticTeachingStrategy(context: PromptContext): string {
+    const strategies: string[] = [];
+    
+    // Core Socratic principles
+    strategies.push(`
+SOCRATIC TEACHING METHOD:
+- NEVER give direct answers to problems
+- Ask guiding questions to help student think
+- Build understanding through questioning, not telling
+- Use "What do you think would happen if..." type questions
+- Celebrate the thinking process, not just correct answers`);
+
+    // Progressive hint system
+    strategies.push(`
+PROGRESSIVE HINT SYSTEM (for wrong answers):
+Level 1 (First wrong attempt): Gentle nudge - "Good try! But think about..."
+Level 2 (Second wrong attempt): More guidance - "Let me guide you. First, consider..."
+Level 3 (Third wrong attempt): Detailed help - "Chalo step by step dekhte hain..."
+Level 4 (After 3 attempts): Full walkthrough with explanation of each step`);
+
+    // Concept hook strategies based on subject
+    if (context.subject) {
+      const subjectLower = context.subject.toLowerCase();
+      if (subjectLower.includes('physics')) {
+        strategies.push(`
+PHYSICS HOOKS: Use real-world phenomena
+- Connect concepts to everyday experiences (phone, car, sports)
+- Explain "why" before "how to calculate"
+- Use visual analogies for abstract concepts`);
+      } else if (subjectLower.includes('chemistry')) {
+        strategies.push(`
+CHEMISTRY HOOKS: Use daily life connections
+- Relate to cooking, cleaning, health, materials
+- Use color, smell, taste analogies for reactions
+- Connect molecular behavior to macroscopic observations`);
+      } else if (subjectLower.includes('biology')) {
+        strategies.push(`
+BIOLOGY HOOKS: Use body/nature examples
+- Connect to student's own body experiences
+- Use familiar organisms as examples
+- Relate processes to survival and adaptation`);
+      } else if (subjectLower.includes('math')) {
+        strategies.push(`
+MATH HOOKS: Use problem-solving scenarios
+- Frame problems as real-world challenges
+- Show practical applications before abstract formulas
+- Build intuition before rigor`);
+      }
+    }
+
+    return strategies.join('\n');
+  }
+
+  /**
    * Generate response guidelines based on context
    */
   private generateResponseGuidelines(context: PromptContext): string[] {
@@ -296,42 +357,65 @@ IMPORTANT: Build on these strengths when teaching new concepts. Use these as anc
       guidelines.push('Avoid complex jargon unless student level is advanced');
     }
     
-    // Emotional guidelines
+    // Emotional guidelines with specific adaptations
     const emotionMods = EMOTION_RESPONSE_MODIFIERS[context.currentEmotion];
     if (emotionMods) {
       guidelines.push(`Tone: ${emotionMods.tone}`);
       guidelines.push(`Encouragement level: ${emotionMods.encouragement}`);
+      
+      // Emotion-specific Socratic adaptations
+      if (context.currentEmotion === 'frustrated') {
+        guidelines.push('Simplify questions, use easier examples, validate the struggle');
+        guidelines.push('Focus on high-yield topics, reassure about exam preparation');
+      } else if (context.currentEmotion === 'confident') {
+        guidelines.push('Increase challenge level, ask deeper probing questions');
+      } else if (context.currentEmotion === 'confused') {
+        guidelines.push('Break down into smaller steps, use simpler analogies');
+      } else if (context.currentEmotion === 'bored') {
+        guidelines.push('Add interesting hooks, challenge with real-world applications');
+      }
     }
     
-    // Phase guidelines
+    // Phase guidelines with Socratic approach
     switch (context.currentPhase) {
       case 'greeting':
-        guidelines.push('Warm welcome, build rapport quickly');
+        guidelines.push('Warm welcome, explain how sessions work, ask initial assessment questions');
         break;
       case 'assessment':
-        guidelines.push('Diagnose level without making student anxious');
+        guidelines.push('Diagnose level through questions, not lectures. Ask what they remember.');
         break;
       case 'teaching':
-        guidelines.push('Break concepts into chunks, check understanding frequently');
+        guidelines.push('Use Socratic questioning: "What do you think?", "Why might that be?"');
+        guidelines.push('Break concepts into chunks, check understanding after each');
+        guidelines.push('Use analogies and real-world hooks before formulas');
         break;
       case 'practice':
-        guidelines.push('Give hints, not answers. Let student solve problems');
+        guidelines.push('CRITICAL: Give progressive hints, NOT answers');
+        guidelines.push('Ask guiding questions: "What formula applies here?", "What is the first step?"');
+        guidelines.push('Let student struggle productively before helping');
         break;
       case 'feedback':
-        guidelines.push('Be specific and constructive, celebrate progress');
+        guidelines.push('Be specific about what they did well');
+        guidelines.push('Address misconceptions gently through questions');
+        guidelines.push('Celebrate the thinking process, not just correct answers');
         break;
       case 'closure':
-        guidelines.push('Recap key points, motivate for next session');
+        guidelines.push('Recap 2-3 key takeaways in student\'s words');
+        guidelines.push('Connect to exam relevance');
+        guidelines.push('Motivate for next session with preview');
         break;
     }
     
-    // Intent guidelines
+    // Intent guidelines with Socratic approach
     if (context.intent === 'request_hint') {
-      guidelines.push('CRITICAL: Give guiding question, NOT full solution');
+      guidelines.push('CRITICAL: Give guiding QUESTION, NOT solution hint');
+      guidelines.push('Ask: "What formula might help?", "What is given vs unknown?"');
     } else if (context.intent === 'submit_answer') {
-      guidelines.push('Evaluate answer, give constructive feedback');
+      guidelines.push('If correct: Celebrate and ask "How did you think about it?"');
+      guidelines.push('If wrong: Ask "Walk me through your thinking" before correcting');
     } else if (context.intent === 'request_explanation') {
-      guidelines.push('Explain concept with relatable examples');
+      guidelines.push('Start with real-world hook or analogy');
+      guidelines.push('Check understanding with quick questions after explanation');
     }
     
     return guidelines;
