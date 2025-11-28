@@ -990,7 +990,7 @@ export const documentReferenceLinks = pgTable('document_reference_links', {
 // ========== AI MENTOR CURRICULUM SYSTEM TYPES ==========
 
 // Teaching Mode Types
-export type TeachingMode = 'socratic' | 'direct' | 'scaffolded_direct' | 'supportive' | 'worked_example';
+export type TeachingMode = 'socratic' | 'direct' | 'scaffolded_direct' | 'revision_mode' | 'worked_example';
 
 export type HintLevel = 1 | 2 | 3 | 4 | 5 | 6;
 

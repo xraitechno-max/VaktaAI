@@ -380,7 +380,7 @@ export class TutorSessionService {
     const profile = session.profileSnapshot || {};
     const catchphrase = getPersonaCatchphrase(session.personaId);
     
-    const resumeText = `${catchphrase} ${profile.firstName}! Aapka session resume kar rahe hain! 🔄
+    const resumeText = `${catchphrase} ${profile.firstName}! Aapka session resume kar rahe hain.
 
 Pichli baar hum ruk gaye the: ${session.currentPhase} phase mein
 Progress: ${session.progress}%
@@ -735,14 +735,14 @@ Chalo wahi se continue karte hain!`;
     const normalized = subject.toLowerCase();
     if (normalized.includes('physics')) return 'physics';
     if (normalized.includes('chemistry')) return 'chemistry';
-    if (normalized.includes('math')) return 'mathematics';
+    if (normalized.includes('math')) return 'math';
     if (normalized.includes('bio')) return 'biology';
     return 'physics';
   }
 
-  // Helper: Map class string to ClassLevel
+  // Helper: Map class string to ClassLevel (individual class number)
   private mapClassToLevel(classStr?: string): ClassLevel {
-    if (!classStr) return 'competitive_jee_11_12';
+    if (!classStr) return '11'; // Default to Class 11
     
     const normalized = classStr.toLowerCase();
     if (normalized.includes('dropper')) return 'dropper';
@@ -750,13 +750,13 @@ Chalo wahi se continue karte hain!`;
     const match = normalized.match(/(\d{1,2})/);
     if (match) {
       const classNum = parseInt(match[1]);
-      if (classNum >= 6 && classNum <= 7) return 'foundation_6_7';
-      if (classNum >= 8 && classNum <= 9) return 'bridge_8_9';
-      if (classNum === 10) return 'board_10';
-      if (classNum >= 11) return 'competitive_jee_11_12'; // Default to JEE
+      // Ensure we return a valid ClassLevel
+      if (classNum >= 6 && classNum <= 12) {
+        return classNum.toString() as ClassLevel;
+      }
     }
     
-    return 'competitive_jee_11_12';
+    return '11'; // Default to Class 11
   }
 }
 

@@ -33,11 +33,11 @@ export class TeachingModeEngine {
     } = context;
 
     if (requestType === 'revision' || timePressure === true) {
-      return 'direct';
+      return 'revision_mode';
     }
 
     if (frustrationCount >= 2 && emotion === 'frustrated') {
-      return 'supportive';
+      return 'scaffolded_direct'; // Extra support but still teaching
     }
 
     if (recentAttempts >= 3) {
@@ -68,7 +68,7 @@ export class TeachingModeEngine {
       socratic: 3,
       direct: 6,
       scaffolded_direct: 6,
-      supportive: 6,
+      revision_mode: 6,
       worked_example: 6,
     };
 
@@ -76,7 +76,7 @@ export class TeachingModeEngine {
       socratic: 1,
       direct: 6,
       scaffolded_direct: 3,
-      supportive: 4,
+      revision_mode: 4,
       worked_example: 5,
     };
 
@@ -132,8 +132,8 @@ export class TeachingModeEngine {
         }
         return 'Direct mode selected: Default approach for clear explanation';
 
-      case 'supportive':
-        return `Supportive mode selected: Student showing signs of frustration (count: ${frustrationCount}, emotion: ${emotion})`;
+      case 'revision_mode':
+        return 'Revision mode selected: Quick review with focus on key formulas and concepts';
 
       case 'scaffolded_direct':
         if (recentAttempts >= 3) {
@@ -160,7 +160,7 @@ export class TeachingModeEngine {
       socratic: 'Guided discovery through questions (uses hints L1-L3)',
       direct: 'Clear, efficient explanation with full solution',
       scaffolded_direct: 'Step-by-step guidance starting from L3',
-      supportive: 'Encouraging approach with extra support and patience',
+      revision_mode: 'Quick review with focus on formulas and exam-relevant points',
       worked_example: 'Learn by example - showing similar solved problems',
     };
     return descriptions[mode];
@@ -171,7 +171,7 @@ export class TeachingModeEngine {
       socratic: { min: 1, max: 3 },
       direct: { min: 6, max: 6 },
       scaffolded_direct: { min: 3, max: 6 },
-      supportive: { min: 4, max: 6 },
+      revision_mode: { min: 4, max: 6 },
       worked_example: { min: 5, max: 6 },
     };
     return ranges[mode];

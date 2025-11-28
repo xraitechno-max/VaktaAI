@@ -191,7 +191,7 @@ const MODE_CONSTRAINTS: Record<TeachingMode, { entryLevel: HintLevel; maxLevel: 
   socratic: { entryLevel: 1, maxLevel: 3 },
   direct: { entryLevel: 6, maxLevel: 6 },
   scaffolded_direct: { entryLevel: 3, maxLevel: 6 },
-  supportive: { entryLevel: 4, maxLevel: 6 },
+  revision_mode: { entryLevel: 4, maxLevel: 6 },
   worked_example: { entryLevel: 5, maxLevel: 6 },
 };
 

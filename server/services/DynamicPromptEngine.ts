@@ -675,13 +675,13 @@ ${phraseBanks.examTips.slice(0, 4).map(p => `- "${p}"`).join('\n')}
 - Student needs structure, not discovery right now
 - Hint levels: Start at L3 (first step scaffold), progress to L6`,
       
-      supportive: `SUPPORTIVE MODE - Emotional Priority
-- Student is struggling emotionally, not just academically
-- Be extra patient and encouraging
-- Acknowledge their feelings before teaching
-- Use simpler examples and smaller steps
-- Celebrate every small win
-- Hint levels: Start at L4 (targeted hints with encouragement)`,
+      revision_mode: `REVISION MODE - Quick Review
+- Student is revising or facing time pressure
+- Focus on key formulas and exam-relevant points
+- Be efficient - quick refresher, not deep teaching
+- Highlight important patterns and common question types
+- Include memory tricks and shortcuts
+- Hint levels: Start at L4 (key formulas and shortcuts)`,
       
       worked_example: `WORKED EXAMPLE MODE - Learn by Watching
 - Show a similar problem solved completely
@@ -1006,9 +1006,9 @@ ${modifiers.encouragement}`;
         case 'direct':
           guidelines.push('Be concise and clear - efficiency matters here');
           break;
-        case 'supportive':
-          guidelines.push('Use extra encouragement - student is struggling');
-          guidelines.push('Validate feelings before teaching');
+        case 'revision_mode':
+          guidelines.push('Be efficient - focus on key formulas and shortcuts');
+          guidelines.push('Highlight exam-relevant points and common patterns');
           break;
         case 'scaffolded_direct':
           guidelines.push('Break into clear numbered steps');
