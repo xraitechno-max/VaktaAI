@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
@@ -63,22 +64,31 @@ export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizar
   useEffect(() => {
     if (!formData.examTarget || formData.subjects.length === 0) return;
     
-    const examLower = formData.examTarget.toLowerCase();
+    const examTarget = formData.examTarget;
     
-    // Define valid subjects for current exam target
+    // Define valid subjects for current exam target (must match SubjectSelection.tsx)
+    // ExamTarget IDs: board-only, board-foundation, board-jee-main, board-jee-advanced, board-neet, pure-jee, pure-neet
     let validSubjects: string[] = [];
     
-    if (examLower.includes('neet')) {
-      validSubjects = ['physics', 'chemistry', 'biology', 'english'];
-    } else if (examLower.includes('jee')) {
-      validSubjects = ['physics', 'chemistry', 'maths', 'english'];
-    } else if (['6', '7', '8'].includes(formData.currentClass)) {
-      validSubjects = ['science', 'maths', 'social', 'english', 'hindi'];
-    } else if (['9', '10'].includes(formData.currentClass)) {
+    // NEET targets (pure-neet or board-neet)
+    if (examTarget === 'pure-neet' || examTarget === 'board-neet') {
+      validSubjects = ['physics', 'chemistry', 'biology', 'english', 'physical_education'];
+    }
+    // JEE targets (pure-jee, board-jee-main, board-jee-advanced)
+    else if (examTarget === 'pure-jee' || examTarget === 'board-jee-main' || examTarget === 'board-jee-advanced') {
+      validSubjects = ['physics', 'chemistry', 'maths', 'english', 'computer'];
+    }
+    // Class 6-8
+    else if (['6', '7', '8'].includes(formData.currentClass)) {
+      validSubjects = ['science', 'maths', 'social', 'english', 'hindi', 'computer'];
+    }
+    // Class 9-10
+    else if (['9', '10'].includes(formData.currentClass)) {
       validSubjects = ['physics', 'chemistry', 'biology', 'maths', 'social', 'english', 'hindi', 'computer'];
-    } else {
-      // Board-only or other exam targets for 11-12/dropper
-      validSubjects = ['physics', 'chemistry', 'maths', 'biology', 'english', 'hindi', 'computer'];
+    }
+    // Board-only for 11-12/dropper (Science stream default)
+    else {
+      validSubjects = ['physics', 'chemistry', 'maths', 'biology', 'english', 'computer', 'physical_education'];
     }
     
     // Remove any subjects that are no longer valid
@@ -125,9 +135,10 @@ export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizar
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
-      <Card className="w-full max-w-3xl p-6 lg:p-8 shadow-2xl">
+  // Use portal to render outside AppLayout DOM tree, completely covering the sidebar
+  const content = (
+    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-gradient-to-br from-purple-50 via-white to-blue-50 dark:from-slate-900 dark:via-slate-800 dark:to-slate-900">
+      <Card className="w-full max-w-3xl p-6 lg:p-8 shadow-2xl max-h-[90vh] overflow-y-auto">
         {/* Header */}
         <div className="text-center mb-8">
           <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-blue-600 bg-clip-text text-transparent mb-2">
@@ -244,4 +255,7 @@ export default function OnboardingWizard({ onComplete, onSkip }: OnboardingWizar
       </Card>
     </div>
   );
+
+  // Portal renders outside AppLayout, covering sidebar completely
+  return createPortal(content, document.body);
 }

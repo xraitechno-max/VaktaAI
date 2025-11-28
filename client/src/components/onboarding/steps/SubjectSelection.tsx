@@ -1,6 +1,6 @@
 import { Card } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
-import { Atom, FlaskConical, Calculator, Dna, BookOpen, Globe, Languages, Code, Beaker } from 'lucide-react';
+import { Atom, FlaskConical, Calculator, Dna, BookOpen, Globe, Languages, Code, Beaker, Activity, Palette, Music, Building2 } from 'lucide-react';
 
 interface SubjectSelectionProps {
   currentClass: string;
@@ -10,7 +10,7 @@ interface SubjectSelectionProps {
 }
 
 export default function SubjectSelection({ currentClass, examTarget, value, onChange }: SubjectSelectionProps) {
-  // All possible subjects with icons
+  // All possible subjects with icons - comprehensive list for all classes
   const allSubjects = [
     {
       id: 'physics',
@@ -75,55 +75,104 @@ export default function SubjectSelection({ currentClass, examTarget, value, onCh
       gradient: 'from-violet-500 to-purple-500',
       description: 'Programming, Data Structures',
     },
+    {
+      id: 'physical_education',
+      label: 'Physical Education',
+      icon: Activity,
+      gradient: 'from-green-500 to-teal-500',
+      description: 'Sports, Fitness, Health',
+    },
+    {
+      id: 'economics',
+      label: 'Economics',
+      icon: Building2,
+      gradient: 'from-emerald-500 to-green-500',
+      description: 'Micro, Macro, Indian Economy',
+    },
+    {
+      id: 'accountancy',
+      label: 'Accountancy',
+      icon: Calculator,
+      gradient: 'from-sky-500 to-blue-500',
+      description: 'Financial Statements, Accounting',
+    },
+    {
+      id: 'business_studies',
+      label: 'Business Studies',
+      icon: Building2,
+      gradient: 'from-slate-500 to-gray-500',
+      description: 'Management, Marketing, Finance',
+    },
+    {
+      id: 'fine_arts',
+      label: 'Fine Arts',
+      icon: Palette,
+      gradient: 'from-pink-500 to-rose-500',
+      description: 'Painting, Sculpture, Drawing',
+    },
+    {
+      id: 'music',
+      label: 'Music',
+      icon: Music,
+      gradient: 'from-fuchsia-500 to-purple-500',
+      description: 'Vocal, Instrumental, Theory',
+    },
   ];
 
   // Get subjects based on class and exam target
+  // ExamTarget IDs from ExamTargetSelection: board-only, board-foundation, board-jee-main, board-jee-advanced, board-neet, pure-jee, pure-neet
   const getAvailableSubjects = () => {
-    const examLower = examTarget.toLowerCase();
-    
-    // Class 6-8: General subjects
+    // Class 6-8: Foundation subjects (6 subjects)
     if (['6', '7', '8'].includes(currentClass)) {
       return allSubjects.filter(s => 
-        ['science', 'maths', 'social', 'english', 'hindi'].includes(s.id)
+        ['science', 'maths', 'social', 'english', 'hindi', 'computer'].includes(s.id)
       );
     }
     
-    // Class 9-10: Separate sciences
+    // Class 9-10: Board subjects with separate sciences (8 subjects)
     if (['9', '10'].includes(currentClass)) {
       return allSubjects.filter(s => 
         ['physics', 'chemistry', 'biology', 'maths', 'social', 'english', 'hindi', 'computer'].includes(s.id)
       );
     }
     
-    // Class 11-12 or Dropper: Based on exam target (with fallback if not set yet)
+    // Class 11-12 or Dropper: Based on exam target
     if (['11', '12', 'dropper'].includes(currentClass)) {
       if (!examTarget || examTarget === '') {
         // Default to all science subjects if exam target not set yet
         return allSubjects.filter(s => 
-          ['physics', 'chemistry', 'maths', 'biology', 'english', 'hindi', 'computer'].includes(s.id)
+          ['physics', 'chemistry', 'maths', 'biology', 'english', 'computer', 'physical_education'].includes(s.id)
         );
       }
       
-      if (examLower.includes('neet')) {
-        // NEET: PCB + English
+      // NEET targets: pure-neet or board-neet
+      if (examTarget === 'pure-neet' || examTarget === 'board-neet') {
+        // NEET: PCB + English + Physical Education (5 subjects)
         return allSubjects.filter(s => 
-          ['physics', 'chemistry', 'biology', 'english'].includes(s.id)
+          ['physics', 'chemistry', 'biology', 'english', 'physical_education'].includes(s.id)
         );
-      } else if (examLower.includes('jee')) {
-        // JEE: PCM + English
+      }
+      
+      // JEE targets: pure-jee, board-jee-main, board-jee-advanced
+      if (examTarget === 'pure-jee' || examTarget === 'board-jee-main' || examTarget === 'board-jee-advanced') {
+        // JEE: PCM + English + Computer Science (5 subjects)
         return allSubjects.filter(s => 
-          ['physics', 'chemistry', 'maths', 'english'].includes(s.id)
+          ['physics', 'chemistry', 'maths', 'english', 'computer'].includes(s.id)
         );
-      } else if (examLower.includes('board')) {
-        // Board exams: All science subjects
+      }
+      
+      // Board-only or board-foundation: Science stream (7 subjects)
+      if (examTarget === 'board-only' || examTarget === 'board-foundation') {
         return allSubjects.filter(s => 
-          ['physics', 'chemistry', 'maths', 'biology', 'english', 'hindi', 'computer'].includes(s.id)
+          ['physics', 'chemistry', 'maths', 'biology', 'english', 'computer', 'physical_education'].includes(s.id)
         );
       }
     }
     
-    // Default fallback: All subjects
-    return allSubjects;
+    // Default fallback: Science stream subjects
+    return allSubjects.filter(s => 
+      ['physics', 'chemistry', 'maths', 'biology', 'english', 'computer', 'physical_education'].includes(s.id)
+    );
   };
 
   const availableSubjects = getAvailableSubjects();
