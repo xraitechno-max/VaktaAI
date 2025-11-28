@@ -93,6 +93,16 @@ export default function Tutor() {
       const hasCompletedOnboarding = user.onboardingCompleted === true;
       const hasAllFields = user.currentClass && user.examTarget && user.subjects && user.subjects.length > 0 && user.languagePreference;
       const needsOnboarding = !hasCompletedOnboarding && !hasAllFields;
+      console.log('[ONBOARDING DEBUG]', {
+        hasCompletedOnboarding,
+        hasAllFields,
+        needsOnboarding,
+        currentClass: user.currentClass,
+        examTarget: user.examTarget,
+        subjects: user.subjects,
+        languagePreference: user.languagePreference,
+        onboardingCompleted: user.onboardingCompleted
+      });
       setShowOnboarding(needsOnboarding);
     }
   }, [user, userLoading, onboardingSkipped]);
