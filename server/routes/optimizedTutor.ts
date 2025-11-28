@@ -11,7 +11,7 @@ import { hintService } from '../services/hintService';
 import { storage } from '../storage';
 import { LanguageDetectionEngine, type DetectedLanguage } from '../services/LanguageDetectionEngine';
 import { SessionContextManager } from '../services/SessionContextManager';
-import { DynamicPromptEngine } from '../services/DynamicPromptEngine';
+import { DynamicPromptEngine, enhancedPromptEngine } from '../services/DynamicPromptEngine';
 import { ResponseValidator } from '../services/ResponseValidator';
 import { performanceOptimizer, metricsTracker } from '../services/PerformanceOptimizer';
 import type { IntentResult } from '../types/intents';
@@ -581,6 +581,56 @@ optimizedTutorRouter.post('/session/ask', async (req, res) => {
       }
     }
     
+    // 🆕 CURRICULUM-ALIGNED TUTORING INTEGRATION
+    // Map emotion to curriculum emotional state
+    const emotionMap: Record<string, 'confident' | 'confused' | 'frustrated' | 'bored' | 'neutral'> = {
+      'confident': 'confident',
+      'curious': 'confident',
+      'confused': 'confused',
+      'frustrated': 'frustrated',
+      'bored': 'bored',
+      'neutral': 'neutral',
+      'happy': 'confident',
+      'sad': 'frustrated'
+    };
+    const curriculumEmotion = emotionMap[emotionResult.emotion] || 'neutral';
+    
+    // 1. Check for demotivation signals
+    const responseTimeMs = sessionCtx?.lastMessageTime ? Date.now() - sessionCtx.lastMessageTime : 5000;
+    const demotivationCheck = tutorSessionService.checkDemotivation(session, query, responseTimeMs);
+    
+    if (demotivationCheck.needsIntervention) {
+      console.log(`[CURRICULUM] Demotivation detected (level ${demotivationCheck.level}): ${demotivationCheck.intervention}`);
+    }
+    
+    // 2. Determine request type from intent
+    const requestTypeMap: Record<string, 'doubt' | 'practice' | 'revision' | 'concept'> = {
+      'ask_doubt': 'doubt',
+      'request_hint': 'doubt',
+      'request_practice': 'practice',
+      'request_revision': 'revision',
+      'ask_concept': 'concept',
+      'submit_answer': 'practice'
+    };
+    const requestType = requestTypeMap[intentResult.intent] || 'concept';
+    
+    // 3. Decide teaching mode based on context
+    const teachingDecision = tutorSessionService.decideTeachingMode(session, curriculumEmotion, requestType);
+    console.log(`[CURRICULUM] Teaching mode: ${teachingDecision.mode} (${teachingDecision.rationale}), Tone: ${teachingDecision.toneModifier}`);
+    
+    // 4. Build enhanced prompt context with curriculum info
+    const detectedLangForPrompt = detectedLang as 'english' | 'hindi' | 'hinglish';
+    const enhancedContext = tutorSessionService.buildEnhancedPromptContext(session, curriculumEmotion, detectedLangForPrompt);
+    
+    // Add demotivation awareness if needed
+    if (demotivationCheck.needsIntervention && demotivationCheck.level) {
+      enhancedContext.demotivationLevel = demotivationCheck.level;
+    }
+    
+    // 5. Generate enhanced system prompt using curriculum-aligned engine
+    const enhancedPromptResult = enhancedPromptEngine.generateEnhancedSystemPrompt(enhancedContext);
+    console.log(`[CURRICULUM] Enhanced prompt generated with ${enhancedPromptResult.adaptations.length} adaptations`);
+    
     const promptContext = {
       // Language context
       detectedLanguage: detectedLang,
@@ -620,10 +670,14 @@ optimizedTutorRouter.post('/session/ask', async (req, res) => {
       avgResponseTime: sessionCtx?.avgResponseTime
     };
     
-    const generatedPrompt = dynamicPromptEngine.generateSystemPrompt(promptContext);
+    // Use enhanced prompt from curriculum-aligned engine (replaces old dynamicPromptEngine)
+    const generatedPrompt = enhancedPromptResult;
     
     console.log(`[DYNAMIC PROMPT] Generated with adaptations: ${generatedPrompt.adaptations.join(', ')}`);
     console.log(`[DYNAMIC PROMPT] Guidelines: ${generatedPrompt.responseGuidelines.length} rules applied`);
+    if (generatedPrompt.teachingModeApplied) {
+      console.log(`[DYNAMIC PROMPT] Teaching mode applied: ${generatedPrompt.teachingModeApplied}`);
+    }
     
     // Add persona-specific context
     const personaContext = `
@@ -637,6 +691,9 @@ Progress: ${session.progress}%
 Personality Traits: ${persona.personality.traits.join(', ')}
 Voice Style: ${persona.languageStyle.hindiPercentage}% Hindi, ${persona.languageStyle.englishPercentage}% English
 Catchphrases: ${persona.personality.catchphrases.slice(0, 2).join(', ')}
+
+TEACHING APPROACH: ${teachingDecision.mode} (${teachingDecision.toneModifier})
+${demotivationCheck.needsIntervention ? `STUDENT SUPPORT NEEDED: ${demotivationCheck.intervention}` : ''}
     `.trim();
     
     let sessionContext = `${generatedPrompt.systemPrompt}\n\n${personaContext}\n\n${generatedPrompt.responseGuidelines.join('\n')}`;
@@ -970,27 +1027,65 @@ optimizedTutorRouter.post('/session/ask-stream', async (req, res) => {
       console.log(`[SESSION ASSESSMENT] Level: ${assessmentResult.level}, Score: ${assessmentResult.score}`);
     }
     
-    // 🔥 STEP 4: GENERATE DYNAMIC PROMPT USING MULTI-FACTOR ANALYSIS
-    const promptResult = dynamicPromptEngine.generateSystemPrompt({
-      detectedLanguage: detectedLang,
-      preferredLanguage: session.profileSnapshot?.preferredLanguage as DetectedLanguage,
-      languageConfidence: langDetection?.confidence || 0.5,
-      currentEmotion: emotionResult.emotion,
-      emotionConfidence: emotionResult.confidence,
-      emotionalStability: sessionCtx?.emotionalHistory && sessionCtx.emotionalHistory.length > 0 ? 
-        (sessionCtx.emotionalHistory.filter(e => e.emotion === emotionResult.emotion).length / sessionCtx.emotionalHistory.length) : 0.5,
-      subject: session.subject,
-      topic: session.topic,
-      level: session.level || 'beginner',
-      currentPhase: session.currentPhase,
-      intent: intent.intent,
-      examType: examType as 'board' | 'competitive', // Board vs Competitive exam level
-      misconceptions: session.adaptiveMetrics?.misconceptions || [],
-      strongConcepts: session.adaptiveMetrics?.strongConcepts || []
-    });
+    // 🆕 CURRICULUM-ALIGNED TUTORING INTEGRATION (STREAM)
+    // Map emotion to curriculum emotional state
+    const streamEmotionMap: Record<string, 'confident' | 'confused' | 'frustrated' | 'bored' | 'neutral'> = {
+      'confident': 'confident',
+      'curious': 'confident',
+      'confused': 'confused',
+      'frustrated': 'frustrated',
+      'bored': 'bored',
+      'neutral': 'neutral',
+      'happy': 'confident',
+      'sad': 'frustrated'
+    };
+    const streamCurriculumEmotion = streamEmotionMap[emotionResult.emotion] || 'neutral';
     
-    const systemPrompt = promptResult.systemPrompt;
-    console.log(`[STREAM PROMPT] Generated ${systemPrompt.length} chars for ${detectedLang} | ${emotionResult.emotion} | ${session.currentPhase}`);
+    // 1. Check for demotivation signals
+    const streamResponseTimeMs = sessionCtx?.lastMessageTime ? Date.now() - sessionCtx.lastMessageTime : 5000;
+    const streamDemotivationCheck = tutorSessionService.checkDemotivation(session, query, streamResponseTimeMs);
+    
+    if (streamDemotivationCheck.needsIntervention) {
+      console.log(`[STREAM CURRICULUM] Demotivation detected (level ${streamDemotivationCheck.level})`);
+    }
+    
+    // 2. Determine request type from intent
+    const streamRequestTypeMap: Record<string, 'doubt' | 'practice' | 'revision' | 'concept'> = {
+      'ask_doubt': 'doubt',
+      'request_hint': 'doubt',
+      'request_practice': 'practice',
+      'request_revision': 'revision',
+      'ask_concept': 'concept',
+      'submit_answer': 'practice'
+    };
+    const streamRequestType = streamRequestTypeMap[intent.intent] || 'concept';
+    
+    // 3. Decide teaching mode based on context
+    const streamTeachingDecision = tutorSessionService.decideTeachingMode(session, streamCurriculumEmotion, streamRequestType);
+    console.log(`[STREAM CURRICULUM] Teaching mode: ${streamTeachingDecision.mode} (${streamTeachingDecision.toneModifier})`);
+    
+    // 4. Build enhanced prompt context
+    const streamDetectedLangForPrompt = detectedLang as 'english' | 'hindi' | 'hinglish';
+    const streamEnhancedContext = tutorSessionService.buildEnhancedPromptContext(session, streamCurriculumEmotion, streamDetectedLangForPrompt);
+    
+    if (streamDemotivationCheck.needsIntervention && streamDemotivationCheck.level) {
+      streamEnhancedContext.demotivationLevel = streamDemotivationCheck.level;
+    }
+    
+    // 5. Generate enhanced system prompt
+    const streamEnhancedPromptResult = enhancedPromptEngine.generateEnhancedSystemPrompt(streamEnhancedContext);
+    
+    // 🔥 STEP 4: GENERATE DYNAMIC PROMPT USING CURRICULUM-ALIGNED ENGINE
+    const promptResult = streamEnhancedPromptResult;
+    
+    // Add persona and teaching approach context
+    const streamPersonaContext = `
+TEACHING APPROACH: ${streamTeachingDecision.mode} (${streamTeachingDecision.toneModifier})
+${streamDemotivationCheck.needsIntervention ? `STUDENT SUPPORT NEEDED: ${streamDemotivationCheck.intervention}` : ''}
+    `.trim();
+    
+    const systemPrompt = `${promptResult.systemPrompt}\n\n${streamPersonaContext}`;
+    console.log(`[STREAM PROMPT] Generated ${systemPrompt.length} chars for ${detectedLang} | ${emotionResult.emotion} | Teaching: ${streamTeachingDecision.mode}`);
     
     // Set up SSE
     res.setHeader('Content-Type', 'text/event-stream');
