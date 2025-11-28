@@ -164,6 +164,7 @@ export interface AIResponseChunkMessage extends VoiceWebSocketMessage {
 export interface AIResponseCompleteMessage extends VoiceWebSocketMessage {
   type: 'AI_RESPONSE_COMPLETE';
   messageId: string;
+  chatId?: string;  // 🔥 For frontend to refetch messages with SSML metadata
   emotion?: string;
   personaId?: string;
   phase?: TutorPhase;

@@ -1600,12 +1600,13 @@ ${voiceDemotivationCheck.needsIntervention ? `STUDENT SUPPORT NEEDED: ${voiceDem
         };
       }
 
-      // Send completion message
+      // Send completion message with chatId for frontend refetch
       const completeMsg: VoiceMessage = {
         type: 'AI_RESPONSE_COMPLETE',
         timestamp: new Date().toISOString(),
         sessionId: ws.sessionId,
         messageId,
+        chatId,  // 🔥 CRITICAL: Include chatId for frontend to refetch messages
         emotion: emotionResult.emotion,
         personaId: session.personaId,
         phase: session.currentPhase as any,
