@@ -1185,6 +1185,19 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       return;
     }
 
+    // 🔥 FIX: Check if SSML metadata is available (prevents race condition)
+    // After streaming completes, messages are refetched to get SSML metadata
+    // We must wait for the refetch before playing TTS
+    const ssml = (lastMessage.metadata as any)?.speakSSML;
+    if (!ssml) {
+      console.log('[TTS AUTO-PLAY] ⏳ SSML metadata not yet available, waiting for refetch...', {
+        messageId: lastMessage.id,
+        hasMetadata: !!lastMessage.metadata,
+        metadataKeys: lastMessage.metadata ? Object.keys(lastMessage.metadata) : []
+      });
+      return; // Will re-trigger when messages refetch with SSML
+    }
+
     // Check avatar state
     if (!avatarReady) {
       console.log('[TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...');
@@ -1199,6 +1212,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
     // 🔥 All conditions met - use debounced auto-play to prevent duplicates
     console.log('[TTS AUTO-PLAY] ✅ All conditions met - Auto-playing:', lastMessage.id);
     console.log('[TTS AUTO-PLAY] Chat mode:', chat.mode, '- Will use', chat.mode === 'tutor' ? 'PHONEME' : 'REGULAR', 'TTS');
+    console.log('[TTS AUTO-PLAY] 🎤 Fresh SSML available:', ssml.substring(0, 60) + '...');
     
     // 🔥 Clear any pending TTS debounce
     if (ttsDebounceRef.current) {
@@ -1210,23 +1224,14 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
 
     // Debounce the actual TTS call by 100ms to prevent duplicates
     ttsDebounceRef.current = setTimeout(() => {
-      // 🎯 Use SSML-based TTS if available (for tutor mode with phonemes)
-      const ssml = (lastMessage.metadata as any)?.speakSSML;
-      if (ssml) {
-        const persona = (lastMessage.metadata as any)?.speakMeta?.persona || tutorSession?.session?.personaId || 'Priya';
-        const language = (lastMessage.metadata as any)?.speakMeta?.language || chat?.language || 'en';
-        console.log('[TTS AUTO-PLAY] Using SSML with phonemes - persona:', persona, 'lang:', language);
-        playSSMLAudio(lastMessage.id, ssml, persona, language).catch((err) => {
-          console.error('[TTS AUTO-PLAY] ❌ Playback failed:', err);
-          console.log('[TTS AUTO-PLAY] User can click speaker icon manually');
-        });
-      } else {
-        console.log('[TTS AUTO-PLAY] No SSML metadata, using fallback text TTS');
-        playAudio(lastMessage.id, lastMessage.content).catch((err) => {
-          console.error('[TTS AUTO-PLAY] ❌ Playback failed:', err);
-          console.log('[TTS AUTO-PLAY] User can click speaker icon manually');
-        });
-      }
+      // 🎯 Use SSML-based TTS with phonemes for Unity lip-sync
+      const persona = (lastMessage.metadata as any)?.speakMeta?.persona || tutorSession?.session?.personaId || 'Priya';
+      const language = (lastMessage.metadata as any)?.speakMeta?.language || chat?.language || 'en';
+      console.log('[TTS AUTO-PLAY] 🎵 Playing with SSML phonemes - persona:', persona, 'lang:', language);
+      playSSMLAudio(lastMessage.id, ssml, persona, language).catch((err) => {
+        console.error('[TTS AUTO-PLAY] ❌ Playback failed:', err);
+        console.log('[TTS AUTO-PLAY] User can click speaker icon manually');
+      });
     }, 100);
     
     return () => {

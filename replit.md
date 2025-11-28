@@ -28,6 +28,11 @@ Preferred communication style: Simple, everyday language (Hindi/English/Hinglish
 - **Audio Playback Completion Tracking**: Unity WebGL avatar build **must** send `AUDIO_ENDED` and `AUDIO_FAILED` messages to React when TTS audio finishes or fails. This is crucial for maintaining `playingAudio` state and smooth UX.
 - **Unity Avatar Lip-Sync**: Server-side Azure TTS generates viseme IDs (0-21) with timing data. Unity C# code maps these visemes to ARKit blend shapes for lip-sync.
 
+### TTS Auto-Play Race Condition Fix (Nov 2025)
+- **Problem**: TTS was playing old greeting audio because auto-play useEffect fired before messages were refetched with SSML metadata after WebSocket streaming completed.
+- **Solution**: Added guard in TutorSession.tsx TTS auto-play useEffect that checks `if (!ssml) return` - ensures TTS only plays when fresh speakSSML metadata is available from refetched messages.
+- **Flow**: AI_RESPONSE_COMPLETE → queryClient.refetchQueries() → TTS auto-play checks for speakSSML → plays only when SSML exists in message metadata.
+
 ## External Dependencies
 
 ### Third-Party APIs
