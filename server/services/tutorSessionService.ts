@@ -1,8 +1,20 @@
 // Tutor Session Orchestration Service
 // Manages 7-phase conversation flow, adaptive learning, and state machine
+// Enhanced with curriculum-aligned tutoring engines (Nov 2025)
 
 import { storage } from '../storage';
-import { InsertTutorSession, TutorSession, User } from '@shared/schema';
+import { 
+  InsertTutorSession, 
+  TutorSession, 
+  User,
+  TeachingMode,
+  HintLevel,
+  TeachingModeContext,
+  ClassLevel,
+  SubjectCode,
+  SessionMetrics,
+  CurriculumContext
+} from '@shared/schema';
 import { 
   selectPersonaBySubject,
   getPersonaCatchphrase,
@@ -19,6 +31,20 @@ import {
   fillTemplate,
   TemplateVariant
 } from '../config/phaseTemplates';
+
+// Import new curriculum engines
+import { teachingModeEngine } from './curriculum/TeachingModeEngine';
+import { hintLadderSystem } from './curriculum/HintLadderSystem';
+import { demotivationMonitor } from './curriculum/DemotivationMonitor';
+import { doubtResolutionWorkflow } from './curriculum/DoubtResolutionWorkflow';
+
+// Import new config integrations
+import { getAdaptation } from '../config/classLevelAdaptations';
+import { getStrategy } from '../config/subjectStrategies';
+import { AI_MENTOR_PERSONALITY, getRandomPhrase } from '../config/aiMentorPersonality';
+
+// Import enhanced prompt engine
+import { enhancedPromptEngine, EnhancedPromptContext } from './DynamicPromptEngine';
 
 // Phase progression order
 export const PHASE_ORDER = [
@@ -58,7 +84,38 @@ export interface SessionContext {
   };
 }
 
+// Enhanced session context for curriculum-aligned tutoring
+export interface EnhancedSessionContext extends SessionContext {
+  // Teaching mode state
+  currentTeachingMode?: TeachingMode;
+  teachingModeRationale?: string;
+  
+  // Hint ladder state
+  currentHintLevel?: HintLevel;
+  hintsGiven?: number;
+  
+  // Student engagement metrics
+  sessionMetrics?: SessionMetrics;
+  demotivationLevel?: number;
+  
+  // Curriculum context
+  curriculumContext?: CurriculumContext;
+  
+  // Subject/class context
+  classLevel?: ClassLevel;
+  subjectCode?: SubjectCode;
+  
+  // Attempt tracking
+  recentAttempts?: number;
+  frustrationCount?: number;
+}
+
 export class TutorSessionService {
+  // Session-level tracking (in-memory for quick access)
+  private sessionMetricsCache: Map<string, SessionMetrics> = new Map();
+  private hintStateCache: Map<string, { level: HintLevel; count: number }> = new Map();
+  private teachingModeCache: Map<string, TeachingMode> = new Map();
+
   // Initialize new session with profile data
   async initializeSession(
     chatId: string,
@@ -409,6 +466,297 @@ Chalo wahi se continue karte hain!`;
       misconceptions,
       strengths
     };
+  }
+
+  // ============================================
+  // ENHANCED CURRICULUM-ALIGNED METHODS (Nov 2025)
+  // ============================================
+
+  /**
+   * Determine teaching mode based on student context
+   * Uses TeachingModeEngine for intelligent mode selection
+   */
+  decideTeachingMode(
+    session: TutorSession,
+    emotion: 'confident' | 'confused' | 'frustrated' | 'bored' | 'neutral',
+    requestType: 'doubt' | 'practice' | 'revision' | 'concept' = 'concept'
+  ): { mode: TeachingMode; rationale: string; toneModifier: string } {
+    const chatId = session.chatId;
+    const metrics = this.sessionMetricsCache.get(chatId);
+    const hintState = this.hintStateCache.get(chatId);
+    
+    // Build teaching mode context
+    const context: TeachingModeContext = {
+      masteryScore: (session.adaptiveMetrics?.diagnosticScore || 50) / 100,
+      recentAttempts: metrics?.consecutiveWrongAnswers || 0,
+      emotion,
+      requestType,
+      timePressure: false, // Could be determined from exam date proximity
+      prerequisiteStatus: 'complete', // Could be determined from curriculum context
+      lastHintLevel: hintState?.level || 1,
+      frustrationCount: metrics?.demotivationEvents || 0
+    };
+
+    const decision = teachingModeEngine.decide(context);
+    
+    // Cache the teaching mode
+    this.teachingModeCache.set(chatId, decision.mode);
+    
+    return {
+      mode: decision.mode,
+      rationale: decision.rationale,
+      toneModifier: decision.toneModifier
+    };
+  }
+
+  /**
+   * Get next hint from the hint ladder
+   * Uses HintLadderSystem for progressive scaffolding
+   */
+  getNextHint(
+    session: TutorSession,
+    topic: string,
+    problem: string
+  ): { hint: string; level: HintLevel; canEscalate: boolean } {
+    const chatId = session.chatId;
+    const subject = this.mapSubjectToCode(session.subject);
+    const currentMode = this.teachingModeCache.get(chatId) || 'direct';
+    
+    // Get or initialize hint state
+    let hintState = this.hintStateCache.get(chatId);
+    if (!hintState) {
+      // Entry level depends on teaching mode
+      const entryLevel = currentMode === 'socratic' ? 1 
+        : currentMode === 'scaffolded_direct' ? 3 
+        : currentMode === 'worked_example' ? 5 
+        : 1;
+      hintState = { level: entryLevel as HintLevel, count: 0 };
+    }
+
+    const hint = hintLadderSystem.getHint(
+      hintState.level,
+      subject,
+      topic,
+      problem
+    );
+
+    const canEscalate = hintLadderSystem.canEscalate(hintState.level, currentMode);
+
+    // Update cache
+    this.hintStateCache.set(chatId, {
+      level: hintState.level,
+      count: hintState.count + 1
+    });
+
+    return {
+      hint,
+      level: hintState.level,
+      canEscalate
+    };
+  }
+
+  /**
+   * Escalate to next hint level
+   */
+  escalateHint(session: TutorSession): HintLevel {
+    const chatId = session.chatId;
+    const currentMode = this.teachingModeCache.get(chatId) || 'direct';
+    const hintState = this.hintStateCache.get(chatId) || { level: 1 as HintLevel, count: 0 };
+
+    const newLevel = hintLadderSystem.escalate(hintState.level, currentMode);
+    
+    this.hintStateCache.set(chatId, {
+      level: newLevel,
+      count: hintState.count
+    });
+
+    return newLevel;
+  }
+
+  /**
+   * Check for demotivation signals and get intervention if needed
+   */
+  checkDemotivation(
+    session: TutorSession,
+    latestMessage: string,
+    responseTimeMs: number
+  ): { needsIntervention: boolean; intervention?: string; level?: number } {
+    const chatId = session.chatId;
+    const subject = this.mapSubjectToCode(session.subject);
+    
+    // Get or create session metrics
+    let metrics = this.sessionMetricsCache.get(chatId);
+    if (!metrics) {
+      metrics = demotivationMonitor.createInitialMetrics();
+    }
+
+    // Update metrics with latest data
+    metrics = demotivationMonitor.updateMetrics(
+      metrics,
+      false, // isCorrect - would need to be determined from answer analysis
+      responseTimeMs,
+      latestMessage.length
+    );
+    this.sessionMetricsCache.set(chatId, metrics);
+
+    // Check signals
+    const signals = demotivationMonitor.checkSignals(metrics, latestMessage);
+    const needsIntervention = demotivationMonitor.needsIntervention(signals);
+
+    if (needsIntervention) {
+      const level = demotivationMonitor.determineInterventionLevel(signals);
+      const intervention = demotivationMonitor.getIntervention(level, subject);
+      
+      // Record the event
+      demotivationMonitor.recordDemotivationEvent(metrics);
+      
+      return { needsIntervention: true, intervention, level };
+    }
+
+    return { needsIntervention: false };
+  }
+
+  /**
+   * Record successful recovery from demotivation
+   */
+  recordDemotivationRecovery(session: TutorSession): void {
+    const chatId = session.chatId;
+    const metrics = this.sessionMetricsCache.get(chatId);
+    if (metrics) {
+      demotivationMonitor.recordRecovery(metrics);
+    }
+  }
+
+  /**
+   * Build enhanced prompt context for the AI
+   * Combines all curriculum engines into a single context object
+   */
+  buildEnhancedPromptContext(
+    session: TutorSession,
+    emotion: 'confident' | 'confused' | 'frustrated' | 'bored' | 'neutral',
+    detectedLanguage: 'english' | 'hindi' | 'hinglish'
+  ): EnhancedPromptContext {
+    const chatId = session.chatId;
+    const profile = session.profileSnapshot || {};
+    
+    // Get current states
+    const teachingMode = this.teachingModeCache.get(chatId) || 'direct';
+    const hintState = this.hintStateCache.get(chatId);
+    const metrics = this.sessionMetricsCache.get(chatId);
+
+    // Map to ClassLevel
+    const classLevel = this.mapClassToLevel(profile.currentClass);
+    const subjectCode = this.mapSubjectToCode(session.subject);
+    
+    // Build enhanced context
+    const context: EnhancedPromptContext = {
+      // Language context
+      detectedLanguage,
+      languageConfidence: 0.9,
+      preferredLanguage: profile.preferredLanguage as 'english' | 'hindi' | 'hinglish',
+      
+      // Emotional context
+      currentEmotion: emotion,
+      emotionConfidence: 0.8,
+      
+      // Learning context
+      subject: session.subject || '',
+      topic: session.topic || '',
+      level: session.level || 'beginner',
+      currentPhase: session.currentPhase || 'greeting',
+      
+      // User profile
+      userProfile: {
+        currentClass: profile.currentClass,
+        examTarget: profile.examTarget,
+        educationBoard: profile.educationBoard,
+        firstName: profile.firstName
+      },
+      
+      // Enhanced curriculum context
+      teachingMode,
+      currentHintLevel: hintState?.level,
+      hintsGiven: hintState?.count,
+      classLevel,
+      subjectCode,
+      examTarget: profile.examTarget as any,
+      frustrationCount: metrics?.demotivationEvents || 0,
+      recentAttempts: metrics?.consecutiveWrongAnswers || 0,
+      masteryScore: (session.adaptiveMetrics?.diagnosticScore || 50) / 100
+    };
+
+    return context;
+  }
+
+  /**
+   * Get class adaptation config for a session
+   */
+  getClassAdaptation(session: TutorSession) {
+    const profile = session.profileSnapshot || {};
+    const classLevel = this.mapClassToLevel(profile.currentClass);
+    const examTarget = profile.examTarget as any;
+    
+    return getAdaptation(classLevel, examTarget);
+  }
+
+  /**
+   * Get subject strategy for a session
+   */
+  getSubjectStrategy(session: TutorSession) {
+    const subjectCode = this.mapSubjectToCode(session.subject);
+    const profile = session.profileSnapshot || {};
+    const examTarget = profile.examTarget as any;
+    
+    return getStrategy(subjectCode, examTarget);
+  }
+
+  /**
+   * Get random phrase from AI Mentor personality
+   */
+  getPersonalityPhrase(
+    type: 'encouragement' | 'correction' | 'support' | 'motivation' | 'examTips'
+  ): string {
+    return getRandomPhrase(type);
+  }
+
+  /**
+   * Clear session caches when session ends
+   */
+  clearSessionCaches(chatId: string): void {
+    this.sessionMetricsCache.delete(chatId);
+    this.hintStateCache.delete(chatId);
+    this.teachingModeCache.delete(chatId);
+    hintLadderSystem.clearHintHistory(chatId);
+  }
+
+  // Helper: Map subject string to SubjectCode
+  private mapSubjectToCode(subject?: string): SubjectCode {
+    if (!subject) return 'physics';
+    const normalized = subject.toLowerCase();
+    if (normalized.includes('physics')) return 'physics';
+    if (normalized.includes('chemistry')) return 'chemistry';
+    if (normalized.includes('math')) return 'mathematics';
+    if (normalized.includes('bio')) return 'biology';
+    return 'physics';
+  }
+
+  // Helper: Map class string to ClassLevel
+  private mapClassToLevel(classStr?: string): ClassLevel {
+    if (!classStr) return 'competitive_jee_11_12';
+    
+    const normalized = classStr.toLowerCase();
+    if (normalized.includes('dropper')) return 'dropper';
+    
+    const match = normalized.match(/(\d{1,2})/);
+    if (match) {
+      const classNum = parseInt(match[1]);
+      if (classNum >= 6 && classNum <= 7) return 'foundation_6_7';
+      if (classNum >= 8 && classNum <= 9) return 'bridge_8_9';
+      if (classNum === 10) return 'board_10';
+      if (classNum >= 11) return 'competitive_jee_11_12'; // Default to JEE
+    }
+    
+    return 'competitive_jee_11_12';
   }
 }
 
