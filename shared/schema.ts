@@ -1180,6 +1180,49 @@ export interface PersonalityPhrases {
   examTips: string[];
 }
 
+// Doubt Resolution Workflow State
+export interface DoubtWorkflowState {
+  doubt: string;
+  subject: SubjectCode;
+  context: CurriculumContext;
+  currentStep: DoubtResolutionStep['id'];
+  stepIndex: number;
+  rootCause?: RootCauseCategory;
+  explanation?: string;
+  verificationQuestion?: VerificationQuestion;
+  practiceProblems?: PracticeProblem[];
+  userResponses: Record<string, string>;
+  isComplete: boolean;
+  startedAt: Date;
+  completedAt?: Date;
+}
+
+// Verification Question for Doubt Resolution
+export interface VerificationQuestion {
+  id: string;
+  type: 'mcq' | 'fill_blank' | 'short_derivation';
+  question: string;
+  options?: string[];
+  correctAnswer: string;
+  hint?: string;
+  explanation: string;
+  topic: string;
+  rootCause: RootCauseCategory;
+}
+
+// Practice Problem for Doubt Resolution
+export interface PracticeProblem {
+  id: string;
+  type: 'board' | 'jee_main' | 'jee_advanced' | 'neet';
+  question: string;
+  difficulty: 'easy' | 'medium' | 'hard';
+  marks?: number;
+  solution: string;
+  solutionGated: boolean;
+  topic: string;
+  hints?: string[];
+}
+
 // NCERT Curriculum Chunks Table (for RAG)
 export const ncertCurriculumChunks = pgTable('ncert_curriculum_chunks', {
   id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),

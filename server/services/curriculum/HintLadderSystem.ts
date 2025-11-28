@@ -1,0 +1,348 @@
+import type {
+  HintLevel,
+  TeachingMode,
+  SubjectCode,
+  HintTemplate,
+} from '@shared/schema';
+
+interface HintLevelConfig {
+  level: HintLevel;
+  name: string;
+  description: string;
+}
+
+const HINT_LEVEL_CONFIGS: HintLevelConfig[] = [
+  {
+    level: 1,
+    name: 'Conceptual Question',
+    description: 'Ask guiding question about the core concept',
+  },
+  {
+    level: 2,
+    name: 'Formula Recall',
+    description: 'Prompt to recall relevant formula/principle',
+  },
+  {
+    level: 3,
+    name: 'First Step Scaffold',
+    description: "Give first step and ask 'what's next?'",
+  },
+  {
+    level: 4,
+    name: 'Targeted Hint',
+    description: 'Point to specific part of solution',
+  },
+  {
+    level: 5,
+    name: 'Worked Example',
+    description: 'Show similar problem with complete solution',
+  },
+  {
+    level: 6,
+    name: 'Direct Explanation',
+    description: 'Full step-by-step solution with explanation',
+  },
+];
+
+const HINT_TEMPLATES: Record<HintLevel, Record<SubjectCode, string[]>> = {
+  1: {
+    physics: [
+      'What physical quantity are we trying to find here?',
+      'Think about the relationship between the given values - what law connects them?',
+      'Can you identify which type of motion/force/energy is involved?',
+      'What would happen if we changed one of these variables?',
+    ],
+    chemistry: [
+      'What type of reaction is this? How can you identify it?',
+      'Think about the electron configuration - what pattern do you notice?',
+      'Which principle governs this chemical behavior?',
+      'What bonds are being formed or broken here?',
+    ],
+    math: [
+      'What mathematical concept is at the heart of this problem?',
+      'Can you identify the pattern or relationship between the given values?',
+      'What properties or theorems might apply here?',
+      'How would you approach this if the numbers were simpler?',
+    ],
+    biology: [
+      'What biological process is being described here?',
+      'Think about the structure-function relationship - what does this suggest?',
+      'Which system or pathway is involved in this process?',
+      'How does this connect to what you know about cellular mechanisms?',
+    ],
+  },
+  2: {
+    physics: [
+      'Remember the formula connecting {topic}? Try to recall it.',
+      'What equation relates force, mass, and acceleration?',
+      "Newton's laws might help here - can you state the relevant one?",
+      'Think about the conservation principle that applies here.',
+    ],
+    chemistry: [
+      'Can you recall the formula for {topic}?',
+      "What's the relationship shown in the periodic table for this property?",
+      'Remember the equation for calculating moles?',
+      'What formula connects pressure, volume, and temperature?',
+    ],
+    math: [
+      'What formula applies to {topic}?',
+      'Can you recall the standard form for this type of equation?',
+      "What's the general formula for the nth term of this sequence?",
+      'Remember the identity or theorem that relates these quantities.',
+    ],
+    biology: [
+      'Can you recall the equation for {topic}?',
+      'What formula describes this metabolic process?',
+      'Remember the relationship between genotype and phenotype ratios?',
+      "What's the equation for calculating population growth?",
+    ],
+  },
+  3: {
+    physics: [
+      "The first step is to identify all forces acting on the object. What's next?",
+      "Start by listing what's given and what we need to find. Now what?",
+      "We begin by drawing a free body diagram. What forces should we include?",
+      "First, let's convert all units to SI. What's our next move?",
+    ],
+    chemistry: [
+      "Step 1: Write the unbalanced equation. What's next?",
+      "First, identify the oxidation states. Now what do we do?",
+      "Start by writing the electronic configuration. What pattern emerges?",
+      "We begin by calculating moles. What's the next step?",
+    ],
+    math: [
+      "First step: Let's set up our variables. x = {topic}. What equation can we form?",
+      "Start by simplifying the left side. What do we get?",
+      "The first step is to find the common factor. What is it?",
+      "Begin by substituting the given values. What's our next move?",
+    ],
+    biology: [
+      "First, identify the organelles involved. What process connects them?",
+      "Start by drawing the pathway. What's the first enzyme?",
+      "Step 1: Identify the parent genotypes. What gametes can they produce?",
+      "Begin with the stimulus. What's the receptor that detects it?",
+    ],
+  },
+  4: {
+    physics: [
+      'Look at the energy term - are you accounting for all forms?',
+      'Check your sign convention - is the direction consistent?',
+      'The key is in the constraint equation - focus there.',
+      'Pay attention to the initial conditions given in the problem.',
+    ],
+    chemistry: [
+      'Focus on the limiting reagent - have you identified it correctly?',
+      'Check the oxidation numbers in your redox equation.',
+      "The key is in the electronegativity difference. What's the bond type?",
+      'Look at the molecular geometry - it affects the polarity.',
+    ],
+    math: [
+      'Focus on the discriminant - what does its sign tell you?',
+      'Check if you can factor the expression differently.',
+      'The key is in the coefficient of the middle term.',
+      "Look at the boundary conditions - they'll constrain your solution.",
+    ],
+    biology: [
+      'Focus on the enzyme active site - what type of inhibition?',
+      'Check the feedback mechanism - is it positive or negative?',
+      'The key is in the chromosome number - count carefully.',
+      'Look at the hormonal cascade - which gland is the target?',
+    ],
+  },
+  5: {
+    physics: [
+      "Here's a similar problem: A ball is thrown upward with velocity 20 m/s. Find max height.\n\nSolution:\n1. At max height, v = 0\n2. Using v² = u² - 2gh\n3. 0 = 400 - 2(10)h\n4. h = 20m\n\nNow apply this approach to your problem.",
+      "Example: A 2kg block slides down a frictionless incline of 30°.\n\nSolution:\n1. Component of gravity along incline: mg sin30° = 2(10)(0.5) = 10N\n2. Acceleration = F/m = 10/2 = 5 m/s²\n\nUse this method for your problem.",
+    ],
+    chemistry: [
+      "Here's a similar problem: Balance Fe + O₂ → Fe₂O₃\n\nSolution:\n1. Count atoms: Fe(1), O(2) → Fe(2), O(3)\n2. Balance Fe: 4Fe + O₂ → 2Fe₂O₃\n3. Balance O: 4Fe + 3O₂ → 2Fe₂O₃\n\nApply this to your equation.",
+      "Example: Calculate moles in 18g of H₂O\n\nSolution:\n1. Molar mass of H₂O = 2(1) + 16 = 18 g/mol\n2. Moles = mass/molar mass = 18/18 = 1 mol\n\nNow solve yours similarly.",
+    ],
+    math: [
+      "Here's a similar problem: Solve x² - 5x + 6 = 0\n\nSolution:\n1. Factor: (x-2)(x-3) = 0\n2. Set each factor to 0: x-2=0 or x-3=0\n3. Solutions: x = 2 or x = 3\n\nApply this method to your equation.",
+      "Example: Find the derivative of f(x) = x³ + 2x\n\nSolution:\n1. Use power rule: d/dx(xⁿ) = nxⁿ⁻¹\n2. f'(x) = 3x² + 2\n\nNow differentiate your function.",
+    ],
+    biology: [
+      "Here's a similar problem: Cross between Tt × Tt pea plants\n\nSolution:\n1. Gametes: T and t from each parent\n2. Punnett square gives: TT, Tt, Tt, tt\n3. Phenotype ratio: 3 tall : 1 short\n4. Genotype ratio: 1 TT : 2 Tt : 1 tt\n\nApply this to your cross.",
+      "Example: Trace blood flow through the heart\n\nSolution:\n1. Deoxygenated blood → Right atrium\n2. → Right ventricle → Pulmonary artery → Lungs\n3. Oxygenated blood → Left atrium\n4. → Left ventricle → Aorta → Body\n\nUse this pattern for your question.",
+    ],
+  },
+  6: {
+    physics: [
+      "Let me solve this step by step for {topic}:\n\n**Given:** {problem}\n\n**Solution:**\n1. First, we identify the relevant principle\n2. Write the governing equation\n3. Substitute the known values\n4. Solve for the unknown\n5. Check units and reasonableness\n\n**Final Answer:** [calculated]",
+      "Complete solution for this {topic} problem:\n\n**Analysis:**\n- Identify the system and forces\n- Draw free body diagram\n- Apply Newton's laws\n\n**Calculation:**\n- Set up equations\n- Solve simultaneously\n- Verify answer",
+    ],
+    chemistry: [
+      "Complete solution for this {topic} problem:\n\n**Given:** {problem}\n\n**Step-by-step Solution:**\n1. Write the balanced equation\n2. Calculate molar masses\n3. Convert to moles\n4. Use stoichiometry\n5. Convert back to required units\n\n**Final Answer:** [calculated]",
+      "Here's the full explanation for {topic}:\n\n**Concept:** Understanding the underlying principle\n**Application:** How it applies to this problem\n**Calculation:** Detailed working\n**Conclusion:** Final answer with explanation",
+    ],
+    math: [
+      "Complete solution for {topic}:\n\n**Problem:** {problem}\n\n**Solution:**\n1. Understand what's being asked\n2. Identify the method/formula\n3. Set up the equation\n4. Solve step by step\n5. Verify the answer\n\n**Final Answer:** [calculated]",
+      "Full worked solution:\n\n**Step 1:** Simplify/rearrange\n**Step 2:** Apply the relevant theorem\n**Step 3:** Calculate\n**Step 4:** Check by substitution\n\n**Answer:** [with explanation]",
+    ],
+    biology: [
+      "Complete explanation for {topic}:\n\n**Given:** {problem}\n\n**Solution:**\n1. Identify the biological process\n2. Explain the mechanism\n3. Apply relevant formulas/ratios\n4. Draw conclusions\n\n**Final Answer:** [with biological significance]",
+      "Full solution for this {topic} problem:\n\n**Concept Review:** Key principles involved\n**Step-by-step Analysis:**\n- Break down the process\n- Apply genetic/metabolic principles\n- Calculate ratios/quantities\n\n**Conclusion:** Answer with explanation",
+    ],
+  },
+};
+
+const MODE_CONSTRAINTS: Record<TeachingMode, { entryLevel: HintLevel; maxLevel: HintLevel }> = {
+  socratic: { entryLevel: 1, maxLevel: 3 },
+  direct: { entryLevel: 6, maxLevel: 6 },
+  scaffolded_direct: { entryLevel: 3, maxLevel: 6 },
+  supportive: { entryLevel: 4, maxLevel: 6 },
+  worked_example: { entryLevel: 5, maxLevel: 6 },
+};
+
+export class HintLadderSystem {
+  private hintHistory: Map<string, HintLevel[]> = new Map();
+
+  getHint(
+    level: HintLevel,
+    subject: SubjectCode,
+    topic: string,
+    problem: string
+  ): string {
+    const templates = this.getTemplateForLevel(level, subject);
+
+    if (templates.length === 0) {
+      return this.getDefaultHint(level, topic);
+    }
+
+    const template = templates[Math.floor(Math.random() * templates.length)];
+
+    return template
+      .replace(/\{topic\}/g, topic)
+      .replace(/\{problem\}/g, problem);
+  }
+
+  escalate(currentLevel: HintLevel, mode: TeachingMode): HintLevel {
+    const constraints = MODE_CONSTRAINTS[mode];
+
+    if (!this.canEscalate(currentLevel, mode)) {
+      return currentLevel;
+    }
+
+    const nextLevel = (currentLevel + 1) as HintLevel;
+
+    if (currentLevel < constraints.entryLevel) {
+      return constraints.entryLevel;
+    }
+
+    return Math.min(nextLevel, constraints.maxLevel) as HintLevel;
+  }
+
+  canEscalate(currentLevel: HintLevel, mode: TeachingMode): boolean {
+    const constraints = MODE_CONSTRAINTS[mode];
+    return currentLevel < constraints.maxLevel;
+  }
+
+  getTemplateForLevel(level: HintLevel, subject: SubjectCode): string[] {
+    const levelTemplates = HINT_TEMPLATES[level];
+    if (!levelTemplates) {
+      return [];
+    }
+
+    return levelTemplates[subject] || [];
+  }
+
+  getLevelConfig(level: HintLevel): HintLevelConfig | undefined {
+    return HINT_LEVEL_CONFIGS.find((config) => config.level === level);
+  }
+
+  getAllLevelConfigs(): HintLevelConfig[] {
+    return [...HINT_LEVEL_CONFIGS];
+  }
+
+  getModeConstraints(mode: TeachingMode): { entryLevel: HintLevel; maxLevel: HintLevel } {
+    return MODE_CONSTRAINTS[mode];
+  }
+
+  getEntryLevel(mode: TeachingMode): HintLevel {
+    return MODE_CONSTRAINTS[mode].entryLevel;
+  }
+
+  recordHint(sessionId: string, level: HintLevel): void {
+    const history = this.hintHistory.get(sessionId) || [];
+    history.push(level);
+    this.hintHistory.set(sessionId, history);
+  }
+
+  getHintHistory(sessionId: string): HintLevel[] {
+    return this.hintHistory.get(sessionId) || [];
+  }
+
+  clearHintHistory(sessionId: string): void {
+    this.hintHistory.delete(sessionId);
+  }
+
+  getHintsUsedCount(sessionId: string): number {
+    return this.getHintHistory(sessionId).length;
+  }
+
+  getHighestHintUsed(sessionId: string): HintLevel | null {
+    const history = this.getHintHistory(sessionId);
+    if (history.length === 0) return null;
+    return Math.max(...history) as HintLevel;
+  }
+
+  shouldOfferNextHint(sessionId: string, mode: TeachingMode): boolean {
+    const history = this.getHintHistory(sessionId);
+    if (history.length === 0) return true;
+
+    const lastHint = history[history.length - 1];
+    return this.canEscalate(lastHint, mode);
+  }
+
+  getNextRecommendedHint(sessionId: string, mode: TeachingMode): HintLevel {
+    const history = this.getHintHistory(sessionId);
+
+    if (history.length === 0) {
+      return this.getEntryLevel(mode);
+    }
+
+    const lastHint = history[history.length - 1];
+    return this.escalate(lastHint, mode);
+  }
+
+  private getDefaultHint(level: HintLevel, topic: string): string {
+    const config = this.getLevelConfig(level);
+    const name = config?.name || `Level ${level}`;
+
+    switch (level) {
+      case 1:
+        return `Think about the core concept behind ${topic}. What principle governs this?`;
+      case 2:
+        return `Can you recall the main formula or equation related to ${topic}?`;
+      case 3:
+        return `Let's start with the first step. What do we know, and what's our target?`;
+      case 4:
+        return `Focus on the key relationship in the problem. What's the critical piece?`;
+      case 5:
+        return `Let me show you a similar solved example for ${topic}...`;
+      case 6:
+        return `Here's the complete solution with step-by-step explanation for ${topic}...`;
+      default:
+        return `${name}: Here's a hint for ${topic}`;
+    }
+  }
+
+  buildHintTemplate(level: HintLevel, subject: SubjectCode): HintTemplate {
+    const config = this.getLevelConfig(level);
+
+    return {
+      level,
+      name: config?.name || `Level ${level}`,
+      description: config?.description || '',
+      templates: {
+        physics: HINT_TEMPLATES[level]?.physics || [],
+        chemistry: HINT_TEMPLATES[level]?.chemistry || [],
+        math: HINT_TEMPLATES[level]?.math || [],
+        biology: HINT_TEMPLATES[level]?.biology || [],
+      },
+    };
+  }
+}
+
+export const hintLadderSystem = new HintLadderSystem();
