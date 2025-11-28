@@ -1185,11 +1185,13 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       return;
     }
 
-    // 🔥 FIX: Check if SSML metadata is available (prevents race condition)
-    // After streaming completes, messages are refetched to get SSML metadata
-    // We must wait for the refetch before playing TTS
+    // Get SSML and check if this is a greeting message
     const ssml = (lastMessage.metadata as any)?.speakSSML;
-    if (!ssml) {
+    const isGreeting = (lastMessage.metadata as any)?.isGreeting;
+    
+    // 🔥 FIX: For streamed responses (non-greeting), wait for SSML metadata
+    // Greeting messages don't have SSML - they use text-based TTS fallback
+    if (!ssml && !isGreeting) {
       console.log('[TTS AUTO-PLAY] ⏳ SSML metadata not yet available, waiting for refetch...', {
         messageId: lastMessage.id,
         hasMetadata: !!lastMessage.metadata,
@@ -1211,8 +1213,12 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
 
     // 🔥 All conditions met - use debounced auto-play to prevent duplicates
     console.log('[TTS AUTO-PLAY] ✅ All conditions met - Auto-playing:', lastMessage.id);
-    console.log('[TTS AUTO-PLAY] Chat mode:', chat.mode, '- Will use', chat.mode === 'tutor' ? 'PHONEME' : 'REGULAR', 'TTS');
-    console.log('[TTS AUTO-PLAY] 🎤 Fresh SSML available:', ssml.substring(0, 60) + '...');
+    console.log('[TTS AUTO-PLAY] Chat mode:', chat.mode, '- Will use', ssml ? 'SSML PHONEME' : 'TEXT FALLBACK', 'TTS');
+    if (ssml) {
+      console.log('[TTS AUTO-PLAY] 🎤 Fresh SSML available:', ssml.substring(0, 60) + '...');
+    } else {
+      console.log('[TTS AUTO-PLAY] 📝 Using text fallback for greeting');
+    }
     
     // 🔥 Clear any pending TTS debounce
     if (ttsDebounceRef.current) {
@@ -1224,14 +1230,24 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
 
     // Debounce the actual TTS call by 100ms to prevent duplicates
     ttsDebounceRef.current = setTimeout(() => {
-      // 🎯 Use SSML-based TTS with phonemes for Unity lip-sync
-      const persona = (lastMessage.metadata as any)?.speakMeta?.persona || tutorSession?.session?.personaId || 'Priya';
+      const persona = (lastMessage.metadata as any)?.speakMeta?.persona || (lastMessage.metadata as any)?.personaId || tutorSession?.session?.personaId || 'Priya';
       const language = (lastMessage.metadata as any)?.speakMeta?.language || chat?.language || 'en';
-      console.log('[TTS AUTO-PLAY] 🎵 Playing with SSML phonemes - persona:', persona, 'lang:', language);
-      playSSMLAudio(lastMessage.id, ssml, persona, language).catch((err) => {
-        console.error('[TTS AUTO-PLAY] ❌ Playback failed:', err);
-        console.log('[TTS AUTO-PLAY] User can click speaker icon manually');
-      });
+      
+      if (ssml) {
+        // 🎯 Use SSML-based TTS with phonemes for Unity lip-sync
+        console.log('[TTS AUTO-PLAY] 🎵 Playing with SSML phonemes - persona:', persona, 'lang:', language);
+        playSSMLAudio(lastMessage.id, ssml, persona, language).catch((err) => {
+          console.error('[TTS AUTO-PLAY] ❌ Playback failed:', err);
+          console.log('[TTS AUTO-PLAY] User can click speaker icon manually');
+        });
+      } else {
+        // 📝 Fallback to text-based TTS for greeting messages
+        console.log('[TTS AUTO-PLAY] 📝 Playing text-based TTS - persona:', persona, 'lang:', language);
+        playAudio(lastMessage.id, lastMessage.content).catch((err) => {
+          console.error('[TTS AUTO-PLAY] ❌ Playback failed:', err);
+          console.log('[TTS AUTO-PLAY] User can click speaker icon manually');
+        });
+      }
     }, 100);
     
     return () => {
