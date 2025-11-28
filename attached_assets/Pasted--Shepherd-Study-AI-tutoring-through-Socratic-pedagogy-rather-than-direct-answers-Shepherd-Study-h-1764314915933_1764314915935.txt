@@ -1,0 +1,102 @@
+# Shepherd.Study: AI tutoring through Socratic pedagogy rather than direct answers
+
+Shepherd.Study has built an AI tutoring platform fundamentally designed to **prevent "mindless AI use"** by embedding the Socratic method directly into its core architecture. The Y Combinator-backed startup (W24 batch), founded by Moyo Orekoya and Kehinde Williams, explicitly rejects the answer-giving model of most AI tutors in favor of question-based scaffolding that forces students to "try, explain, and reflect." With **150,000+ student users** and teacher partnerships in the US and Nigeria, Shepherd represents a "pedagogy-first" approach that prioritizes learning science over content delivery—positioning teachers as AI orchestrators rather than replacements.
+
+The platform's differentiation lies not in sophisticated proprietary systems but in its philosophical commitment: making AI the "co-pilot, not the driver" while giving institutions **direct control over AI prompting** and academic integrity monitoring.
+
+## Socratic method is hardcoded into the tutoring experience
+
+Co-founder Moyo Orekoya articulated the platform's core design principle in a comprehensive interview: "We built Shepherd to prevent mindless AI use. Instead of handing students answers, it asks questions, nudges thinking, and scaffolds learning. It's built on the Socratic method, so students must try, explain, and reflect."
+
+This manifests in concrete interaction patterns:
+
+- **Question-first responses**: When students request homework help, Shepherd's AI tutor doesn't provide direct answers but instead poses guiding questions to help students discover solutions themselves
+- **Step-by-step scaffolding**: The platform explicitly states it "helps you understand the why" rather than delivering finished solutions
+- **Required student effort**: The system is designed so students cannot passively receive information—they must actively engage through explanation and reflection
+- **Progressive complexity**: The AI adjusts question depth based on student responses, building understanding incrementally
+
+The pedagogical approach draws explicitly from the World Bank's "From Chalkboards to Chatbots" randomized controlled trial, which demonstrated that **teacher-AI collaboration drove better learning outcomes** than either approach alone. This evidence base shapes every design decision.
+
+## AI tutor personality emphasizes guidance over authority
+
+Shepherd's AI tutor behavioral characteristics reflect a deliberate instructional design philosophy. Based on product descriptions and user feedback patterns, the tutor exhibits:
+
+**Interaction tone**: Supportive and encouraging rather than authoritative—designed as a patient learning companion available 24/7 without judgment. The App Store description emphasizes: "When you're stuck, Shepherd doesn't just give answers—it helps you understand the why."
+
+**Error handling approach**: When students provide incorrect answers, the system employs questioning techniques to guide them toward correct understanding rather than simply marking responses wrong and providing solutions. This aligns with Socratic pedagogy's emphasis on self-discovery through guided inquiry.
+
+**Motivational techniques**: The platform incorporates active recall methods through flashcards and adaptive quizzes, using spaced repetition algorithms to optimize retention. Quick feedback loops provide immediate assessment while maintaining engagement through progress tracking and smart reminders.
+
+**Contextual grounding**: A distinctive feature is Shepherd's "source-grounded" approach—when answering questions from uploaded documents, the AI cites specific passages and paragraphs, maintaining trustworthiness while teaching students to reference source material.
+
+## Prompt customization enables institutional control, but architecture details remain proprietary
+
+**Critical finding: No public documentation exists for any system called "DynamicPromptEngine."** Extensive searches across GitHub repositories, technical blogs, patent databases, job postings, and engineering publications found no references to this specific terminology. The term may represent internal proprietary nomenclature that hasn't been publicly disclosed, or it may not exist as a documented component.
+
+What IS documented about Shepherd's prompt engineering approach:
+
+**Institutional prompt control**: Shepherd's schools page explicitly states: "Partnering with Shepherd gives you control over AI. We work with you to customize AI models and AI prompts and features for your school." This B2B feature allows educational institutions to configure AI behavior according to their specific curricula and academic integrity requirements.
+
+**Teacher-designed AI tutors**: The platform empowers teachers to "design and assign personalized AI tutors to students" in under five minutes. This suggests a prompt templating system where educators can customize tutoring parameters without requiring technical expertise.
+
+**SSO-linked ethical incentives**: School email SSO integration serves dual purposes—authentication and behavioral tracking. Institutions gain analytics capabilities to monitor AI usage patterns and flag potential academic dishonesty.
+
+**Education-specific workflows**: The Y Combinator profile emphasizes that Shepherd provides "education-specific workflows, not just chatbots"—suggesting structured interaction patterns beyond simple chat interfaces.
+
+## Technical stack relies on OpenAI models with pedagogical overlays
+
+Shepherd's technical implementation, while not extensively documented, reveals a pragmatic architecture:
+
+| Component | Implementation |
+|-----------|----------------|
+| **LLM Foundation** | GPT-3.5 (Basic tier, 30 questions/day) and GPT-4 (Premium tier, 200 questions/day) |
+| **Pricing** | Basic: $4.99/month; Premium: $14.99/month |
+| **Document Processing** | PDFs, PowerPoints, Word docs, videos, audio files, YouTube links, websites |
+| **Note Editor** | Notion-style rich text editor with AI chat integration |
+| **Learning Science** | Spaced repetition algorithms for flashcard review |
+| **Platforms** | Web (shepherd.study), iOS mobile app, teacher platform (teacher.shepherd.study) |
+
+The platform addresses LLM hallucination concerns through source-grounding—tying AI responses to uploaded documents and cited passages. For homework help, students can capture problems via photo and receive guided (not direct) assistance.
+
+**Two-platform model**: Shepherd operates distinct products for different user segments:
+1. **Student-only platform** (shepherd.study): Direct-to-consumer study tools
+2. **Teacher-in-the-loop platform** (teacher.shepherd.study): B2B product currently piloting in US and Nigeria schools
+
+## Socratic prompt engineering follows established patterns, likely adapted for Shepherd
+
+While Shepherd hasn't published its specific system prompts, the broader AI education community has codified "Socratic prompt engineering" patterns that likely inform their approach. Common techniques include:
+
+**Guided questioning frameworks**: Structured prompt sequences like clarify → justify → counterexample → synthesize that mimic Socratic dialogue patterns
+
+**Adaptive scaffolding**: Prompts that adjust question depth based on learner confidence and prior responses
+
+**Reflective pauses**: System instructions that require students to summarize reasoning or compare alternatives before proceeding
+
+**Human-in-the-loop design**: Prompt architectures that enable teachers to review transcripts, tweak strategies, and maintain curriculum alignment
+
+A representative Socratic tutor system prompt from the broader AI education ecosystem: "You are a tutor that always responds in the Socratic style. You never give the student the answer, but always try to ask just the right question to help them learn to think for themselves."
+
+Given Shepherd's explicit Socratic commitments, their prompts likely incorporate similar core instructions with additional guardrails for:
+- Source citation from uploaded documents
+- Teacher monitoring hooks
+- Academic integrity boundaries
+- Subject-matter contextual grounding from curricula
+
+## Measurable outcomes suggest pedagogical approach works
+
+Shepherd reports concrete impact metrics from classroom deployments:
+
+- **75% reduction** in teacher grading time for essays
+- **3x increase** in writing assignments teachers can assign (enabled by AI-assisted grading)
+- Students reporting **"jumped two to three grade levels in a matter of weeks"**
+- **83% of students** in one study reported AI tutor explanations were "as good as or better than" human instructors (from related AI tutoring research)
+
+These outcomes align with broader academic research. A 2025 randomized controlled trial published in Nature's *Scientific Reports* found that structured AI tutoring outperformed in-class active learning on both engagement and learning outcomes—but only when AI prompts incorporated pedagogical best practices including scaffolded questioning.
+
+## Conclusion: Philosophy over technology as competitive moat
+
+Shepherd.Study's approach reveals that **effective AI tutoring may depend less on proprietary technical architectures than on rigorous pedagogical commitment**. The absence of publicly documented systems like "DynamicPromptEngine" suggests either careful IP protection or that Shepherd's differentiation lies primarily in execution rather than novel technical invention.
+
+The platform's competitive advantage appears to be its unwavering Socratic philosophy—refusing to give direct answers even when students request them—combined with institutional integration that positions teachers as AI orchestrators rather than obsolete intermediaries. This "pedagogy-first" stance, grounded in World Bank research demonstrating teacher-AI collaboration superiority, represents a meaningful departure from AI tutoring tools that simply provide faster answers.
+
+For organizations seeking to understand or replicate Shepherd's approach, the key insight is structural: effective AI tutoring requires designing prompts and interfaces that **make questioning the default behavior** while giving educators visibility and control over the learning journey. The technology is commercially available (GPT-4); the differentiation is in how it's constrained to serve pedagogical rather than convenience goals.

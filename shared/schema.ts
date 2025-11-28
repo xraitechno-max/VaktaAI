@@ -986,3 +986,357 @@ export const documentReferenceLinks = pgTable('document_reference_links', {
   similarity: integer('similarity'),
   createdAt: timestamp('created_at').defaultNow()
 });
+
+// ========== AI MENTOR CURRICULUM SYSTEM TYPES ==========
+
+// Teaching Mode Types
+export type TeachingMode = 'socratic' | 'direct' | 'scaffolded_direct' | 'supportive' | 'worked_example';
+
+export type HintLevel = 1 | 2 | 3 | 4 | 5 | 6;
+
+export type EmotionalState = 'confident' | 'confused' | 'frustrated' | 'bored' | 'neutral';
+
+export type ClassLevel = '6' | '7' | '8' | '9' | '10' | '11' | '12' | 'dropper';
+
+export type SubjectCode = 'physics' | 'chemistry' | 'math' | 'biology';
+
+export type ExamTarget = 'board-only' | 'board-foundation' | 'board-jee-main' | 'board-jee-advanced' | 'board-neet' | 'pure-jee' | 'pure-neet';
+
+export type ClassProfile = 'foundation_6_7' | 'bridge_8_9' | 'board_10' | 'competitive_jee_11_12' | 'competitive_neet_11_12' | 'dropper';
+
+export type RootCauseCategory = 'prerequisite_gap' | 'terminology_confusion' | 'conceptual_misconception' | 'procedural_error';
+
+export type ChunkType = 'section' | 'section_part' | 'summary' | 'formulas' | 'key_points' | 'glossary';
+
+export type DifficultyTag = 'foundation' | 'intermediate' | 'advanced';
+
+// Teaching Mode Decision Interface
+export interface TeachingModeDecision {
+  mode: TeachingMode;
+  rationale: string;
+  nextHintLevel?: HintLevel;
+  toneMod?: 'encouraging' | 'urgent' | 'calm';
+}
+
+// Teaching Mode Input Context
+export interface TeachingModeContext {
+  masteryScore: number; // 0-1
+  recentAttempts: number;
+  emotion: EmotionalState;
+  requestType: 'explain' | 'doubt' | 'practice' | 'revision' | 'step';
+  timePressure: boolean;
+  prerequisiteStatus: 'solid' | 'partial' | 'missing';
+  lastHintLevel: HintLevel;
+  frustrationCount: number;
+}
+
+// Hint Ladder Types
+export interface HintTemplate {
+  level: HintLevel;
+  name: string;
+  description: string;
+  templates: {
+    physics: string[];
+    chemistry: string[];
+    math: string[];
+    biology: string[];
+  };
+}
+
+// NCERT Chunk for RAG
+export interface NCERTChunkMetadata {
+  source: 'ncert';
+  classLevel: ClassLevel;
+  subject: SubjectCode;
+  book: string;
+  chapterNumber: string;
+  chapterTitle: string;
+  sectionNumber?: string;
+  sectionTitle?: string;
+  chunkType: ChunkType;
+  chunkIndex?: number;
+  isCompleteSection?: boolean;
+  pageRange?: [number, number];
+  formulaCount?: number;
+  keyPointCount?: number;
+  language: 'english' | 'hindi';
+  difficultyTag?: DifficultyTag;
+  examWeightage?: number; // 0-10 scale
+}
+
+export interface NCERTChunk {
+  chunkId: string;
+  content: string;
+  tokens: number;
+  embedding?: number[];
+  metadata: NCERTChunkMetadata;
+}
+
+// NCERT Chapter Structure for Chunking
+export interface NCERTChapterContent {
+  classLevel: ClassLevel;
+  subject: SubjectCode;
+  book: string;
+  chapterNumber: string;
+  chapterTitle: string;
+  sections: Array<{
+    number: string;
+    title: string;
+    pageRange: [number, number];
+    content: string;
+    difficultyTag?: DifficultyTag;
+  }>;
+  formulas?: string[];
+  summary?: string;
+  keyPoints?: string[];
+  glossary?: Record<string, string>;
+  examRelevance?: {
+    boards?: string[];
+    jee?: string[];
+    neet?: string[];
+  };
+}
+
+// Curriculum Context for AI Mentor
+export interface CurriculumContext {
+  topic: string;
+  chapterTitle: string;
+  classLevel: ClassLevel;
+  subject: SubjectCode;
+  prerequisites: Array<{
+    topic: string;
+    masteryStatus: 'solid' | 'partial' | 'missing';
+  }>;
+  examRelevance: {
+    examType: ExamTarget;
+    weightage: number; // 0-10
+    questionTypes: string[];
+    pyqFrequency: 'high' | 'medium' | 'low';
+  };
+  ncertReference?: {
+    pageRange: [number, number];
+    keyFormulas: string[];
+    commonMistakes: string[];
+  };
+}
+
+// Class Level Adaptation Config
+export interface ClassAdaptation {
+  profile: ClassProfile;
+  languageRatio: {
+    hinglish: number; // 0-100
+    english: number; // 0-100
+  };
+  tone: 'playful' | 'friendly' | 'focused' | 'professional' | 'empathetic';
+  exampleStyle: 'everyday' | 'academic' | 'competitive' | 'mixed';
+  complexityLevel: 'basic' | 'intermediate' | 'advanced';
+  examFocus: string[];
+}
+
+// Subject Strategy Config
+export interface SubjectStrategy {
+  subject: SubjectCode;
+  introHook: string[];
+  teachingApproach: string;
+  commonMisconceptions: string[];
+  practiceBlueprint: string[];
+  jeeVariation?: string;
+  neetVariation?: string;
+  boardVariation?: string;
+}
+
+// Doubt Resolution Step
+export interface DoubtResolutionStep {
+  id: 'acknowledge' | 'diagnose' | 'explain' | 'verify' | 'consolidate';
+  actions: string[];
+  promptTemplate: string;
+}
+
+// Demotivation Signal
+export interface DemotivationSignal {
+  type: 'consecutive_wrong' | 'slow_response' | 'minimal_text' | 'negative_sentiment' | 'negative_phrase';
+  threshold: number;
+  detected: boolean;
+  value?: number;
+}
+
+// Session Metrics for Demotivation Tracking
+export interface SessionMetrics {
+  consecutiveWrongAnswers: number;
+  averageResponseLatency: number; // ms
+  recentMessageLengths: number[]; // last 5
+  sentimentScores: number[]; // last 5
+  demotivationEvents: number;
+  interventionSuccessRate: number;
+  timeToRecovery?: number; // ms
+}
+
+// AI Mentor Personality Phrases
+export interface PersonalityPhrases {
+  encouragement: string[];
+  correction: string[];
+  support: string[];
+  motivation: string[];
+  examTips: string[];
+}
+
+// NCERT Curriculum Chunks Table (for RAG)
+export const ncertCurriculumChunks = pgTable('ncert_curriculum_chunks', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  chunkId: varchar('chunk_id').notNull().unique(), // deterministic hash-based ID
+  
+  // Content
+  content: text('content').notNull(),
+  tokens: integer('tokens').notNull(),
+  
+  // Curriculum metadata
+  classLevel: varchar('class_level').notNull(), // '6'-'12' or 'dropper'
+  subject: varchar('subject').notNull(), // 'physics', 'chemistry', 'math', 'biology'
+  book: varchar('book').notNull(),
+  chapterNumber: varchar('chapter_number').notNull(),
+  chapterTitle: varchar('chapter_title').notNull(),
+  sectionNumber: varchar('section_number'),
+  sectionTitle: varchar('section_title'),
+  chunkType: varchar('chunk_type').notNull(), // 'section', 'section_part', 'summary', 'formulas', 'key_points', 'glossary'
+  
+  // Page and position info
+  pageStart: integer('page_start'),
+  pageEnd: integer('page_end'),
+  chunkIndex: integer('chunk_index'),
+  isCompleteSection: boolean('is_complete_section').default(false),
+  
+  // Educational metadata
+  difficultyTag: varchar('difficulty_tag'), // 'foundation', 'intermediate', 'advanced'
+  examWeightage: real('exam_weightage'), // 0-10 scale
+  language: varchar('language').default('english'),
+  
+  // Extended metadata
+  metadata: jsonb('metadata').$type<{
+    formulaCount?: number;
+    keyPointCount?: number;
+    glossaryTerms?: string[];
+    relatedTopics?: string[];
+    examRelevance?: {
+      boards?: string[];
+      jee?: string[];
+      neet?: string[];
+    };
+  }>(),
+  
+  // Vector embedding for similarity search
+  embedding: vector('embedding'),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => [
+  index('ncert_curriculum_chunks_class_idx').on(table.classLevel),
+  index('ncert_curriculum_chunks_subject_idx').on(table.subject),
+  index('ncert_curriculum_chunks_chapter_idx').on(table.chapterNumber),
+  index('ncert_curriculum_chunks_type_idx').on(table.chunkType),
+  index('ncert_curriculum_chunks_chunk_id_idx').on(table.chunkId),
+]);
+
+// Topic Prerequisites Graph
+export const topicPrerequisites = pgTable('topic_prerequisites', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Topic info
+  topicId: varchar('topic_id').notNull(),
+  topicName: varchar('topic_name').notNull(),
+  classLevel: varchar('class_level').notNull(),
+  subject: varchar('subject').notNull(),
+  chapterNumber: varchar('chapter_number').notNull(),
+  
+  // Prerequisites (topics that should be mastered first)
+  prerequisites: jsonb('prerequisites').$type<Array<{
+    topicId: string;
+    topicName: string;
+    importance: 'critical' | 'helpful' | 'optional';
+  }>>().default([]),
+  
+  // Leads to (topics this enables)
+  leadsTo: jsonb('leads_to').$type<Array<{
+    topicId: string;
+    topicName: string;
+  }>>().default([]),
+  
+  // Exam relevance
+  examRelevance: jsonb('exam_relevance').$type<{
+    jeeMain?: { weightage: number; frequency: string };
+    jeeAdvanced?: { weightage: number; frequency: string };
+    neet?: { weightage: number; frequency: string };
+    boards?: { weightage: number; frequency: string };
+  }>(),
+  
+  // Common mistakes for this topic
+  commonMistakes: jsonb('common_mistakes').$type<string[]>().default([]),
+  
+  // Key formulas/concepts
+  keyFormulas: jsonb('key_formulas').$type<string[]>().default([]),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => [
+  index('topic_prereq_topic_idx').on(table.topicId),
+  index('topic_prereq_class_idx').on(table.classLevel),
+  index('topic_prereq_subject_idx').on(table.subject),
+]);
+
+// Student Topic Mastery Tracking
+export const studentTopicMastery = pgTable('student_topic_mastery', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  topicId: varchar('topic_id').notNull(),
+  
+  // Mastery metrics
+  masteryScore: real('mastery_score').default(0), // 0-1
+  confidenceLevel: varchar('confidence_level').$type<'low' | 'medium' | 'high'>().default('low'),
+  
+  // Attempt tracking
+  totalAttempts: integer('total_attempts').default(0),
+  correctAttempts: integer('correct_attempts').default(0),
+  hintsUsed: integer('hints_used').default(0),
+  
+  // Learning progress
+  lastPracticed: timestamp('last_practiced'),
+  practiceCount: integer('practice_count').default(0),
+  
+  // Misconceptions identified
+  misconceptions: jsonb('misconceptions').$type<string[]>().default([]),
+  
+  // SRS for spaced repetition
+  srsInterval: integer('srs_interval').default(1), // days
+  nextReviewDate: timestamp('next_review_date'),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => [
+  index('student_mastery_user_idx').on(table.userId),
+  index('student_mastery_topic_idx').on(table.topicId),
+  index('student_mastery_next_review_idx').on(table.nextReviewDate),
+]);
+
+// Insert schemas for new tables
+export const insertNCERTCurriculumChunkSchema = createInsertSchema(ncertCurriculumChunks).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertTopicPrerequisiteSchema = createInsertSchema(topicPrerequisites).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertStudentTopicMasterySchema = createInsertSchema(studentTopicMastery).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+// Types for new tables
+export type InsertNCERTCurriculumChunk = typeof insertNCERTCurriculumChunkSchema._type;
+export type NCERTCurriculumChunk = typeof ncertCurriculumChunks.$inferSelect;
+export type InsertTopicPrerequisite = typeof insertTopicPrerequisiteSchema._type;
+export type TopicPrerequisite = typeof topicPrerequisites.$inferSelect;
+export type InsertStudentTopicMastery = typeof insertStudentTopicMasterySchema._type;
+export type StudentTopicMastery = typeof studentTopicMastery.$inferSelect;

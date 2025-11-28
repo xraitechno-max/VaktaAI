@@ -1,0 +1,187 @@
+from typing import List, Dict
+from dataclasses import dataclass
+import hashlib
+
+@dataclass
+class NCERTChunk:
+    """A chunk of NCERT content for embedding"""
+    chunk_id: str
+    content: str
+    metadata: Dict
+    embedding: List[float] = None
+
+
+class NCERTChunker:
+    """
+    Intelligent chunking for NCERT content
+    Optimized for educational Q&A retrieval
+    """
+    
+    def __init__(
+        self, 
+        chunk_size: int = 512,
+        chunk_overlap: int = 50,
+        min_chunk_size: int = 100
+    ):
+        self.chunk_size = chunk_size
+        self.chunk_overlap = chunk_overlap
+        self.min_chunk_size = min_chunk_size
+    
+    def create_chunks(self, chapter: NCERTChapter) -> List[NCERTChunk]:
+        """Create chunks from a chapter with rich metadata"""
+        
+        chunks = []
+        
+        # 1. Chunk each section separately (preserves context)
+        for section in chapter.sections:
+            section_chunks = self._chunk_section(
+                content=section["content"],
+                section_title=section["title"],
+                section_number=section["number"],
+                chapter=chapter
+            )
+            chunks.extend(section_chunks)
+        
+        # 2. Create special chunks for formulas
+        if chapter.formulas:
+            formula_chunk = self._create_formula_chunk(chapter)
+            chunks.append(formula_chunk)
+        
+        # 3. Create chunk for summary
+        if chapter.summary:
+            summary_chunk = self._create_summary_chunk(chapter)
+            chunks.append(summary_chunk)
+        
+        # 4. Create chunks for key points
+        if chapter.key_points:
+            keypoint_chunk = self._create_keypoint_chunk(chapter)
+            chunks.append(keypoint_chunk)
+        
+        return chunks
+    
+    def _chunk_section(
+        self, 
+        content: str, 
+        section_title: str,
+        section_number: str,
+        chapter: NCERTChapter
+    ) -> List[NCERTChunk]:
+        """Chunk a section with overlap"""
+        
+        chunks = []
+        words = content.split()
+        
+        if len(words) < self.min_chunk_size:
+            # Small section - keep as single chunk
+            chunk = NCERTChunk(
+                chunk_id=self._generate_chunk_id(content),
+                content=content,
+                metadata={
+                    "source": "ncert",
+                    "class": chapter.class_level,
+                    "subject": chapter.subject,
+                    "book": chapter.book,
+                    "chapter_number": chapter.chapter_number,
+                    "chapter_title": chapter.chapter_title,
+                    "section_number": section_number,
+                    "section_title": section_title,
+                    "chunk_type": "section",
+                    "is_complete_section": True
+                }
+            )
+            chunks.append(chunk)
+        else:
+            # Large section - split with overlap
+            start = 0
+            chunk_num = 1
+            
+            while start < len(words):
+                end = start + self.chunk_size
+                chunk_words = words[start:end]
+                chunk_text = ' '.join(chunk_words)
+                
+                chunk = NCERTChunk(
+                    chunk_id=self._generate_chunk_id(chunk_text),
+                    content=chunk_text,
+                    metadata={
+                        "source": "ncert",
+                        "class": chapter.class_level,
+                        "subject": chapter.subject,
+                        "book": chapter.book,
+                        "chapter_number": chapter.chapter_number,
+                        "chapter_title": chapter.chapter_title,
+                        "section_number": section_number,
+                        "section_title": section_title,
+                        "chunk_type": "section_part",
+                        "chunk_number": chunk_num,
+                        "is_complete_section": False
+                    }
+                )
+                chunks.append(chunk)
+                
+                start = end - self.chunk_overlap
+                chunk_num += 1
+        
+        return chunks
+    
+    def _create_formula_chunk(self, chapter: NCERTChapter) -> NCERTChunk:
+        """Create a special chunk for all formulas in chapter"""
+        
+        formula_text = f"Key Formulas from {chapter.chapter_title}:\n"
+        formula_text += "\n".join([f"• {f}" for f in chapter.formulas])
+        
+        return NCERTChunk(
+            chunk_id=self._generate_chunk_id(formula_text),
+            content=formula_text,
+            metadata={
+                "source": "ncert",
+                "class": chapter.class_level,
+                "subject": chapter.subject,
+                "book": chapter.book,
+                "chapter_number": chapter.chapter_number,
+                "chapter_title": chapter.chapter_title,
+                "chunk_type": "formulas",
+                "formula_count": len(chapter.formulas)
+            }
+        )
+    
+    def _create_summary_chunk(self, chapter: NCERTChapter) -> NCERTChunk:
+        """Create chunk for chapter summary"""
+        
+        return NCERTChunk(
+            chunk_id=self._generate_chunk_id(chapter.summary),
+            content=f"Summary of {chapter.chapter_title}:\n{chapter.summary}",
+            metadata={
+                "source": "ncert",
+                "class": chapter.class_level,
+                "subject": chapter.subject,
+                "book": chapter.book,
+                "chapter_number": chapter.chapter_number,
+                "chapter_title": chapter.chapter_title,
+                "chunk_type": "summary"
+            }
+        )
+    
+    def _create_keypoint_chunk(self, chapter: NCERTChapter) -> NCERTChunk:
+        """Create chunk for key learning points"""
+        
+        keypoint_text = f"Key Points from {chapter.chapter_title}:\n"
+        keypoint_text += "\n".join([f"• {kp}" for kp in chapter.key_points])
+        
+        return NCERTChunk(
+            chunk_id=self._generate_chunk_id(keypoint_text),
+            content=keypoint_text,
+            metadata={
+                "source": "ncert",
+                "class": chapter.class_level,
+                "subject": chapter.subject,
+                "book": chapter.book,
+                "chapter_number": chapter.chapter_number,
+                "chapter_title": chapter.chapter_title,
+                "chunk_type": "key_points"
+            }
+        )
+    
+    def _generate_chunk_id(self, content: str) -> str:
+        """Generate unique chunk ID"""
+        return hashlib.md5(content.encode()).hexdigest()[:12]
