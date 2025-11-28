@@ -14,6 +14,7 @@ import { optimizedAI } from './optimizedAIService';
 import { enhancedVoiceService } from './enhancedVoiceService';
 import { performanceOptimizer, metricsTracker } from './PerformanceOptimizer';
 import { hintService } from './hintService';
+import { enhancedPromptEngine } from './DynamicPromptEngine';
 import { ttsCacheService } from './ttsCacheService';
 import { audioCompression } from './audioCompression';
 import { ttsMetrics } from './ttsMetrics';
@@ -1330,24 +1331,61 @@ export class VoiceStreamService {
 
       console.log(`[TEXT QUERY] Intent: ${intentResult.intent} | Emotion: ${emotionResult.emotion}`);
 
-      // Generate dynamic prompt
-      const promptResult = dynamicPromptEngine.generateSystemPrompt({
-        detectedLanguage: detectedLang,
-        preferredLanguage: session.profileSnapshot?.preferredLanguage as DetectedLanguage,
-        languageConfidence: langDetection?.confidence || 0.5,
-        currentEmotion: emotionResult.emotion,
-        emotionConfidence: emotionResult.confidence,
-        emotionalStability: 0.5,
-        subject: session.subject,
-        topic: session.topic,
-        level: session.level || 'beginner',
-        currentPhase: session.currentPhase,
-        intent: intentResult.intent,
-        misconceptions: session.adaptiveMetrics?.misconceptions || [],
-        strongConcepts: session.adaptiveMetrics?.strongConcepts || []
-      });
-
-      const systemPrompt = promptResult.systemPrompt;
+      // 🆕 CURRICULUM-ALIGNED TUTORING INTEGRATION (VOICE)
+      // Map emotion to curriculum emotional state
+      const voiceEmotionMap: Record<string, 'confident' | 'confused' | 'frustrated' | 'bored' | 'neutral'> = {
+        'confident': 'confident',
+        'curious': 'confident',
+        'confused': 'confused',
+        'frustrated': 'frustrated',
+        'bored': 'bored',
+        'neutral': 'neutral',
+        'happy': 'confident',
+        'sad': 'frustrated'
+      };
+      const voiceCurriculumEmotion = voiceEmotionMap[emotionResult.emotion] || 'neutral';
+      
+      // 1. Check for demotivation signals
+      const voiceDemotivationCheck = tutorSessionService.checkDemotivation(session, queryText, 5000);
+      
+      if (voiceDemotivationCheck.needsIntervention) {
+        console.log(`[TEXT QUERY CURRICULUM] Demotivation detected (level ${voiceDemotivationCheck.level})`);
+      }
+      
+      // 2. Determine request type from intent
+      const voiceRequestTypeMap: Record<string, 'doubt' | 'practice' | 'revision' | 'concept'> = {
+        'ask_doubt': 'doubt',
+        'request_hint': 'doubt',
+        'request_practice': 'practice',
+        'request_revision': 'revision',
+        'ask_concept': 'concept',
+        'submit_answer': 'practice'
+      };
+      const voiceRequestType = voiceRequestTypeMap[intentResult.intent] || 'concept';
+      
+      // 3. Decide teaching mode based on context
+      const voiceTeachingDecision = tutorSessionService.decideTeachingMode(session, voiceCurriculumEmotion, voiceRequestType);
+      console.log(`[TEXT QUERY CURRICULUM] Teaching mode: ${voiceTeachingDecision.mode} (${voiceTeachingDecision.toneModifier})`);
+      
+      // 4. Build enhanced prompt context
+      const voiceDetectedLangForPrompt = detectedLang as 'english' | 'hindi' | 'hinglish';
+      const voiceEnhancedContext = tutorSessionService.buildEnhancedPromptContext(session, voiceCurriculumEmotion, voiceDetectedLangForPrompt);
+      
+      if (voiceDemotivationCheck.needsIntervention && voiceDemotivationCheck.level) {
+        voiceEnhancedContext.demotivationLevel = voiceDemotivationCheck.level;
+      }
+      
+      // 5. Generate enhanced system prompt
+      const voiceEnhancedPromptResult = enhancedPromptEngine.generateEnhancedSystemPrompt(voiceEnhancedContext);
+      
+      // Add persona and teaching approach context
+      const voicePersonaContext = `
+TEACHING APPROACH: ${voiceTeachingDecision.mode} (${voiceTeachingDecision.toneModifier})
+${voiceDemotivationCheck.needsIntervention ? `STUDENT SUPPORT NEEDED: ${voiceDemotivationCheck.intervention}` : ''}
+      `.trim();
+      
+      const systemPrompt = `${voiceEnhancedPromptResult.systemPrompt}\n\n${voicePersonaContext}`;
+      console.log(`[TEXT QUERY PROMPT] Generated ${systemPrompt.length} chars | Teaching: ${voiceTeachingDecision.mode}`);
 
       // Save user message
       const userMessage = await storage.addMessage({
