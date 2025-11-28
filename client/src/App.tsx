@@ -10,7 +10,6 @@ import { LanguageProvider } from "@/contexts/LanguageContext";
 
 // Pages
 import Landing from "@/pages/Landing";
-import Onboarding from "@/pages/Onboarding";
 import Chat from "@/pages/Chat";
 import Tutor from "@/pages/Tutor";
 import DocSathiSources from "@/pages/DocSathiSources";
@@ -51,20 +50,8 @@ function Router() {
     );
   }
 
-  // Check if onboarding is needed (no subjects selected)
-  const needsOnboarding = !user?.subjects || user.subjects.length === 0;
-
-  // Onboarding flow
-  if (needsOnboarding) {
-    return (
-      <Switch>
-        <Route path="/onboarding" component={Onboarding} />
-        <Route component={Onboarding} />
-      </Switch>
-    );
-  }
-
   // Authenticated users get the full app with layout + Unity Avatar preload
+  // Note: Onboarding is now handled by Tutor.tsx with the new OnboardingWizard component
   return (
     <UnityAvatarProvider>
       <AppLayout>
