@@ -19,561 +19,105 @@ export interface TemplateVariant {
 }
 
 // Phase 1: Greeting (0-30 seconds)
-// NEW FORMAT: Structured introduction with methodology explanation and initial assessment questions
+// CONCISE FORMAT: Short, warm welcome with quick assessment
 export const GREETING_TEMPLATES: PhaseTemplate = {
   phase: 'greeting',
-  duration: '0-30 seconds',
-  goal: 'Warm welcome with tutor methodology and initial assessment questions',
+  duration: '0-15 seconds',
+  goal: 'Quick warm welcome with initial assessment question',
   variants: [
     // English - Classes 6-8 (Foundation)
     {
-      timeOfDay: 'morning',
       language: 'english',
       context: 'foundation',
-      text: `Hi {studentName}, I'm {teacherName}, your AI tutor. I'm here to help you really understand {topic}, not just get answers.
+      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {topic}.
 
-Here's how our sessions will work:
-- I'll ask you small, focused questions (one at a time)
-- I won't just give you final answers - instead, we'll think through them together
-- I'll explain things at a level that fits Class {currentClass}, and we'll adjust based on how you're feeling
-- We'll check understanding as we go, so nothing piles up and gets confusing
+We'll learn step-by-step together - I'll guide you with questions, not just answers.
 
-Before we dive into {topic}, I want to get a quick sense of where you are.
-
-Have you seen {topic} before? If yes, can you tell me what you remember (even if you're not sure it's correct)?
-What's your goal for today: understanding the concept, solving problems, or preparing for a test?
-
-Answer either or both, and we'll start from there, step by step.`,
+Quick check: Have you studied {topic} before? What do you remember?`,
       emotion: 'enthusiastic',
       requiresResponse: true
     },
     // Hinglish - Classes 6-8 (Foundation)
     {
-      timeOfDay: 'morning',
       language: 'hinglish',
       context: 'foundation',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI tutor. Main yahan tumhe {topic} sach mein samjhane ke liye hoon, sirf answers dene ke liye nahi.
+      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {topic} ke liye.
 
-Humare sessions aise chalenge:
-- Main tumse chhote, focused questions puchchungi (ek time pe ek)
-- Main direct answers nahi dungi - hum saath mein sochenge
-- Main Class {currentClass} ke level pe explain karungi, aur tumhari feeling ke hisaab se adjust karungi
-- Har step pe understanding check karenge, taaki kuch confusing na ho
+Hum saath mein step-by-step seekhenge - main questions se guide karungi, sirf answers nahi dungi.
 
-{topic} shuru karne se pehle, mujhe jaanna hai tum kahaan ho.
-
-Kya tumne {topic} pehle dekha hai? Agar haan, toh jo yaad hai wo batao (galat bhi ho toh chalega)?
-Aaj ka goal kya hai: concept samajhna, problems solve karna, ya test ki prep?
-
-Dono mein se koi bhi answer do, aur hum wahi se step by step shuru karenge.`,
+Quick check: Kya {topic} pehle padha hai? Jo yaad hai batao?`,
       emotion: 'enthusiastic',
       requiresResponse: true
     },
     // English - Classes 9-10 (Board Prep)
     {
-      timeOfDay: 'morning',
       language: 'english',
       context: 'board_prep',
-      text: `Hi {studentName}, I'm {teacherName}, your AI tutor. I'm here to help you really understand {topic}, not just memorize for boards.
+      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {topic}.
 
-Here's how our sessions will work:
-- I'll ask you small, focused questions (one at a time)
-- I won't just give you final answers - instead, we'll think through them together
-- I'll explain things at a level that fits Class {currentClass} board prep, and we'll adjust based on how you're feeling
-- We'll check understanding as we go, so nothing piles up and gets confusing
+{topic} is important for {examTarget}. We'll build understanding together, step-by-step.
 
-{topic} is important for your {examTarget} - it appears frequently in exams!
-
-Before we start, I want to understand where you are:
-
-Have you studied {topic} before? If yes, can you write what you remember (even if you're not sure it's correct)?
-What's your goal for today with {topic}: understanding the concept, solving numerical problems, or preparing for boards?
-
-Answer either or both, and we'll start from there, step by step.`,
+Quick check: Have you studied {topic} before? What's your goal today - concepts, numericals, or board prep?`,
       emotion: 'enthusiastic',
       requiresResponse: true
     },
     // Hinglish - Classes 9-10 (Board Prep)
     {
-      timeOfDay: 'morning',
       language: 'hinglish',
       context: 'board_prep',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI tutor. Main yahan tumhe {topic} sach mein samjhane ke liye hoon, sirf boards ke liye ratta lagane nahi.
+      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {topic} ke liye.
 
-Humare sessions aise chalenge:
-- Main tumse chhote, focused questions puchchungi (ek time pe ek)
-- Main direct answers nahi dungi - hum saath mein sochenge
-- Main Class {currentClass} board prep ke level pe explain karungi
-- Har step pe understanding check karenge, taaki kuch confusing na ho
+{topic} {examTarget} ke liye important hai. Hum saath mein step-by-step samjhenge.
 
-{topic} tumhare {examTarget} ke liye important hai - exams mein frequently aata hai!
-
-Shuru karne se pehle, mujhe jaanna hai:
-
-Kya {topic} pehle padha hai? Agar haan, toh jo yaad hai wo batao (galat bhi ho toh chalega)?
-Aaj ka goal kya hai: concept samajhna, numerical solve karna, ya boards ki prep?
-
-Koi bhi answer do, aur hum wahi se step by step shuru karenge.`,
+Quick check: Kya {topic} pehle padha hai? Aaj ka goal kya hai - concepts, numericals, ya boards prep?`,
       emotion: 'enthusiastic',
       requiresResponse: true
     },
     // English - Classes 11-12 (Competitive)
     {
-      timeOfDay: 'morning',
       language: 'english',
       context: 'competitive',
-      text: `Hi {studentName}, I'm {teacherName}, your AI tutor. I'm here to help you truly master {topic}, not just solve problems mechanically.
+      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {topic}.
 
-Here's how our sessions will work:
-- I'll ask you focused questions (one at a time) to build deep understanding
-- I won't just give you final answers - we'll think through them together
-- I'll explain at {examTarget} level, covering both concepts and shortcuts
-- We'll check understanding at each step, so nothing gets confusing
+{topic} is crucial for {examTarget} - tests both concepts and speed. We'll master it together.
 
-{topic} is crucial for {examTarget} - it tests both conceptual depth and problem-solving speed!
-
-Before we dive in, I want to understand where you stand:
-
-Have you studied {topic} before? If yes, can you write the key formula/concept you remember (even if unsure)?
-What's your goal today: understanding the concept deeply, solving advanced problems, or exam-level practice?
-
-Answer either or both, and we'll start from there, step by step.`,
+Quick check: What do you already know about {topic}? And what's your goal - deep concepts, advanced problems, or exam practice?`,
       emotion: 'enthusiastic',
       requiresResponse: true
     },
     // Hinglish - Classes 11-12 (Competitive)
     {
-      timeOfDay: 'morning',
       language: 'hinglish',
       context: 'competitive',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI tutor. Main yahan {topic} sach mein master karne mein help karungi, sirf mechanically problems solve karne ke liye nahi.
+      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {topic} ke liye.
 
-Humare sessions aise chalenge:
-- Main focused questions puchchungi (ek time pe ek) deep understanding ke liye
-- Main direct answers nahi dungi - hum saath mein sochenge
-- Main {examTarget} level pe explain karungi, concepts aur shortcuts dono cover karenge
-- Har step pe understanding check karenge
+{topic} {examTarget} ke liye crucial hai - concepts aur speed dono test hoti hai. Saath mein master karenge.
 
-{topic} {examTarget} ke liye bahut crucial hai - conceptual depth aur speed dono test hoti hai!
-
-Shuru karne se pehle, mujhe jaanna hai:
-
-Kya {topic} pehle padha hai? Agar haan, toh key formula/concept batao (unsure bhi ho toh chalega)?
-Aaj ka goal kya hai: concept deeply samajhna, advanced problems solve karna, ya exam-level practice?
-
-Koi bhi answer do, aur hum wahi se step by step shuru karenge.`,
+Quick check: {topic} ke baare mein kya jaante ho? Aur goal kya hai - deep concepts, advanced problems, ya exam practice?`,
       emotion: 'enthusiastic',
       requiresResponse: true
     },
     // English - Dropper (Comeback)
     {
-      timeOfDay: 'morning',
       language: 'english',
       context: 'dropper',
-      text: `Hi {studentName}, I'm {teacherName}, your AI tutor. This is YOUR year, and I'm here to help you truly master {topic}, not just revise quickly.
+      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor. This is YOUR year for {examTarget}.
 
-Here's how our sessions will work:
-- I'll ask you focused questions to identify and fill gaps
-- I won't just give you answers - we'll build solid understanding together
-- I'll explain at {examTarget} level with exam-focused strategies
-- We'll check understanding at each step, targeting weak areas
+Let's master {topic} together - I'll help fill gaps and build solid understanding.
 
-{topic} is important for {examTarget} - getting this right can make a big difference!
-
-Before we start, I want to understand your current level:
-
-Have you studied {topic} before? What do you remember (even if it feels incomplete)?
-What's your goal today: clearing concepts, solving tough problems, or exam simulation?
-
-Answer either or both, and we'll start from there, step by step. Let's make this count!`,
+Quick check: What do you remember about {topic}? What's your focus today - concepts, tough problems, or exam simulation?`,
       emotion: 'encouraging',
       requiresResponse: true
     },
     // Hinglish - Dropper (Comeback)
     {
-      timeOfDay: 'morning',
       language: 'hinglish',
       context: 'dropper',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI tutor. Ye TUMHARA saal hai, aur main {topic} sach mein master karne mein help karungi, sirf quick revision nahi.
+      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor. Ye TUMHARA saal hai {examTarget} ke liye.
 
-Humare sessions aise chalenge:
-- Main focused questions puchchungi gaps identify aur fill karne ke liye
-- Main direct answers nahi dungi - hum saath mein solid understanding banayenge
-- Main {examTarget} level pe explain karungi with exam-focused strategies
-- Har step pe understanding check karenge, weak areas target karenge
+{topic} saath mein master karenge - gaps fill karke solid understanding banayenge.
 
-{topic} {examTarget} ke liye important hai - isko sahi karna big difference la sakta hai!
-
-Shuru karne se pehle, tumhara current level jaanna hai:
-
-Kya {topic} pehle padha hai? Jo yaad hai wo batao (incomplete feel ho toh bhi)?
-Aaj ka goal kya hai: concepts clear karna, tough problems solve karna, ya exam simulation?
-
-Koi bhi answer do, aur hum wahi se step by step shuru karenge. Let's make this count!`,
-      emotion: 'encouraging',
-      requiresResponse: true
-    },
-    // Afternoon/Evening variants - Same structured format
-    {
-      timeOfDay: 'afternoon',
-      language: 'english',
-      context: 'foundation',
-      text: `Hi {studentName}, I'm {teacherName}, your AI tutor. I'm here to help you really understand {topic}, not just get answers.
-
-Here's how our sessions will work:
-- I'll ask you small, focused questions (one at a time)
-- I won't just give you final answers - instead, we'll think through them together
-- I'll explain things at a level that fits Class {currentClass}, and we'll adjust based on how you're feeling
-- We'll check understanding as we go, so nothing piles up and gets confusing
-
-Before we dive into {topic}, I want to get a quick sense of where you are.
-
-Have you seen {topic} before? If yes, can you tell me what you remember (even if you're not sure it's correct)?
-What's your goal for today: understanding the concept, solving problems, or preparing for a test?
-
-Answer either or both, and we'll start from there, step by step.`,
-      emotion: 'friendly',
-      requiresResponse: true
-    },
-    {
-      timeOfDay: 'afternoon',
-      language: 'hinglish',
-      context: 'foundation',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI tutor. Main yahan tumhe {topic} sach mein samjhane ke liye hoon, sirf answers dene ke liye nahi.
-
-Humare sessions aise chalenge:
-- Main tumse chhote, focused questions puchchungi (ek time pe ek)
-- Main direct answers nahi dungi - hum saath mein sochenge
-- Main Class {currentClass} ke level pe explain karungi, aur tumhari feeling ke hisaab se adjust karungi
-- Har step pe understanding check karenge, taaki kuch confusing na ho
-
-{topic} shuru karne se pehle, mujhe jaanna hai tum kahaan ho.
-
-Kya tumne {topic} pehle dekha hai? Agar haan, toh jo yaad hai wo batao (galat bhi ho toh chalega)?
-Aaj ka goal kya hai: concept samajhna, problems solve karna, ya test ki prep?
-
-Dono mein se koi bhi answer do, aur hum wahi se step by step shuru karenge.`,
-      emotion: 'friendly',
-      requiresResponse: true
-    },
-    // Evening foundation variants
-    {
-      timeOfDay: 'evening',
-      language: 'english',
-      context: 'foundation',
-      text: `Hi {studentName}, I'm {teacherName}, your AI tutor. I'm here to help you really understand {topic}, not just get answers.
-
-Here's how our sessions will work:
-- I'll ask you small, focused questions (one at a time)
-- I won't just give you final answers - instead, we'll think through them together
-- I'll explain things at a level that fits Class {currentClass}, and we'll adjust based on how you're feeling
-- We'll check understanding as we go, so nothing piles up and gets confusing
-
-Before we dive into {topic}, I want to get a quick sense of where you are.
-
-Have you seen {topic} before? If yes, can you tell me what you remember (even if you're not sure it's correct)?
-What's your goal for today: understanding the concept, solving problems, or preparing for a test?
-
-Answer either or both, and we'll start from there, step by step.`,
-      emotion: 'excited',
-      requiresResponse: true
-    },
-    {
-      timeOfDay: 'evening',
-      language: 'hinglish',
-      context: 'foundation',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI tutor. Main yahan tumhe {topic} sach mein samjhane ke liye hoon, sirf answers dene ke liye nahi.
-
-Humare sessions aise chalenge:
-- Main tumse chhote, focused questions puchchungi (ek time pe ek)
-- Main direct answers nahi dungi - hum saath mein sochenge
-- Main Class {currentClass} ke level pe explain karungi, aur tumhari feeling ke hisaab se adjust karungi
-- Har step pe understanding check karenge, taaki kuch confusing na ho
-
-{topic} shuru karne se pehle, mujhe jaanna hai tum kahaan ho.
-
-Kya tumne {topic} pehle dekha hai? Agar haan, toh jo yaad hai wo batao (galat bhi ho toh chalega)?
-Aaj ka goal kya hai: concept samajhna, problems solve karna, ya test ki prep?
-
-Dono mein se koi bhi answer do, aur hum wahi se step by step shuru karenge.`,
-      emotion: 'excited',
-      requiresResponse: true
-    },
-    // Afternoon competitive variants
-    {
-      timeOfDay: 'afternoon',
-      language: 'english',
-      context: 'competitive',
-      text: `Hi {studentName}, I'm {teacherName}, your AI tutor. I'm here to help you truly master {topic}, not just solve problems mechanically.
-
-Here's how our sessions will work:
-- I'll ask you focused questions (one at a time) to build deep understanding
-- I won't just give you final answers - we'll think through them together
-- I'll explain at {examTarget} level, covering both concepts and shortcuts
-- We'll check understanding at each step, so nothing gets confusing
-
-{topic} is crucial for {examTarget} - it tests both conceptual depth and problem-solving speed!
-
-Before we dive in, I want to understand where you stand:
-
-Have you studied {topic} before? If yes, can you write the key formula/concept you remember (even if unsure)?
-What's your goal today: understanding the concept deeply, solving advanced problems, or exam-level practice?
-
-Answer either or both, and we'll start from there, step by step.`,
-      emotion: 'friendly',
-      requiresResponse: true
-    },
-    {
-      timeOfDay: 'afternoon',
-      language: 'hinglish',
-      context: 'competitive',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI tutor. Main yahan {topic} sach mein master karne mein help karungi, sirf mechanically problems solve karne ke liye nahi.
-
-Humare sessions aise chalenge:
-- Main focused questions puchchungi (ek time pe ek) deep understanding ke liye
-- Main direct answers nahi dungi - hum saath mein sochenge
-- Main {examTarget} level pe explain karungi, concepts aur shortcuts dono cover karenge
-- Har step pe understanding check karenge
-
-{topic} {examTarget} ke liye bahut crucial hai - conceptual depth aur speed dono test hoti hai!
-
-Shuru karne se pehle, mujhe jaanna hai:
-
-Kya {topic} pehle padha hai? Agar haan, toh key formula/concept batao (unsure bhi ho toh chalega)?
-Aaj ka goal kya hai: concept deeply samajhna, advanced problems solve karna, ya exam-level practice?
-
-Koi bhi answer do, aur hum wahi se step by step shuru karenge.`,
-      emotion: 'friendly',
-      requiresResponse: true
-    },
-    {
-      timeOfDay: 'evening',
-      language: 'english',
-      context: 'competitive',
-      text: `Hi {studentName}, I'm {teacherName}, your AI tutor. I'm here to help you truly master {topic}, not just solve problems mechanically.
-
-Here's how our sessions will work:
-- I'll ask you focused questions (one at a time) to build deep understanding
-- I won't just give you final answers - we'll think through them together
-- I'll explain at {examTarget} level, covering both concepts and shortcuts
-- We'll check understanding at each step, so nothing gets confusing
-
-{topic} is crucial for {examTarget} - it tests both conceptual depth and problem-solving speed!
-
-Before we dive in, I want to understand where you stand:
-
-Have you studied {topic} before? If yes, can you write the key formula/concept you remember (even if unsure)?
-What's your goal today: understanding the concept deeply, solving advanced problems, or exam-level practice?
-
-Answer either or both, and we'll start from there, step by step.`,
-      emotion: 'excited',
-      requiresResponse: true
-    },
-    {
-      timeOfDay: 'evening',
-      language: 'hinglish',
-      context: 'competitive',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI tutor. Main yahan {topic} sach mein master karne mein help karungi, sirf mechanically problems solve karne ke liye nahi.
-
-Humare sessions aise chalenge:
-- Main focused questions puchchungi (ek time pe ek) deep understanding ke liye
-- Main direct answers nahi dungi - hum saath mein sochenge
-- Main {examTarget} level pe explain karungi, concepts aur shortcuts dono cover karenge
-- Har step pe understanding check karenge
-
-{topic} {examTarget} ke liye bahut crucial hai - conceptual depth aur speed dono test hoti hai!
-
-Shuru karne se pehle, mujhe jaanna hai:
-
-Kya {topic} pehle padha hai? Agar haan, toh key formula/concept batao (unsure bhi ho toh chalega)?
-Aaj ka goal kya hai: concept deeply samajhna, advanced problems solve karna, ya exam-level practice?
-
-Koi bhi answer do, aur hum wahi se step by step shuru karenge.`,
-      emotion: 'excited',
-      requiresResponse: true
-    },
-    // Additional afternoon/evening variants for board_prep and dropper
-    {
-      timeOfDay: 'afternoon',
-      language: 'english',
-      context: 'board_prep',
-      text: `Hi {studentName}, I'm {teacherName}, your AI tutor. I'm here to help you really understand {topic}, not just memorize for boards.
-
-Here's how our sessions will work:
-- I'll ask you small, focused questions (one at a time)
-- I won't just give you final answers - instead, we'll think through them together
-- I'll explain things at a level that fits Class {currentClass} board prep, and we'll adjust based on how you're feeling
-- We'll check understanding as we go, so nothing piles up and gets confusing
-
-{topic} is important for your {examTarget} - it appears frequently in exams!
-
-Before we start, I want to understand where you are:
-
-Have you studied {topic} before? If yes, can you write what you remember (even if you're not sure it's correct)?
-What's your goal for today with {topic}: understanding the concept, solving numerical problems, or preparing for boards?
-
-Answer either or both, and we'll start from there, step by step.`,
-      emotion: 'friendly',
-      requiresResponse: true
-    },
-    {
-      timeOfDay: 'afternoon',
-      language: 'hinglish',
-      context: 'board_prep',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI tutor. Main yahan tumhe {topic} sach mein samjhane ke liye hoon, sirf boards ke liye ratta lagane nahi.
-
-Humare sessions aise chalenge:
-- Main tumse chhote, focused questions puchchungi (ek time pe ek)
-- Main direct answers nahi dungi - hum saath mein sochenge
-- Main Class {currentClass} board prep ke level pe explain karungi
-- Har step pe understanding check karenge, taaki kuch confusing na ho
-
-{topic} tumhare {examTarget} ke liye important hai - exams mein frequently aata hai!
-
-Shuru karne se pehle, mujhe jaanna hai:
-
-Kya {topic} pehle padha hai? Agar haan, toh jo yaad hai wo batao (galat bhi ho toh chalega)?
-Aaj ka goal kya hai: concept samajhna, numerical solve karna, ya boards ki prep?
-
-Koi bhi answer do, aur hum wahi se step by step shuru karenge.`,
-      emotion: 'friendly',
-      requiresResponse: true
-    },
-    {
-      timeOfDay: 'evening',
-      language: 'english',
-      context: 'board_prep',
-      text: `Hi {studentName}, I'm {teacherName}, your AI tutor. I'm here to help you really understand {topic}, not just memorize for boards.
-
-Here's how our sessions will work:
-- I'll ask you small, focused questions (one at a time)
-- I won't just give you final answers - instead, we'll think through them together
-- I'll explain things at a level that fits Class {currentClass} board prep, and we'll adjust based on how you're feeling
-- We'll check understanding as we go, so nothing piles up and gets confusing
-
-{topic} is important for your {examTarget} - it appears frequently in exams!
-
-Before we start, I want to understand where you are:
-
-Have you studied {topic} before? If yes, can you write what you remember (even if you're not sure it's correct)?
-What's your goal for today with {topic}: understanding the concept, solving numerical problems, or preparing for boards?
-
-Answer either or both, and we'll start from there, step by step.`,
-      emotion: 'excited',
-      requiresResponse: true
-    },
-    {
-      timeOfDay: 'evening',
-      language: 'hinglish',
-      context: 'board_prep',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI tutor. Main yahan tumhe {topic} sach mein samjhane ke liye hoon, sirf boards ke liye ratta lagane nahi.
-
-Humare sessions aise chalenge:
-- Main tumse chhote, focused questions puchchungi (ek time pe ek)
-- Main direct answers nahi dungi - hum saath mein sochenge
-- Main Class {currentClass} board prep ke level pe explain karungi
-- Har step pe understanding check karenge, taaki kuch confusing na ho
-
-{topic} tumhare {examTarget} ke liye important hai - exams mein frequently aata hai!
-
-Shuru karne se pehle, mujhe jaanna hai:
-
-Kya {topic} pehle padha hai? Agar haan, toh jo yaad hai wo batao (galat bhi ho toh chalega)?
-Aaj ka goal kya hai: concept samajhna, numerical solve karna, ya boards ki prep?
-
-Koi bhi answer do, aur hum wahi se step by step shuru karenge.`,
-      emotion: 'excited',
-      requiresResponse: true
-    },
-    {
-      timeOfDay: 'afternoon',
-      language: 'english',
-      context: 'dropper',
-      text: `Hi {studentName}, I'm {teacherName}, your AI tutor. This is YOUR year, and I'm here to help you truly master {topic}, not just revise quickly.
-
-Here's how our sessions will work:
-- I'll ask you focused questions to identify and fill gaps
-- I won't just give you answers - we'll build solid understanding together
-- I'll explain at {examTarget} level with exam-focused strategies
-- We'll check understanding at each step, targeting weak areas
-
-{topic} is important for {examTarget} - getting this right can make a big difference!
-
-Before we start, I want to understand your current level:
-
-Have you studied {topic} before? What do you remember (even if it feels incomplete)?
-What's your goal today: clearing concepts, solving tough problems, or exam simulation?
-
-Answer either or both, and we'll start from there, step by step. Let's make this count!`,
-      emotion: 'encouraging',
-      requiresResponse: true
-    },
-    {
-      timeOfDay: 'afternoon',
-      language: 'hinglish',
-      context: 'dropper',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI tutor. Ye TUMHARA saal hai, aur main {topic} sach mein master karne mein help karungi, sirf quick revision nahi.
-
-Humare sessions aise chalenge:
-- Main focused questions puchchungi gaps identify aur fill karne ke liye
-- Main direct answers nahi dungi - hum saath mein solid understanding banayenge
-- Main {examTarget} level pe explain karungi with exam-focused strategies
-- Har step pe understanding check karenge, weak areas target karenge
-
-{topic} {examTarget} ke liye important hai - isko sahi karna big difference la sakta hai!
-
-Shuru karne se pehle, tumhara current level jaanna hai:
-
-Kya {topic} pehle padha hai? Jo yaad hai wo batao (incomplete feel ho toh bhi)?
-Aaj ka goal kya hai: concepts clear karna, tough problems solve karna, ya exam simulation?
-
-Koi bhi answer do, aur hum wahi se step by step shuru karenge. Let's make this count!`,
-      emotion: 'encouraging',
-      requiresResponse: true
-    },
-    {
-      timeOfDay: 'evening',
-      language: 'english',
-      context: 'dropper',
-      text: `Hi {studentName}, I'm {teacherName}, your AI tutor. This is YOUR year, and I'm here to help you truly master {topic}, not just revise quickly.
-
-Here's how our sessions will work:
-- I'll ask you focused questions to identify and fill gaps
-- I won't just give you answers - we'll build solid understanding together
-- I'll explain at {examTarget} level with exam-focused strategies
-- We'll check understanding at each step, targeting weak areas
-
-{topic} is important for {examTarget} - getting this right can make a big difference!
-
-Before we start, I want to understand your current level:
-
-Have you studied {topic} before? What do you remember (even if it feels incomplete)?
-What's your goal today: clearing concepts, solving tough problems, or exam simulation?
-
-Answer either or both, and we'll start from there, step by step. Let's make this count!`,
-      emotion: 'encouraging',
-      requiresResponse: true
-    },
-    {
-      timeOfDay: 'evening',
-      language: 'hinglish',
-      context: 'dropper',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI tutor. Ye TUMHARA saal hai, aur main {topic} sach mein master karne mein help karungi, sirf quick revision nahi.
-
-Humare sessions aise chalenge:
-- Main focused questions puchchungi gaps identify aur fill karne ke liye
-- Main direct answers nahi dungi - hum saath mein solid understanding banayenge
-- Main {examTarget} level pe explain karungi with exam-focused strategies
-- Har step pe understanding check karenge, weak areas target karenge
-
-{topic} {examTarget} ke liye important hai - isko sahi karna big difference la sakta hai!
-
-Shuru karne se pehle, tumhara current level jaanna hai:
-
-Kya {topic} pehle padha hai? Jo yaad hai wo batao (incomplete feel ho toh bhi)?
-Aaj ka goal kya hai: concepts clear karna, tough problems solve karna, ya exam simulation?
-
-Koi bhi answer do, aur hum wahi se step by step shuru karenge. Let's make this count!`,
+Quick check: {topic} ke baare mein kya yaad hai? Aaj ka focus kya hai - concepts, tough problems, ya exam simulation?`,
       emotion: 'encouraging',
       requiresResponse: true
     }
