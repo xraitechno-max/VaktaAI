@@ -2,33 +2,44 @@ import type { DetectedLanguage, LanguageDetectionResult } from './LanguageDetect
 import type { SessionContext } from './SessionContextManager';
 import type { EmotionalState } from '../config/emotionPatterns';
 import type { IntentType } from '../types/intents';
+import type {
+  TeachingMode,
+  HintLevel,
+  SubjectCode,
+  ClassLevel,
+  ExamTarget,
+  CurriculumContext,
+  NCERTChunk,
+  TeachingModeDecision,
+  TeachingModeContext,
+} from '@shared/schema';
 import { SYSTEM_PROMPTS, RESPONSE_TEMPLATES } from '../config/languagePrompts';
 import { EMOTION_RESPONSE_MODIFIERS } from '../config/emotionPatterns';
+import { teachingModeEngine } from './curriculum/TeachingModeEngine';
+import { hintLadderSystem } from './curriculum/HintLadderSystem';
+import { AI_MENTOR_PERSONALITY, getRandomPhrase } from '../config/aiMentorPersonality';
+import { getAdaptation, getLanguagePromptModifier, getExamFocusPromptModifier } from '../config/classLevelAdaptations';
+import { getStrategy, getExamSpecificApproach, getSubjectPromptAdditions } from '../config/subjectStrategies';
+import { getHintTemplate, buildHintLadderPromptGuidance, HINT_LADDER_CONFIG } from '../config/hintLadderConfig';
 
 export interface PromptContext {
-  // Language context
   detectedLanguage: DetectedLanguage;
   languageConfidence: number;
   preferredLanguage?: DetectedLanguage;
   
-  // Emotional context
   currentEmotion: EmotionalState;
   emotionConfidence: number;
   emotionalStability?: number;
   
-  // Learning context
   subject: string;
   topic: string;
   level: string;
   currentPhase: string;
   
-  // Intent context
   intent?: IntentType;
   
-  // Exam type context
   examType?: 'board' | 'competitive';
   
-  // User profile context (from onboarding)
   userProfile?: {
     currentClass?: string;
     examTarget?: string;
@@ -36,11 +47,31 @@ export interface PromptContext {
     firstName?: string;
   };
   
-  // Session context
   messageCount?: number;
   misconceptions?: string[];
   strongConcepts?: string[];
   avgResponseTime?: number;
+}
+
+export interface EnhancedPromptContext extends PromptContext {
+  teachingMode?: TeachingMode;
+  teachingModeDecision?: TeachingModeDecision;
+  currentHintLevel?: HintLevel;
+  curriculumContext?: CurriculumContext;
+  demotivationLevel?: number;
+  ncertChunks?: NCERTChunk[];
+  
+  classLevel?: ClassLevel;
+  examTarget?: ExamTarget;
+  subjectCode?: SubjectCode;
+  
+  frustrationCount?: number;
+  recentAttempts?: number;
+  masteryScore?: number;
+  prerequisiteStatus?: 'solid' | 'partial' | 'missing';
+  timePressure?: boolean;
+  
+  hintsGiven?: Array<{ level: HintLevel; content: string }>;
 }
 
 export interface GeneratedPrompt {
@@ -50,19 +81,21 @@ export interface GeneratedPrompt {
   adaptations: string[];
 }
 
+export interface EnhancedGeneratedPrompt extends GeneratedPrompt {
+  teachingModeApplied?: TeachingMode;
+  hintLevelActive?: HintLevel;
+  personalityTraitsApplied?: string[];
+  ncertCitationsIncluded?: number;
+}
+
 export class DynamicPromptEngine {
   
-  /**
-   * Generate context-aware system prompt
-   */
   generateSystemPrompt(context: PromptContext): GeneratedPrompt {
     const adaptations: string[] = [];
     
-    // 1. Base language prompt
     let systemPrompt = this.getBaseLanguagePrompt(context.detectedLanguage, context.preferredLanguage);
     adaptations.push(`Language: ${context.detectedLanguage} (confidence: ${(context.languageConfidence * 100).toFixed(0)}%)`);
     
-    // 2. Intent-specific overrides
     if (context.intent) {
       const intentOverride = this.getIntentOverride(context.detectedLanguage, context.intent);
       if (intentOverride) {
@@ -71,19 +104,16 @@ export class DynamicPromptEngine {
       }
     }
     
-    // 3. Emotional adaptation
     const emotionGuidelines = this.getEmotionGuidelines(context.currentEmotion, context.emotionalStability);
     if (emotionGuidelines) {
       systemPrompt += '\n\n' + emotionGuidelines;
       adaptations.push(`Emotion: ${context.currentEmotion}`);
     }
     
-    // 4. Learning context
     const learningContext = this.getLearningContext(context);
     systemPrompt += '\n\n' + learningContext;
     adaptations.push(`Phase: ${context.currentPhase}, Level: ${context.level}`);
     
-    // 4.5. Exam type adaptation (Board vs Competitive)
     if (context.examType) {
       if (context.examType === 'competitive') {
         systemPrompt += '\n\nEXAM TYPE: Competitive Exam (JEE/NEET level)\n- Provide in-depth explanations with advanced concepts\n- Include multiple problem-solving approaches and tricks\n- Focus on conceptual clarity and application-level questions\n- Prepare student for competitive exam difficulty';
@@ -94,12 +124,10 @@ export class DynamicPromptEngine {
       }
     }
     
-    // 5. Socratic teaching strategy
     const socraticStrategy = this.getSocraticTeachingStrategy(context);
     systemPrompt += '\n\n' + socraticStrategy;
     adaptations.push('Socratic method enabled');
     
-    // 6. Misconceptions and strengths adaptation
     if (context.misconceptions && context.misconceptions.length > 0) {
       const misconceptionGuidance = this.getMisconceptionGuidance(context.misconceptions);
       systemPrompt += '\n\n' + misconceptionGuidance;
@@ -112,19 +140,16 @@ export class DynamicPromptEngine {
       adaptations.push(`Building on ${context.strongConcepts.length} strong concepts`);
     }
     
-    // 7. Response time adaptation (if slow responses, keep it concise)
     if (context.avgResponseTime && context.avgResponseTime > 3000) {
       systemPrompt += '\n\nIMPORTANT: Keep responses concise and focused (user has slow response times).';
       adaptations.push('Optimized for slow connection');
     }
     
-    // 8. Language consistency reminder
     if (context.preferredLanguage && context.preferredLanguage !== context.detectedLanguage) {
       systemPrompt += `\n\nNOTE: User typically uses ${context.preferredLanguage} but current message is in ${context.detectedLanguage}. Match current message language unless user explicitly requests change.`;
       adaptations.push('Language switch detected');
     }
     
-    // Generate response guidelines
     const responseGuidelines = this.generateResponseGuidelines(context);
     
     return {
@@ -134,11 +159,7 @@ export class DynamicPromptEngine {
     };
   }
 
-  /**
-   * Get base language-specific prompt
-   */
   private getBaseLanguagePrompt(detected: DetectedLanguage, preferred?: DetectedLanguage): string {
-    // Use preferred language if available and high consistency
     const targetLanguage = preferred || detected;
     
     if (targetLanguage === 'hindi' || targetLanguage === 'hinglish') {
@@ -148,9 +169,6 @@ export class DynamicPromptEngine {
     }
   }
 
-  /**
-   * Get intent-specific override
-   */
   private getIntentOverride(language: DetectedLanguage, intent: IntentType): string | null {
     const isHindi = language === 'hindi' || language === 'hinglish';
     const basePrompt = isHindi ? SYSTEM_PROMPTS.hindi_hinglish : SYSTEM_PROMPTS.english_pure;
@@ -159,9 +177,6 @@ export class DynamicPromptEngine {
     return override || null;
   }
 
-  /**
-   * Get emotion-based guidelines
-   */
   private getEmotionGuidelines(emotion: EmotionalState, stability?: number): string | null {
     const modifiers = EMOTION_RESPONSE_MODIFIERS[emotion];
     if (!modifiers) return null;
@@ -171,7 +186,6 @@ export class DynamicPromptEngine {
     guidelines += `- Response Length: ${modifiers.responseLength}\n`;
     guidelines += `- Suggested Actions: ${modifiers.suggestedActions.join(', ')}\n`;
     
-    // Add stability consideration
     if (stability !== undefined && stability < 0.5) {
       guidelines += `- NOTE: Emotional state is unstable (${(stability * 100).toFixed(0)}% consistency). Be extra attentive to mood shifts.\n`;
     }
@@ -179,31 +193,23 @@ export class DynamicPromptEngine {
     return guidelines;
   }
 
-  /**
-   * Normalize class string to extract numeric value or detect dropper
-   */
   private normalizeClass(classStr: string | undefined): string | null {
     if (!classStr) return null;
     
     const normalized = classStr.toLowerCase().trim();
     
-    // Check for dropper variants
     if (normalized.includes('dropper') || normalized.includes('drop')) {
       return 'dropper';
     }
     
-    // Extract numeric class from "Class 11", "Grade 10", "11th", etc.
     const match = normalized.match(/(\d{1,2})/);
     if (match) {
-      return match[1]; // Returns '6', '7', '8', '9', '10', '11', or '12'
+      return match[1];
     }
     
     return null;
   }
 
-  /**
-   * Get learning context section with user profile
-   */
   private getLearningContext(context: PromptContext): string {
     let contextStr = `
 CURRENT LEARNING CONTEXT:
@@ -213,7 +219,6 @@ Student Level: ${context.level}
 Session Phase: ${context.currentPhase}
 ${context.messageCount ? `Messages in Session: ${context.messageCount}` : ''}`;
 
-    // Add user profile context for personalized teaching
     if (context.userProfile) {
       const { currentClass, examTarget, educationBoard, firstName } = context.userProfile;
       
@@ -227,10 +232,8 @@ ${context.messageCount ? `Messages in Session: ${context.messageCount}` : ''}`;
         if (currentClass) {
           contextStr += `\nClass: ${currentClass}`;
           
-          // Normalize class for comparison
           const normalizedClass = this.normalizeClass(currentClass);
           
-          // Class-specific teaching guidance
           if (normalizedClass === 'dropper') {
             contextStr += '\n- DROPPER STUDENT: This is their second attempt. They have determination and need focused, exam-oriented preparation. Build confidence while addressing gaps.';
           } else if (normalizedClass && ['6', '7', '8'].includes(normalizedClass)) {
@@ -245,7 +248,6 @@ ${context.messageCount ? `Messages in Session: ${context.messageCount}` : ''}`;
         if (examTarget) {
           contextStr += `\nExam Goal: ${examTarget}`;
           
-          // Exam-specific guidance
           if (examTarget.includes('JEE')) {
             contextStr += '\n- JEE FOCUS: Emphasize conceptual depth, multiple approaches, and tricky problem patterns. Include time-saving techniques.';
           } else if (examTarget.includes('NEET')) {
@@ -264,9 +266,6 @@ ${context.messageCount ? `Messages in Session: ${context.messageCount}` : ''}`;
     return contextStr;
   }
 
-  /**
-   * Get misconception guidance
-   */
   private getMisconceptionGuidance(misconceptions: string[]): string {
     return `
 IDENTIFIED MISCONCEPTIONS:
@@ -275,9 +274,6 @@ ${misconceptions.map((m, i) => `${i + 1}. ${m}`).join('\n')}
 IMPORTANT: Address these gently without making student feel bad. Use questions to guide them to correct understanding.`;
   }
 
-  /**
-   * Get strength guidance
-   */
   private getStrengthGuidance(strongConcepts: string[]): string {
     return `
 STUDENT'S STRONG CONCEPTS:
@@ -286,13 +282,9 @@ ${strongConcepts.map((s, i) => `${i + 1}. ${s}`).join('\n')}
 IMPORTANT: Build on these strengths when teaching new concepts. Use these as anchors for explanations.`;
   }
 
-  /**
-   * Get Socratic teaching strategy based on context
-   */
   private getSocraticTeachingStrategy(context: PromptContext): string {
     const strategies: string[] = [];
     
-    // Core Socratic principles
     strategies.push(`
 SOCRATIC TEACHING METHOD:
 - NEVER give direct answers to problems
@@ -301,7 +293,6 @@ SOCRATIC TEACHING METHOD:
 - Use "What do you think would happen if..." type questions
 - Celebrate the thinking process, not just correct answers`);
 
-    // Progressive hint system
     strategies.push(`
 PROGRESSIVE HINT SYSTEM (for wrong answers):
 Level 1 (First wrong attempt): Gentle nudge - "Good try! But think about..."
@@ -309,7 +300,6 @@ Level 2 (Second wrong attempt): More guidance - "Let me guide you. First, consid
 Level 3 (Third wrong attempt): Detailed help - "Chalo step by step dekhte hain..."
 Level 4 (After 3 attempts): Full walkthrough with explanation of each step`);
 
-    // Concept hook strategies based on subject
     if (context.subject) {
       const subjectLower = context.subject.toLowerCase();
       if (subjectLower.includes('physics')) {
@@ -342,13 +332,9 @@ MATH HOOKS: Use problem-solving scenarios
     return strategies.join('\n');
   }
 
-  /**
-   * Generate response guidelines based on context
-   */
-  private generateResponseGuidelines(context: PromptContext): string[] {
+  protected generateResponseGuidelines(context: PromptContext): string[] {
     const guidelines: string[] = [];
     
-    // Language guidelines
     if (context.detectedLanguage === 'hindi' || context.detectedLanguage === 'hinglish') {
       guidelines.push('Use natural Hinglish code-switching (60-70% Hindi, 30-40% English for technical terms)');
       guidelines.push('Start sentences in Hindi, include English technical terms mid-sentence');
@@ -357,13 +343,11 @@ MATH HOOKS: Use problem-solving scenarios
       guidelines.push('Avoid complex jargon unless student level is advanced');
     }
     
-    // Emotional guidelines with specific adaptations
     const emotionMods = EMOTION_RESPONSE_MODIFIERS[context.currentEmotion];
     if (emotionMods) {
       guidelines.push(`Tone: ${emotionMods.tone}`);
       guidelines.push(`Encouragement level: ${emotionMods.encouragement}`);
       
-      // Emotion-specific Socratic adaptations
       if (context.currentEmotion === 'frustrated') {
         guidelines.push('Simplify questions, use easier examples, validate the struggle');
         guidelines.push('Focus on high-yield topics, reassure about exam preparation');
@@ -376,7 +360,6 @@ MATH HOOKS: Use problem-solving scenarios
       }
     }
     
-    // Phase guidelines with Socratic approach
     switch (context.currentPhase) {
       case 'greeting':
         guidelines.push('Warm welcome, explain how sessions work, ask initial assessment questions');
@@ -406,7 +389,6 @@ MATH HOOKS: Use problem-solving scenarios
         break;
     }
     
-    // Intent guidelines with Socratic approach
     if (context.intent === 'request_hint') {
       guidelines.push('CRITICAL: Give guiding QUESTION, NOT solution hint');
       guidelines.push('Ask: "What formula might help?", "What is given vs unknown?"');
@@ -421,11 +403,7 @@ MATH HOOKS: Use problem-solving scenarios
     return guidelines;
   }
 
-  /**
-   * Generate user prompt prefix (optional context injection)
-   */
   generateUserPromptPrefix(context: PromptContext): string | undefined {
-    // Add context that helps AI understand the situation better
     const prefixes: string[] = [];
     
     if (context.messageCount && context.messageCount === 1) {
@@ -443,9 +421,6 @@ MATH HOOKS: Use problem-solving scenarios
     return prefixes.length > 0 ? prefixes.join(' ') + '\n\n' : undefined;
   }
 
-  /**
-   * Build complete prompt package for AI model
-   */
   buildPromptPackage(
     context: PromptContext,
     userMessage: string
@@ -470,9 +445,6 @@ MATH HOOKS: Use problem-solving scenarios
     };
   }
 
-  /**
-   * Get response template for specific situation
-   */
   getResponseTemplate(
     language: DetectedLanguage,
     type: 'greeting' | 'correct_answer' | 'wrong_answer' | 'check_understanding' | 'encouragement'
@@ -482,25 +454,17 @@ MATH HOOKS: Use problem-solving scenarios
     
     if (templates.length === 0) return null;
     
-    // Return random template from available options
     return templates[Math.floor(Math.random() * templates.length)];
   }
 
-  /**
-   * Calculate prompt complexity score
-   */
   calculateComplexityScore(prompt: string): number {
-    // Simple heuristic: character count + unique instruction count
-    const charScore = Math.min(prompt.length / 2000, 1); // Normalize to 0-1
+    const charScore = Math.min(prompt.length / 2000, 1);
     const instructionCount = (prompt.match(/IMPORTANT:|NOTE:|CRITICAL:/g) || []).length;
     const instructionScore = Math.min(instructionCount / 5, 1);
     
     return (charScore + instructionScore) / 2;
   }
 
-  /**
-   * Optimize prompt (remove redundancy if too complex)
-   */
   optimizePrompt(prompt: string, maxComplexity: number = 0.8): string {
     const complexity = this.calculateComplexityScore(prompt);
     
@@ -508,15 +472,12 @@ MATH HOOKS: Use problem-solving scenarios
       return prompt;
     }
     
-    // Remove less critical sections
     let optimized = prompt;
     
-    // Remove optional notes if too long
     if (complexity > 0.9) {
       optimized = optimized.replace(/\nNOTE:.*?\n/g, '\n');
     }
     
-    // Condense learning context if still too long
     if (this.calculateComplexityScore(optimized) > maxComplexity) {
       optimized = optimized.replace(/CURRENT LEARNING CONTEXT:[\s\S]*?(?=\n\n|$)/, 
         'CONTEXT: ' + prompt.match(/Subject: (.*?)\nTopic: (.*?)\n/)?.[0] || '');
@@ -526,4 +487,662 @@ MATH HOOKS: Use problem-solving scenarios
   }
 }
 
+export class EnhancedPromptEngine extends DynamicPromptEngine {
+  
+  generateEnhancedSystemPrompt(context: EnhancedPromptContext): EnhancedGeneratedPrompt {
+    const adaptations: string[] = [];
+    const personalityTraitsApplied: string[] = [];
+    const promptSections: string[] = [];
+
+    promptSections.push(this.buildIdentityAndSafetySection());
+    adaptations.push('Identity & Safety boundaries applied');
+
+    const personalitySection = this.buildPersonalitySection();
+    promptSections.push(personalitySection);
+    AI_MENTOR_PERSONALITY.traits.forEach(t => personalityTraitsApplied.push(t.name));
+    adaptations.push('VaktaAI personality traits applied');
+
+    let teachingModeApplied: TeachingMode | undefined;
+    if (context.teachingModeDecision) {
+      promptSections.push(this.buildTeachingModeSection(context.teachingModeDecision));
+      teachingModeApplied = context.teachingModeDecision.mode;
+      adaptations.push(`Teaching mode: ${context.teachingModeDecision.mode}`);
+    } else if (context.teachingMode) {
+      promptSections.push(this.buildTeachingModeSectionSimple(context.teachingMode));
+      teachingModeApplied = context.teachingMode;
+      adaptations.push(`Teaching mode: ${context.teachingMode}`);
+    }
+
+    if (context.classLevel) {
+      const classAdaptation = getAdaptation(context.classLevel, context.examTarget);
+      promptSections.push(this.buildClassAdaptationSection(classAdaptation, context.classLevel));
+      adaptations.push(`Class adaptation: ${classAdaptation.displayName}`);
+    }
+
+    if (context.subjectCode) {
+      const strategy = getStrategy(context.subjectCode, context.examTarget);
+      promptSections.push(this.buildSubjectStrategySection(strategy, context.examTarget));
+      adaptations.push(`Subject strategy: ${strategy.displayName}`);
+    }
+
+    let hintLevelActive: HintLevel | undefined;
+    if (context.currentHintLevel) {
+      promptSections.push(this.buildHintLevelSection(
+        context.currentHintLevel, 
+        context.subjectCode || 'physics',
+        context.topic,
+        context.teachingMode
+      ));
+      hintLevelActive = context.currentHintLevel;
+      adaptations.push(`Hint level: L${context.currentHintLevel}`);
+    }
+
+    let ncertCitationsIncluded = 0;
+    if (context.ncertChunks && context.ncertChunks.length > 0) {
+      promptSections.push(this.buildNCERTContextSection(context.ncertChunks));
+      ncertCitationsIncluded = context.ncertChunks.length;
+      adaptations.push(`NCERT context: ${context.ncertChunks.length} chunks`);
+    }
+
+    if (context.curriculumContext) {
+      promptSections.push(this.buildCurriculumContextSection(context.curriculumContext));
+      adaptations.push('Curriculum context applied');
+    }
+
+    if (context.demotivationLevel !== undefined && context.demotivationLevel > 0) {
+      promptSections.push(this.buildDemotivationAwarenessSection(context.demotivationLevel));
+      adaptations.push(`Demotivation awareness: level ${context.demotivationLevel}`);
+    }
+
+    promptSections.push(this.buildResponseFormatSection(context));
+    adaptations.push('Response format guidelines applied');
+
+    const emotionSection = this.buildEmotionAdaptationSection(context);
+    if (emotionSection) {
+      promptSections.push(emotionSection);
+      adaptations.push(`Emotion adaptation: ${context.currentEmotion}`);
+    }
+
+    const systemPrompt = promptSections.filter(Boolean).join('\n\n---\n\n');
+    
+    const responseGuidelines = this.generateEnhancedResponseGuidelines(context);
+
+    return {
+      systemPrompt,
+      responseGuidelines,
+      adaptations,
+      teachingModeApplied,
+      hintLevelActive,
+      personalityTraitsApplied,
+      ncertCitationsIncluded
+    };
+  }
+
+  private buildIdentityAndSafetySection(): string {
+    return `# IDENTITY & SAFETY BOUNDARIES
+
+You are **VaktaAI**, an AI study companion designed specifically for Indian students preparing for board exams (CBSE, ICSE, State Boards), competitive exams (JEE Main, JEE Advanced, NEET), and Olympiads.
+
+## Core Identity
+- You are a warm, supportive, and knowledgeable tutor - like a trusted elder sibling who excels at studies
+- You understand the Indian education system, exam patterns, and student pressures
+- You communicate naturally in Hinglish (Hindi-English mix) unless the student prefers pure English/Hindi
+- You are exam-savvy: you know marking schemes, frequently tested concepts, and time management strategies
+
+## Safety Boundaries - STRICTLY FOLLOW
+1. **Academic Integrity**: Never provide direct answers to exam questions or homework that could constitute cheating. Guide students to learn, not copy.
+2. **Age-Appropriate Content**: All interactions must be suitable for students aged 12-20. No inappropriate content.
+3. **No Personal Advice**: Stick to academic topics. Redirect personal, relationship, or mental health concerns to appropriate adults/professionals.
+4. **Factual Accuracy**: Only teach content aligned with NCERT and standard textbooks. Clearly state when something is an approximation or simplification.
+5. **Exam Ethics**: Never suggest ways to cheat, deceive examiners, or gain unfair advantages.
+6. **Cultural Sensitivity**: Be respectful of all religions, regions, and backgrounds. Use inclusive examples.
+
+## What You DO
+- Explain concepts using relatable Indian examples (cricket, Diwali, local food, Bollywood, etc.)
+- Help students understand "why" before "how to solve"
+- Provide progressive hints (Socratic method) rather than direct answers
+- Share exam tips, marking scheme insights, and frequently tested patterns
+- Celebrate small wins and motivate during struggles
+
+## What You DON'T DO
+- Give complete solutions to problems without guided learning
+- Discuss non-academic personal matters
+- Make promises about exam results or ranks
+- Compare students negatively or create pressure
+- Use emojis in responses (keep it professional)`;
+  }
+
+  private buildPersonalitySection(): string {
+    const traits = AI_MENTOR_PERSONALITY.traits;
+    const phraseBanks = AI_MENTOR_PERSONALITY.phraseBanks;
+    const langStyle = AI_MENTOR_PERSONALITY.languageStyle;
+
+    return `# AI MENTOR PERSONALITY
+
+## Core Personality Traits
+${traits.map(t => `### ${t.name}
+${t.description}
+- Behavior: ${t.behavior}`).join('\n\n')}
+
+## Language Style
+- Formality: ${langStyle.formalityLevel}
+- Default to Hinglish: ${langStyle.hinglishDefault ? 'Yes' : 'No'}
+- Terms to AVOID: ${langStyle.avoidTerms.join(', ')} (these can sound condescending)
+
+## Phrase Bank Examples (use naturally, don't force)
+
+### For Encouragement
+${phraseBanks.encouragement.slice(0, 4).map(p => `- "${p}"`).join('\n')}
+
+### For Gentle Correction
+${phraseBanks.correction.slice(0, 4).map(p => `- "${p}"`).join('\n')}
+
+### For Support During Struggles
+${phraseBanks.support.slice(0, 4).map(p => `- "${p}"`).join('\n')}
+
+### For Motivation
+${phraseBanks.motivation.slice(0, 4).map(p => `- "${p}"`).join('\n')}
+
+### Exam Tips to Weave In
+${phraseBanks.examTips.slice(0, 4).map(p => `- "${p}"`).join('\n')}
+
+## Voice Characteristics
+- Pace: ${AI_MENTOR_PERSONALITY.voiceCharacteristics.pace}
+- Warmth: ${AI_MENTOR_PERSONALITY.voiceCharacteristics.warmth}
+- Energy: ${AI_MENTOR_PERSONALITY.voiceCharacteristics.energy}`;
+  }
+
+  private buildTeachingModeSection(decision: TeachingModeDecision): string {
+    const modeDescriptions: Record<TeachingMode, string> = {
+      socratic: `SOCRATIC MODE - Guide Through Questions
+- Ask probing questions to activate student's thinking
+- NEVER give direct answers; lead them to discover
+- Use questions like: "What do you think happens when...?", "How would you approach this?"
+- Start with broad questions, narrow down based on responses
+- Hint levels: Use L1-L3 only (conceptual questions, formula recall, first step)`,
+      
+      direct: `DIRECT MODE - Clear, Efficient Explanation
+- Provide clear, step-by-step explanations
+- Get to the point quickly - student needs efficiency
+- Include the "why" alongside the "how"
+- Use worked examples to demonstrate
+- Hint level: L6 (full explanation)`,
+      
+      scaffolded_direct: `SCAFFOLDED DIRECT MODE - Guided Step-by-Step
+- Break down the solution into clear steps
+- Explain each step before moving to the next
+- Check understanding at each checkpoint
+- Student needs structure, not discovery right now
+- Hint levels: Start at L3 (first step scaffold), progress to L6`,
+      
+      supportive: `SUPPORTIVE MODE - Emotional Priority
+- Student is struggling emotionally, not just academically
+- Be extra patient and encouraging
+- Acknowledge their feelings before teaching
+- Use simpler examples and smaller steps
+- Celebrate every small win
+- Hint levels: Start at L4 (targeted hints with encouragement)`,
+      
+      worked_example: `WORKED EXAMPLE MODE - Learn by Watching
+- Show a similar problem solved completely
+- Walk through each step with explanation
+- Then present the original problem for them to try
+- Compare their approach to the worked example
+- Hint level: L5 (worked examples)`
+    };
+
+    const toneGuidance: Record<string, string> = {
+      encouraging: 'Use extra encouragement. Validate struggles. Celebrate attempts.',
+      urgent: 'Be efficient. Time is limited. Focus on high-yield points.',
+      calm: 'Maintain steady pace. No rush. Focus on deep understanding.'
+    };
+
+    return `# TEACHING MODE: ${decision.mode.toUpperCase()}
+
+## Mode Instructions
+${modeDescriptions[decision.mode]}
+
+## Why This Mode Was Selected
+${decision.rationale}
+
+## Tone Modifier: ${decision.toneMod || 'calm'}
+${toneGuidance[decision.toneMod || 'calm']}
+
+${decision.nextHintLevel ? `## Next Hint Level Available: L${decision.nextHintLevel}` : ''}`;
+  }
+
+  private buildTeachingModeSectionSimple(mode: TeachingMode): string {
+    return this.buildTeachingModeSection({
+      mode,
+      rationale: `${mode} mode selected based on context`,
+      toneMod: 'calm'
+    });
+  }
+
+  private buildClassAdaptationSection(
+    adaptation: ReturnType<typeof getAdaptation>,
+    classLevel: ClassLevel
+  ): string {
+    const languageModifier = getLanguagePromptModifier(adaptation);
+    const examFocusModifier = getExamFocusPromptModifier(adaptation);
+
+    return `# CLASS LEVEL ADAPTATION: ${adaptation.displayName}
+
+## Student Profile
+- Class Level: ${classLevel}
+- Profile: ${adaptation.profile}
+- Description: ${adaptation.description}
+
+${languageModifier}
+
+${examFocusModifier}
+
+## Pace & Approach
+${adaptation.paceGuidance}
+
+## Encouragement Style
+${adaptation.encouragementStyle}
+
+## Explanation Depth: ${adaptation.explanationDepth}
+## Vocabulary Level: ${adaptation.vocabularyLevel}
+## Complexity Level: ${adaptation.complexityLevel}
+
+## Special Considerations
+${adaptation.specialConsiderations.map(c => `- ${c}`).join('\n')}
+
+## Example Contexts to Use
+${adaptation.exampleContexts.slice(0, 4).map(e => `- ${e}`).join('\n')}`;
+  }
+
+  private buildSubjectStrategySection(
+    strategy: ReturnType<typeof getStrategy>,
+    examTarget?: ExamTarget
+  ): string {
+    const examApproach = getExamSpecificApproach(strategy.subject, examTarget);
+    const subjectAdditions = getSubjectPromptAdditions(strategy.subject);
+
+    return `# SUBJECT STRATEGY: ${strategy.displayName}
+
+${subjectAdditions}
+
+## Exam-Specific Approach
+${examApproach}
+
+## Practice Blueprint (question progression)
+${strategy.practiceBlueprint.map((p, i) => `${i + 1}. ${p}`).join('\n')}
+
+## Hinglish Terminology to Use
+${Object.entries(strategy.hinglishTerminology).slice(0, 5).map(([en, hi]) => `- ${en} = "${hi}"`).join('\n')}`;
+  }
+
+  private buildHintLevelSection(
+    level: HintLevel,
+    subject: SubjectCode,
+    topic: string,
+    mode?: TeachingMode
+  ): string {
+    const hintGuidance = buildHintLadderPromptGuidance(level);
+    const template = getHintTemplate(level, subject);
+    const levelConfig = HINT_LADDER_CONFIG.levels[level];
+
+    return `# HINT LADDER - ACTIVE LEVEL: L${level}
+
+${hintGuidance}
+
+## Subject-Specific Template for ${subject}
+"${template.replace(/\{topic\}/g, topic)}"
+
+## Level Details
+- Name: ${levelConfig.name}
+- Description: ${levelConfig.description}
+- Purpose: ${levelConfig.purpose}
+- Reveal Amount: ${levelConfig.revealAmount}
+- Next Action: ${levelConfig.nextAction}
+
+## Escalation Rules
+- Minimum time between hint levels: ${HINT_LADDER_CONFIG.progressionRules.minTimeBetweenLevels / 1000}s
+- Maximum hints per problem: ${HINT_LADDER_CONFIG.progressionRules.maxHintsPerProblem}
+- Auto-progress after ${HINT_LADDER_CONFIG.progressionRules.autoProgressAfterAttempts} wrong attempts
+
+## CRITICAL: Do NOT exceed current level
+Only reveal what Level ${level} allows. If student needs more help, wait for next interaction to escalate.`;
+  }
+
+  private buildNCERTContextSection(chunks: NCERTChunk[]): string {
+    const formattedChunks = chunks.map((chunk, i) => {
+      const meta = chunk.metadata;
+      const citation = `[NCERT | Class ${meta.classLevel} | ${meta.subject} | Ch ${meta.chapterNumber} | ${meta.chunkType}]`;
+      
+      return `### Reference ${i + 1} ${citation}
+**Chapter:** ${meta.chapterTitle}
+${meta.sectionTitle ? `**Section:** ${meta.sectionTitle}` : ''}
+${meta.pageRange ? `**Pages:** ${meta.pageRange[0]}-${meta.pageRange[1]}` : ''}
+
+${chunk.content}`;
+    });
+
+    return `# NCERT CURRICULUM CONTEXT (RAG Retrieved)
+
+The following NCERT content is relevant to the current topic. Use this as your primary source of truth for factual accuracy.
+
+${formattedChunks.join('\n\n---\n\n')}
+
+## NCERT Citation Rules
+1. When stating facts from above, reference using format: [NCERT | Class X | Subject | Ch Y]
+2. For formulas, use exact NCERT notation
+3. If asked about something NOT in the above context, say "Let me check my NCERT reference..." and be careful about accuracy
+4. Prioritize NCERT content over other sources for board exams
+5. For JEE/NEET, you may extend beyond NCERT but always ground in NCERT first`;
+  }
+
+  private buildCurriculumContextSection(context: CurriculumContext): string {
+    const prereqSection = context.prerequisites.length > 0 
+      ? context.prerequisites.map(p => `- ${p.topic}: ${p.masteryStatus}`).join('\n')
+      : 'No specific prerequisites identified';
+
+    return `# CURRICULUM CONTEXT
+
+## Current Topic
+- Topic: ${context.topic}
+- Chapter: ${context.chapterTitle}
+- Class: ${context.classLevel}
+- Subject: ${context.subject}
+
+## Prerequisites Status
+${prereqSection}
+
+## Exam Relevance
+- Exam Type: ${context.examRelevance.examType}
+- Weightage: ${context.examRelevance.weightage}/10
+- Common Question Types: ${context.examRelevance.questionTypes.join(', ')}
+- PYQ Frequency: ${context.examRelevance.pyqFrequency}
+
+${context.ncertReference ? `## NCERT Reference
+- Page Range: ${context.ncertReference.pageRange[0]}-${context.ncertReference.pageRange[1]}
+- Key Formulas: ${context.ncertReference.keyFormulas.slice(0, 3).join(', ')}
+- Common Mistakes to Watch: ${context.ncertReference.commonMistakes.slice(0, 3).join(', ')}` : ''}`;
+  }
+
+  private buildDemotivationAwarenessSection(level: number): string {
+    const interventions = {
+      low: {
+        description: 'Mild signs of frustration detected',
+        actions: [
+          'Use extra encouragement phrases',
+          'Acknowledge that this topic is challenging',
+          'Offer a simpler example before the main problem'
+        ]
+      },
+      medium: {
+        description: 'Moderate demotivation detected - student may be struggling',
+        actions: [
+          'Take a step back and validate their effort',
+          'Switch to a more supportive teaching mode',
+          'Share a relatable story about overcoming difficulty',
+          'Offer to simplify or approach differently'
+        ]
+      },
+      high: {
+        description: 'High demotivation - emotional support needed',
+        actions: [
+          'Pause teaching and acknowledge feelings',
+          'Remind them that struggle is part of learning',
+          'Celebrate ANY progress made so far',
+          'Suggest a short break if appropriate',
+          'Focus on one small win they can achieve'
+        ]
+      }
+    };
+
+    const levelKey = level <= 2 ? 'low' : level <= 4 ? 'medium' : 'high';
+    const intervention = interventions[levelKey];
+
+    return `# DEMOTIVATION AWARENESS - Level ${level}/6
+
+## Status: ${intervention.description}
+
+## Required Actions
+${intervention.actions.map(a => `- ${a}`).join('\n')}
+
+## Supportive Phrases to Use
+${AI_MENTOR_PERSONALITY.phraseBanks.support.slice(0, 3).map(p => `- "${p}"`).join('\n')}
+
+## Motivational Phrases to Use
+${AI_MENTOR_PERSONALITY.phraseBanks.motivation.slice(0, 3).map(p => `- "${p}"`).join('\n')}
+
+## Emotional Adjustments
+- ${HINT_LADDER_CONFIG.emotionalAdjustments.frustrated}
+- ${HINT_LADDER_CONFIG.emotionalAdjustments.confused}
+
+IMPORTANT: Prioritize emotional recovery over content delivery. A demotivated student cannot learn effectively.`;
+  }
+
+  private buildResponseFormatSection(context: EnhancedPromptContext): string {
+    const classAdaptation = context.classLevel 
+      ? getAdaptation(context.classLevel, context.examTarget)
+      : null;
+    
+    const languageRatio = classAdaptation?.languageRatio || { hinglish: 60, english: 40 };
+    const isHinglish = context.detectedLanguage === 'hindi' || context.detectedLanguage === 'hinglish';
+
+    return `# RESPONSE FORMAT GUIDELINES
+
+## Language Requirements
+${isHinglish 
+  ? `- Use Hinglish with approximately ${languageRatio.hinglish}% Hindi and ${languageRatio.english}% English
+- Technical terms should remain in English
+- Common expressions in Hindi (e.g., "achha", "theek hai", "samjhe?")
+- Sentence structure can mix both languages naturally`
+  : `- Use clear, professional English
+- Simplify vocabulary based on student level
+- Define technical terms when first used`}
+
+## Formatting Rules
+1. **NO EMOJIS** - Keep responses professional
+2. Use **bold** for key terms and formulas
+3. Use numbered lists for step-by-step solutions
+4. Use bullet points for multiple related points
+5. Use code blocks for formulas: \`F = ma\`
+
+## NCERT Citation Format
+When referencing NCERT content: [NCERT | Class X | Subject | Ch Y | Page Z]
+
+## Response Length
+${context.currentPhase === 'assessment' || context.currentPhase === 'greeting'
+  ? 'Keep initial responses shorter to encourage dialogue (2-3 sentences)'
+  : context.currentPhase === 'teaching'
+  ? 'Detailed but chunked - explain one concept, check understanding, then continue'
+  : context.currentPhase === 'practice'
+  ? 'Brief hints and questions, not lengthy explanations'
+  : 'Appropriate length for the interaction type'}
+
+## Closing Each Response
+- End with a question to maintain dialogue (if in teaching/practice phase)
+- Or end with clear next step for student
+
+## Things to NEVER Include
+- Emojis or emoticons
+- Overly formal greetings (e.g., "Dear student")
+- Patronizing phrases from avoid list: ${AI_MENTOR_PERSONALITY.languageStyle.avoidTerms.join(', ')}
+- Complete solutions without guided discovery (unless in direct mode)`;
+  }
+
+  private buildEmotionAdaptationSection(context: EnhancedPromptContext): string | null {
+    if (!context.currentEmotion || context.currentEmotion === 'neutral') {
+      return null;
+    }
+
+    const modifiers = EMOTION_RESPONSE_MODIFIERS[context.currentEmotion];
+    if (!modifiers) return null;
+
+    return `# EMOTIONAL STATE ADAPTATION
+
+## Detected Emotion: ${context.currentEmotion}
+${context.emotionConfidence ? `Confidence: ${(context.emotionConfidence * 100).toFixed(0)}%` : ''}
+${context.emotionalStability !== undefined ? `Stability: ${(context.emotionalStability * 100).toFixed(0)}%` : ''}
+
+## Tone Adjustment
+${modifiers.tone}
+
+## Response Length
+${modifiers.responseLength}
+
+## Suggested Actions
+${modifiers.suggestedActions.map(a => `- ${a}`).join('\n')}
+
+## Encouragement Level
+${modifiers.encouragement}`;
+  }
+
+  private generateEnhancedResponseGuidelines(context: EnhancedPromptContext): string[] {
+    const guidelines = this.generateResponseGuidelines(context);
+    
+    if (context.teachingMode) {
+      switch (context.teachingMode) {
+        case 'socratic':
+          guidelines.push('End responses with guiding questions, not explanations');
+          guidelines.push('Wait for student to think before providing more help');
+          break;
+        case 'direct':
+          guidelines.push('Be concise and clear - efficiency matters here');
+          break;
+        case 'supportive':
+          guidelines.push('Use extra encouragement - student is struggling');
+          guidelines.push('Validate feelings before teaching');
+          break;
+        case 'scaffolded_direct':
+          guidelines.push('Break into clear numbered steps');
+          guidelines.push('Check understanding after each step');
+          break;
+        case 'worked_example':
+          guidelines.push('Show similar problem first, then let student apply');
+          break;
+      }
+    }
+    
+    if (context.currentHintLevel) {
+      guidelines.push(`HINT LEVEL L${context.currentHintLevel}: Do not exceed this level of help`);
+    }
+    
+    if (context.demotivationLevel && context.demotivationLevel > 2) {
+      guidelines.push('PRIORITY: Emotional support over content delivery');
+    }
+    
+    if (context.ncertChunks && context.ncertChunks.length > 0) {
+      guidelines.push('Reference NCERT content when making factual claims');
+    }
+
+    return guidelines;
+  }
+
+  buildEnhancedPromptPackage(
+    context: EnhancedPromptContext,
+    userMessage: string
+  ): {
+    systemPrompt: string;
+    userMessage: string;
+    metadata: {
+      adaptations: string[];
+      guidelines: string[];
+      teachingMode?: TeachingMode;
+      hintLevel?: HintLevel;
+      ncertChunksUsed?: number;
+    };
+  } {
+    const generated = this.generateEnhancedSystemPrompt(context);
+    const prefix = this.generateUserPromptPrefix(context);
+    
+    return {
+      systemPrompt: generated.systemPrompt,
+      userMessage: prefix ? prefix + userMessage : userMessage,
+      metadata: {
+        adaptations: generated.adaptations,
+        guidelines: generated.responseGuidelines,
+        teachingMode: generated.teachingModeApplied,
+        hintLevel: generated.hintLevelActive,
+        ncertChunksUsed: generated.ncertCitationsIncluded
+      }
+    };
+  }
+
+  deriveTeachingModeContext(context: EnhancedPromptContext): TeachingModeContext {
+    return {
+      masteryScore: context.masteryScore ?? 0.5,
+      recentAttempts: context.recentAttempts ?? 0,
+      emotion: context.currentEmotion,
+      requestType: this.mapIntentToRequestType(context.intent),
+      timePressure: context.timePressure ?? false,
+      prerequisiteStatus: context.prerequisiteStatus ?? 'solid',
+      lastHintLevel: context.currentHintLevel ?? 1,
+      frustrationCount: context.frustrationCount ?? 0
+    };
+  }
+
+  private mapIntentToRequestType(intent?: IntentType): 'explain' | 'doubt' | 'practice' | 'revision' | 'step' {
+    if (!intent) return 'explain';
+    
+    switch (intent) {
+      case 'request_explanation':
+      case 'request_example':
+      case 'request_simplification':
+        return 'explain';
+      case 'submit_answer':
+      case 'ask_doubt':
+        return 'doubt';
+      case 'request_practice':
+        return 'practice';
+      case 'review_previous':
+        return 'revision';
+      case 'request_hint':
+      case 'request_solution':
+        return 'step';
+      default:
+        return 'explain';
+    }
+  }
+
+  decideTeachingMode(context: EnhancedPromptContext): TeachingModeDecision {
+    const modeContext = this.deriveTeachingModeContext(context);
+    return teachingModeEngine.decide(modeContext);
+  }
+
+  getHintForCurrentLevel(
+    level: HintLevel,
+    subject: SubjectCode,
+    topic: string,
+    problem: string
+  ): string {
+    return hintLadderSystem.getHint(level, subject, topic, problem);
+  }
+
+  escalateHintLevel(
+    currentLevel: HintLevel,
+    mode: TeachingMode
+  ): HintLevel {
+    return hintLadderSystem.escalate(currentLevel, mode);
+  }
+
+  getRandomEncouragement(): string {
+    return getRandomPhrase('encouragement');
+  }
+
+  getRandomCorrection(): string {
+    return getRandomPhrase('correction');
+  }
+
+  getRandomSupport(): string {
+    return getRandomPhrase('support');
+  }
+
+  getRandomMotivation(): string {
+    return getRandomPhrase('motivation');
+  }
+
+  getRandomExamTip(): string {
+    return getRandomPhrase('examTips');
+  }
+}
+
 export const dynamicPromptEngine = new DynamicPromptEngine();
+
+export const enhancedPromptEngine = new EnhancedPromptEngine();
