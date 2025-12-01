@@ -199,10 +199,10 @@ const UnityAvatar = forwardRef<UnityAvatarHandle, UnityAvatarProps>(
           </div>
         )}
 
-        {/* Unity WebGL iframe */}
+        {/* Unity WebGL iframe - served via API with no-cache headers */}
         <iframe
           ref={iframeRef}
-          src={`/unity-avatar/index.html?v=${Date.now()}`}
+          src="/api/unity-assets/html"
           className="w-full h-full border-0"
           style={{
             display: 'block',

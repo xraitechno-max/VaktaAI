@@ -239,6 +239,27 @@ router.post('/refresh', async (req, res) => {
   }
 });
 
+/**
+ * GET /api/unity-assets/html
+ * Serve Unity HTML with proper no-cache headers to force browser refresh
+ */
+router.get('/html', (req, res) => {
+  const htmlPath = path.resolve('client/public/unity-avatar/index.html');
+  
+  // Force no-cache to ensure latest version is served
+  res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  res.setHeader('Content-Type', 'text/html; charset=utf-8');
+  
+  res.sendFile(htmlPath, (err) => {
+    if (err) {
+      console.error('[Unity HTML] Error serving file:', err);
+      res.status(500).send('Failed to load Unity HTML');
+    }
+  });
+});
+
 // Initialize Unity assets in S3 on server startup
 uploadUnityAssetsToS3().catch(err => {
   console.error('[Unity S3] Failed to upload Unity assets:', err);

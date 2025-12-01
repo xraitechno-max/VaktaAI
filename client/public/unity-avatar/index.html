@@ -1,9 +1,11 @@
-<!-- Cache bust: 20251201-102000 -->
+<!-- Cache bust: 20251201-104200 - FORCE NO-CACHE -->
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <!-- Base URL for relative paths when served from /api/unity-assets/html -->
+    <base href="/unity-avatar/">
     <title>VaktaAI Avatar - uLipSync</title>
     <link rel="shortcut icon" href="TemplateData/favicon.ico">
     <style>
@@ -783,6 +785,22 @@
         // Show loading bar
         loadingBar.style.display = "block";
         console.log('[Unity] 🚀 Starting Unity loader...');
+        
+        // 🕐 TIMEOUT DETECTOR: Catch when Unity initialization hangs
+        var loadStartTime = Date.now();
+        var loadTimeout = setTimeout(function() {
+          var elapsedSeconds = Math.round((Date.now() - loadStartTime) / 1000);
+          console.error('[Unity] ⏰ TIMEOUT: Unity initialization took > 60 seconds (' + elapsedSeconds + 's)');
+          console.error('[Unity] 🐛 Possible causes: WASM compilation failure, WebGL context issue, or Unity build incompatibility');
+          
+          // Notify React of timeout
+          if (trustedParentOrigin) {
+            window.parent.postMessage({
+              type: 'UNITY_ERROR',
+              payload: { error: 'Unity initialization timeout (' + elapsedSeconds + 's)', stage: 'timeout' }
+            }, trustedParentOrigin);
+          }
+        }, 60000); // 60 second timeout
 
         // Load Unity
         var script = document.createElement("script");
@@ -804,6 +822,9 @@
               console.log('[Unity] 📊 Loading progress:', Math.round(progress * 100) + '%');
             }
           }).then((instance) => {
+            // Clear timeout - Unity loaded successfully
+            clearTimeout(loadTimeout);
+            
             unityInstance = instance;
             loadingBar.style.display = "none";
             
