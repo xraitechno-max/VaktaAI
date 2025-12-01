@@ -33,6 +33,12 @@ Preferred communication style: Simple, everyday language (Hindi/English/Hinglish
 - **Solution**: Added guard in TutorSession.tsx TTS auto-play useEffect that checks `if (!ssml) return` - ensures TTS only plays when fresh speakSSML metadata is available from refetched messages.
 - **Flow**: AI_RESPONSE_COMPLETE → queryClient.refetchQueries() → TTS auto-play checks for speakSSML → plays only when SSML exists in message metadata.
 
+### AI Mentor Subject Filtering (Dec 2025)
+- **Feature**: AI Mentor subjects are now filtered based on user's profile preferences.
+- **Logic**: Only shows core AI mentor subjects (Physics, Chemistry, Maths, Biology) that are also in the user's profile subjects array.
+- **Fallback**: If user has no subjects set or no matching AI mentor subjects, all 4 core subjects are shown.
+- **UI Adaptation**: Grid layout adapts responsively based on number of filtered subjects (2, 3, or 4 subjects).
+
 ## External Dependencies
 
 ### Third-Party APIs
