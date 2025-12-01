@@ -184,14 +184,7 @@ export function useUnityBridge({
           // Forward Unity iframe console logs to parent console
           if (payload?.level === 'log') {
             console.log('[Unity]', ...payload.args);
-
-            // 🐛 WORKAROUND: Unity HTML5 fallback doesn't send AUDIO_ENDED message,
-            // but it does log "HTML5 Audio ended". We intercept this to fix the timeout.
-            const logMsg = payload.args?.join(' ') || '';
-            if (logMsg.includes('HTML5 Audio ended')) {
-              console.log('[Unity Bridge] 🐛 Intercepted HTML5 Audio end log - synthesizing AUDIO_ENDED event');
-              onMessage?.({ type: 'AUDIO_ENDED', id: 'html5-fallback' });
-            }
+            // NOTE: We no longer synthesize AUDIO_ENDED here - Unity HTML now sends proper events
           }
           else if (payload?.level === 'warn') console.warn('[Unity]', ...payload.args);
           else if (payload?.level === 'error') console.error('[Unity]', ...payload.args);

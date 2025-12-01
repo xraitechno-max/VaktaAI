@@ -259,15 +259,14 @@ export class SmartTTSQueue {
   notifyAudioEnded(chunkId: string): void {
     console.log('[TTS Queue] 🎤 Audio ended notification received:', chunkId);
 
-    // 🎯 CRITICAL FIX: Allow 'html5-fallback' to resolve ANY currently playing chunk
-    // This handles cases where Unity falls back to browser audio and loses the original message ID
-    const isFallback = chunkId === 'html5-fallback';
-    const isMatch = this.currentlyPlaying?.id === chunkId || (isFallback && this.currentlyPlaying);
+    // 🎯 FIX: Require EXACT ID match - no more wildcard fallback
+    // Unity HTML now sends correct chunk IDs in AUDIO_ENDED events
+    const isMatch = this.currentlyPlaying?.id === chunkId;
 
     if (isMatch && this.playbackResolver) {
-      console.log(`[TTS Queue] ✅ Resolving playback promise for: ${this.currentlyPlaying?.id} (Trigger: ${chunkId})`);
+      console.log(`[TTS Queue] ✅ Resolving playback promise for: ${this.currentlyPlaying?.id}`);
       
-      // 🎯 CRITICAL FIX: Clear safety timeout when audio ends normally
+      // Clear safety timeout when audio ends normally
       if (this.safetyTimeoutId) {
         clearTimeout(this.safetyTimeoutId);
         this.safetyTimeoutId = null;
@@ -279,8 +278,7 @@ export class SmartTTSQueue {
     } else {
       console.warn('[TTS Queue] ⚠️ Received audio ended for non-playing chunk:', {
         receivedId: chunkId,
-        currentId: this.currentlyPlaying?.id,
-        isFallback
+        currentId: this.currentlyPlaying?.id
       });
     }
   }
