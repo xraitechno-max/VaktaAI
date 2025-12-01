@@ -11,6 +11,77 @@ interface HintLevelConfig {
   description: string;
 }
 
+interface StudentContext {
+  classLevel?: number;
+  examTarget?: string;
+  masteryScore?: number;
+  frustrationLevel?: number;
+  previousHintsInSession?: number;
+}
+
+interface AdaptedHintResult {
+  hint: string;
+  level: HintLevel;
+  adaptations: string[];
+  shouldOfferNext: boolean;
+}
+
+const EXAM_TARGET_HINT_STYLES: Record<string, { focus: string; language: string; examples: string }> = {
+  jee_main: {
+    focus: 'concept application and numerical accuracy',
+    language: 'precise mathematical terminology',
+    examples: 'JEE Main previous year patterns',
+  },
+  jee_advanced: {
+    focus: 'multi-concept integration and non-standard approaches',
+    language: 'rigorous and concise',
+    examples: 'JEE Advanced and Olympiad-level variations',
+  },
+  neet: {
+    focus: 'NCERT-aligned conceptual clarity and diagram interpretation',
+    language: 'biologically accurate with clinical correlations',
+    examples: 'NEET previous year patterns and NCERT illustrations',
+  },
+  boards: {
+    focus: 'NCERT-based understanding and presentation',
+    language: 'clear and structured for written answers',
+    examples: 'board exam marking scheme requirements',
+  },
+  foundation: {
+    focus: 'building fundamental understanding',
+    language: 'simple and encouraging',
+    examples: 'everyday analogies and basic applications',
+  },
+};
+
+const CLASS_LEVEL_HINT_ADAPTATIONS: Record<string, { detailLevel: string; pace: string; scaffolding: string }> = {
+  foundation: {
+    detailLevel: 'high - break into smaller steps',
+    pace: 'slow with frequent checks',
+    scaffolding: 'maximum support with visual aids',
+  },
+  bridge: {
+    detailLevel: 'moderate - standard breakdown',
+    pace: 'moderate with transitions',
+    scaffolding: 'guided discovery approach',
+  },
+  board: {
+    detailLevel: 'standard - exam-focused',
+    pace: 'efficient with key points',
+    scaffolding: 'selective support where needed',
+  },
+  competitive: {
+    detailLevel: 'concise - assume prerequisites',
+    pace: 'fast with depth where needed',
+    scaffolding: 'minimal - challenge-oriented',
+  },
+  dropper: {
+    detailLevel: 'efficient - time-optimized',
+    pace: 'rapid with shortcuts',
+    scaffolding: 'strategic - focus on weak areas',
+  },
+};
+
 const HINT_LEVEL_CONFIGS: HintLevelConfig[] = [
   {
     level: 1,
@@ -396,6 +467,242 @@ export class HintLadderSystem {
         math: HINT_TEMPLATES[level]?.math || [],
         biology: HINT_TEMPLATES[level]?.biology || [],
       },
+    };
+  }
+
+  getAdaptedHint(
+    level: HintLevel,
+    subject: SubjectCode,
+    topic: string,
+    problem: string,
+    context: StudentContext
+  ): AdaptedHintResult {
+    const adaptations: string[] = [];
+    let effectiveLevel = level;
+
+    if (context.frustrationLevel !== undefined && context.frustrationLevel >= 2) {
+      effectiveLevel = Math.min(8, effectiveLevel + 1) as HintLevel;
+      adaptations.push('escalated due to frustration');
+    }
+
+    if (context.masteryScore !== undefined && context.masteryScore < 0.3) {
+      effectiveLevel = Math.max(effectiveLevel, 3) as HintLevel;
+      adaptations.push('adjusted for low mastery');
+    }
+
+    if (context.previousHintsInSession !== undefined && context.previousHintsInSession >= 3) {
+      effectiveLevel = Math.min(8, effectiveLevel + 1) as HintLevel;
+      adaptations.push('escalated due to multiple attempts');
+    }
+
+    let hint = this.getHint(effectiveLevel, subject, topic, problem);
+
+    const normalizedExamTarget = context.examTarget?.toLowerCase().replace(/[\s-]/g, '_');
+    const classCategory = context.classLevel ? this.getClassCategory(context.classLevel, normalizedExamTarget) : 'board';
+    const classAdaptation = CLASS_LEVEL_HINT_ADAPTATIONS[classCategory];
+    if (classAdaptation) {
+      adaptations.push(`class-level: ${classAdaptation.pace}`);
+    }
+
+    const examStyle = normalizedExamTarget ? EXAM_TARGET_HINT_STYLES[normalizedExamTarget] : undefined;
+    if (examStyle) {
+      adaptations.push(`exam-focus: ${examStyle.focus}`);
+    }
+
+    const shouldOfferNext = effectiveLevel < 8 && 
+      !(context.frustrationLevel !== undefined && context.frustrationLevel >= 3);
+
+    return {
+      hint,
+      level: effectiveLevel,
+      adaptations,
+      shouldOfferNext,
+    };
+  }
+
+  getAdaptiveStartLevel(
+    mode: TeachingMode,
+    context: StudentContext
+  ): HintLevel {
+    const baseLevel = this.getEntryLevel(mode);
+
+    if (context.masteryScore !== undefined && context.masteryScore > 0.7) {
+      return Math.max(1, baseLevel - 1) as HintLevel;
+    }
+
+    if (context.masteryScore !== undefined && context.masteryScore < 0.3) {
+      return Math.min(8, baseLevel + 2) as HintLevel;
+    }
+
+    if (context.frustrationLevel !== undefined && context.frustrationLevel >= 2) {
+      return Math.min(8, baseLevel + 1) as HintLevel;
+    }
+
+    const normalizedExamTarget = context.examTarget?.toLowerCase().replace(/[\s-]/g, '_');
+    const classCategory = context.classLevel ? this.getClassCategory(context.classLevel, normalizedExamTarget) : 'board';
+    if (classCategory === 'foundation' && baseLevel < 3) {
+      return 3 as HintLevel;
+    }
+    if (classCategory === 'competitive' || classCategory === 'dropper') {
+      return Math.max(1, baseLevel - 1) as HintLevel;
+    }
+
+    return baseLevel;
+  }
+
+  getExamTargetGuidance(examTarget: string): { focus: string; language: string; examples: string } | undefined {
+    const normalized = examTarget.toLowerCase().replace(/[\s-]/g, '_');
+    return EXAM_TARGET_HINT_STYLES[normalized];
+  }
+
+  getClassLevelAdaptation(classLevel: number, examTarget?: string): { detailLevel: string; pace: string; scaffolding: string } {
+    const normalizedExamTarget = examTarget?.toLowerCase().replace(/[\s-]/g, '_');
+    const category = this.getClassCategory(classLevel, normalizedExamTarget);
+    return CLASS_LEVEL_HINT_ADAPTATIONS[category] || CLASS_LEVEL_HINT_ADAPTATIONS['board'];
+  }
+
+  buildContextualHintPromptSection(
+    level: HintLevel,
+    subject: SubjectCode,
+    topic: string,
+    context: StudentContext
+  ): string {
+    const config = this.getLevelConfig(level);
+    const levelName = config?.name || `Level ${level}`;
+    const levelDesc = config?.description || '';
+
+    let section = `## Hint Ladder Guidance\n\n`;
+    section += `**Current Hint Level:** ${level} - ${levelName}\n`;
+    section += `**Approach:** ${levelDesc}\n\n`;
+
+    const normalizedExamTarget = context.examTarget?.toLowerCase().replace(/[\s-]/g, '_');
+    const classCategory = context.classLevel ? this.getClassCategory(context.classLevel, normalizedExamTarget) : 'board';
+    const classAdaptation = CLASS_LEVEL_HINT_ADAPTATIONS[classCategory];
+    if (classAdaptation) {
+      section += `**Class-Level Adaptation (${classCategory}):**\n`;
+      section += `- Detail Level: ${classAdaptation.detailLevel}\n`;
+      section += `- Pace: ${classAdaptation.pace}\n`;
+      section += `- Scaffolding: ${classAdaptation.scaffolding}\n\n`;
+    }
+
+    const examStyle = normalizedExamTarget ? EXAM_TARGET_HINT_STYLES[normalizedExamTarget] : undefined;
+    if (examStyle) {
+      section += `**Exam Target (${normalizedExamTarget}):**\n`;
+      section += `- Focus: ${examStyle.focus}\n`;
+      section += `- Language Style: ${examStyle.language}\n`;
+      section += `- Examples: ${examStyle.examples}\n\n`;
+    }
+
+    if (context.masteryScore !== undefined) {
+      const masteryLevel = context.masteryScore < 0.3 ? 'low' : context.masteryScore < 0.7 ? 'moderate' : 'high';
+      section += `**Student Mastery:** ${masteryLevel} (${Math.round(context.masteryScore * 100)}%)\n`;
+      if (masteryLevel === 'low') {
+        section += `- Provide extra scaffolding and encouragement\n`;
+        section += `- Use simpler language and more examples\n`;
+      } else if (masteryLevel === 'high') {
+        section += `- Can skip basics and focus on advanced aspects\n`;
+        section += `- Challenge with extensions and variations\n`;
+      }
+      section += '\n';
+    }
+
+    if (context.frustrationLevel !== undefined && context.frustrationLevel >= 1) {
+      section += `**Frustration Level:** ${context.frustrationLevel}/3\n`;
+      section += `- Be especially supportive and patient\n`;
+      section += `- Consider offering more direct help\n\n`;
+    }
+
+    const templates = this.getTemplateForLevel(level, subject);
+    if (templates.length > 0) {
+      section += `**Subject-Specific Hint Templates for ${subject}:**\n`;
+      templates.slice(0, 2).forEach((t, i) => {
+        section += `${i + 1}. "${t.substring(0, 100)}..."\n`;
+      });
+      section += '\n';
+    }
+
+    return section;
+  }
+
+  private getClassCategory(classLevel: number, examTarget?: string): string {
+    if (classLevel <= 7) return 'foundation';
+    if (classLevel <= 9) return 'bridge';
+    if (classLevel === 10) return 'board';
+    if (classLevel === 11 || classLevel === 12) {
+      const normalizedExam = examTarget?.toLowerCase().replace(/[\s-]/g, '_');
+      const BOARD_EXAM_TOKENS = new Set([
+        'board', 'boards', 'cbse', 'icse', 'state_board', 
+        'hsc', 'ssc', 'isc', 'cisce', 'up_board', 'mp_board',
+        'bihar_board', 'maharashtra_board', 'karnataka_board'
+      ]);
+      if (!normalizedExam || BOARD_EXAM_TOKENS.has(normalizedExam)) {
+        return 'board';
+      }
+      return 'competitive';
+    }
+    if (classLevel >= 13) return 'dropper';
+    return 'board';
+  }
+
+  recommendHintStrategy(
+    subject: SubjectCode,
+    context: StudentContext,
+    misconceptionDetected?: boolean
+  ): {
+    startLevel: HintLevel;
+    maxLevel: HintLevel;
+    escalationPace: 'slow' | 'normal' | 'fast';
+    specialConsiderations: string[];
+  } {
+    const considerations: string[] = [];
+    let startLevel: HintLevel = 1;
+    let maxLevel: HintLevel = 6;
+    let escalationPace: 'slow' | 'normal' | 'fast' = 'normal';
+
+    if (context.masteryScore !== undefined && context.masteryScore < 0.3) {
+      startLevel = 3;
+      maxLevel = 8;
+      escalationPace = 'fast';
+      considerations.push('Low mastery - start with more support');
+    } else if (context.masteryScore !== undefined && context.masteryScore > 0.7) {
+      startLevel = 1;
+      maxLevel = 5;
+      escalationPace = 'slow';
+      considerations.push('High mastery - encourage independent thinking');
+    }
+
+    if (misconceptionDetected) {
+      startLevel = Math.min(8, startLevel + 1) as HintLevel;
+      maxLevel = 8;
+      considerations.push('Misconception detected - provide corrective hints');
+    }
+
+    if (context.frustrationLevel !== undefined && context.frustrationLevel >= 2) {
+      escalationPace = 'fast';
+      considerations.push('Frustration detected - escalate support quickly');
+    }
+
+    const normalizedExamTarget = context.examTarget?.toLowerCase().replace(/[\s-]/g, '_');
+    const classCategory = context.classLevel ? this.getClassCategory(context.classLevel, normalizedExamTarget) : 'board';
+    if (classCategory === 'foundation') {
+      startLevel = Math.max(startLevel, 2) as HintLevel;
+      escalationPace = 'fast';
+      considerations.push('Foundation level - more scaffolding needed');
+    } else if (classCategory === 'competitive' || classCategory === 'dropper') {
+      escalationPace = 'slow';
+      considerations.push('Advanced level - encourage problem-solving first');
+    }
+
+    if (normalizedExamTarget === 'jee_advanced') {
+      maxLevel = 8;
+      considerations.push('JEE Advanced prep - include advanced analysis levels');
+    }
+
+    return {
+      startLevel: startLevel as HintLevel,
+      maxLevel: maxLevel as HintLevel,
+      escalationPace,
+      specialConsiderations: considerations,
     };
   }
 }
