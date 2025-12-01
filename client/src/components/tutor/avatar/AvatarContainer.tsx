@@ -101,7 +101,7 @@ export function AvatarContainer({
   // CRITICAL FIX: Don't move iframe, use dynamic positioning with getBoundingClientRect()
   useEffect(() => {
     console.log(`[Avatar Container] 🔍 viewState changed to: ${viewState}`);
-    console.log('[Avatar Container] 🆕 CODE VERSION: 2025-10-10-FALLBACK-FIX');
+    console.log('[Avatar Container] 🆕 CODE VERSION: 2025-12-01-SMOOTH-AUDIO');
     
     // CRITICAL: Position Unity function - called after DOM is ready
     const positionUnity = () => {

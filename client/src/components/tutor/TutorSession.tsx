@@ -503,7 +503,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       console.log('[TTS] Setting playing audio to:', messageId);
       setPlayingAudio(messageId);
 
-      console.log('[TTS] 🚀 CODE VERSION: 2025-10-09-PHONEME-FINAL 🚀');
+      console.log('[TTS] 🚀 CODE VERSION: 2025-12-01-AUDIO-DURATION-FIX 🚀');
       console.log('[TTS] Fetching emotion-based TTS for text:', text.substring(0, 50) + '...');
 
       // 🎯 CRITICAL: Reliable tutor session detection (use tutorSession data, not chat!)

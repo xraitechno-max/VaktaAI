@@ -19,6 +19,21 @@ export function log(message: string, source = "express") {
 }
 
 export async function setupVite(app: Express, server: Server) {
+  // 🎯 AGGRESSIVE CACHE-BUSTING: Prevent Replit proxy from caching JS/TS files
+  app.use((req, res, next) => {
+    const url = req.url;
+    if (url.endsWith('.ts') || url.endsWith('.tsx') || url.endsWith('.js') || url.endsWith('.jsx') || url.includes('/src/')) {
+      res.set({
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate, max-age=0',
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Surrogate-Control': 'no-store',
+        'X-Accel-Expires': '0',
+      });
+    }
+    next();
+  });
+
   const serverOptions = {
     middlewareMode: true,
     hmr: process.env.NODE_ENV === 'production' ? false : {
