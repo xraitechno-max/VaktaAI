@@ -102,11 +102,15 @@ export default function TutorSetupWizard({ open, onOpenChange, onSubmit }: Tutor
         return 'intermediate';
       };
 
+      // 🎯 Use user's languagePreference from profile for consistent language
+      const userLangPref = user?.languagePreference || 'english';
+      const ttsLang = (userLangPref === 'hindi' || userLangPref === 'hinglish') ? 'hi' : 'en';
+      
       const config: TutorConfig = {
         subject: selectedSubject,
         level: getLevel(),
         topic: topic.trim(),
-        language: user?.locale || 'en',
+        language: ttsLang,  // 🎯 Use profile language preference!
         examType,
       };
       

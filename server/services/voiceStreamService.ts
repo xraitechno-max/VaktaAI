@@ -1049,12 +1049,18 @@ export class VoiceStreamService {
         ws.ttsInFlightMap.clear();
       }
 
+      // 🎯 Use PROFILE language preference for TTS (not detected language!)
+      // This ensures consistent voice language throughout the session
+      const profileLang = session.profileSnapshot?.preferredLanguage;
+      const ttsLanguage: 'hi' | 'en' = (profileLang === 'hindi' || profileLang === 'hinglish') ? 'hi' : 'en';
+      console.log(`[VOICE TUTOR] 🗣️ TTS Language: ${ttsLanguage} (from profile: ${profileLang || 'default english'})`);
+
       // Voice options for TTS
       const voiceOptions = {
         emotion: emotionResult.emotion,
         intent: intentResult.intent,
         personaId: session.personaId,
-        language,
+        language: ttsLanguage,  // 🎯 Use profile preference, NOT detected language!
         enableMathSpeech: true,
         enablePauses: true,
         enableEmphasis: true,

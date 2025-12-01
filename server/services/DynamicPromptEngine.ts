@@ -160,19 +160,41 @@ export class DynamicPromptEngine {
   }
 
   private getBaseLanguagePrompt(detected: DetectedLanguage, preferred?: DetectedLanguage): string {
-    // 🎯 FIXED LOGIC: Always respond in ENGLISH by default
-    // Indian students are learning in English medium schools
-    // Hindi/Hinglish creates confusion and inconsistency
-    // AI Mentor should maintain professional English throughout
+    // 🎯 LANGUAGE STRATEGY: Respect user's PROFILE preference
+    // 1. Profile preference is the PRIMARY source of truth
+    // 2. Stay consistent throughout the session - no mid-conversation switching
+    // 3. If user types in different language, still use their profile preference
     
-    // Always use English - consistent, clear, and professional
-    console.log('[DynamicPrompt] 🇬🇧 Using English (consistent language policy)');
-    return SYSTEM_PROMPTS.english_pure.core;
+    // Normalize language preference - accept both 'hi'/'en' and 'hindi'/'hinglish'/'english'
+    const normalized = this.normalizeLanguagePreference(preferred);
+    
+    if (normalized === 'hindi') {
+      console.log('[DynamicPrompt] 🇮🇳 Using Hindi/Hinglish (from user profile preference)');
+      return SYSTEM_PROMPTS.hindi_hinglish.core;
+    } else {
+      console.log('[DynamicPrompt] 🇬🇧 Using English (from user profile preference)');
+      return SYSTEM_PROMPTS.english_pure.core;
+    }
+  }
+  
+  /**
+   * Normalize language preference to canonical form
+   * Accepts: 'hi', 'en', 'hindi', 'hinglish', 'english'
+   * Returns: 'hindi' or 'english' for prompt selection
+   */
+  private normalizeLanguagePreference(lang?: string): 'hindi' | 'english' {
+    if (!lang) return 'english';
+    const l = lang.toLowerCase().trim();
+    if (l === 'hi' || l === 'hindi' || l === 'hinglish') {
+      return 'hindi';
+    }
+    return 'english';
   }
 
   private getIntentOverride(language: DetectedLanguage, intent: IntentType): string | null {
-    // Always use English prompts for consistency
-    const basePrompt = SYSTEM_PROMPTS.english_pure;
+    // Use prompts matching the session language (normalize to handle 'hi'/'en' codes too)
+    const normalized = this.normalizeLanguagePreference(language);
+    const basePrompt = normalized === 'hindi' ? SYSTEM_PROMPTS.hindi_hinglish : SYSTEM_PROMPTS.english_pure;
     
     const override = (basePrompt.intent_overrides as Record<string, string>)[intent];
     return override || null;

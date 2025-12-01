@@ -256,7 +256,7 @@ optimizedTutorRouter.post('/cache/clear', async (req, res) => {
  */
 optimizedTutorRouter.post('/session/start', async (req, res) => {
   try {
-    const { chatId: providedChatId, subject, topic, level, language, personaId, examType } = req.body;
+    const { chatId: providedChatId, subject, topic, level, language: requestLang, personaId, examType } = req.body;
     const userId = (req as any).user?.id;
     
     if (!subject || !topic || !userId) {
@@ -268,6 +268,13 @@ optimizedTutorRouter.post('/session/start', async (req, res) => {
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
+    
+    // 🎯 Use profile language preference if not provided in request
+    // This ensures greeting uses correct language based on user's profile setting
+    const profileLang = user.languagePreference;
+    const language = requestLang || ((profileLang === 'hindi' || profileLang === 'hinglish') ? 'hi' : 'en');
+    console.log(`[SESSION START] Language: ${language} (request: ${requestLang}, profile: ${profileLang})`);
+    
     
     // Prepare exam context from user profile (always available)
     const examContext = {
