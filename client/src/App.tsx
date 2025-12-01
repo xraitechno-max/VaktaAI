@@ -31,7 +31,6 @@ import NotFound from "@/pages/not-found";
 function Router() {
   const { isAuthenticated, isLoading, user } = useAuth();
 
-  // Show loading state while checking authentication
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
@@ -40,7 +39,6 @@ function Router() {
     );
   }
 
-  // Show landing page for unauthenticated users
   if (!isAuthenticated) {
     return (
       <Switch>
@@ -50,8 +48,6 @@ function Router() {
     );
   }
 
-  // Authenticated users get the full app with layout + Unity Avatar preload
-  // Note: Onboarding is now handled by Tutor.tsx with the new OnboardingWizard component
   return (
     <UnityAvatarProvider>
       <AppLayout>
@@ -61,7 +57,6 @@ function Router() {
           <Route path="/tutor" component={Tutor} />
           <Route path="/docsathi/:chatId" component={DocSathiSession} />
           <Route path="/docsathi" component={DocSathiSources} />
-          {/* Legacy route redirects */}
           <Route path="/docchat/:chatId">{() => { window.location.href = window.location.href.replace('/docchat/', '/docsathi/'); return null; }}</Route>
           <Route path="/docchat">{() => { window.location.href = '/docsathi'; return null; }}</Route>
           <Route path="/quiz/:id" component={QuizAttempt} />
