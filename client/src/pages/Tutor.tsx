@@ -17,11 +17,12 @@ import {
   Brain, Sparkles, Video, MessageSquare, BookOpen,
   Clock, TrendingUp, Zap, Target, ChevronRight, Loader2,
   Atom, Beaker, Calculator, Dna, Mic, Play, ArrowRight,
-  Star, Users, Lightbulb, Settings
+  Star, Users, Lightbulb, Settings, Globe, Languages, Code,
+  Activity, Building2, Palette, Music, FlaskConical
 } from "lucide-react";
 import mentorAvatar from "@assets/generated_images/female_teacher_gradient_background.png";
 
-const subjects = [
+const allSubjects = [
   {
     id: 'physics',
     nameKey: 'subject.physics',
@@ -34,29 +35,128 @@ const subjects = [
   {
     id: 'chemistry',
     nameKey: 'subject.chemistry',
-    icon: Beaker,
-    color: 'from-green-500 to-emerald-500',
-    bgColor: 'bg-green-500/10',
-    borderColor: 'border-green-500/30',
+    icon: FlaskConical,
+    color: 'from-purple-500 to-pink-500',
+    bgColor: 'bg-purple-500/10',
+    borderColor: 'border-purple-500/30',
     topicKeys: ['topic.chemistry.organic', 'topic.chemistry.inorganic', 'topic.chemistry.physical', 'topic.chemistry.equilibrium']
   },
   {
     id: 'maths',
     nameKey: 'subject.maths',
     icon: Calculator,
-    color: 'from-amber-500 to-orange-500',
-    bgColor: 'bg-amber-500/10',
-    borderColor: 'border-amber-500/30',
+    color: 'from-orange-500 to-red-500',
+    bgColor: 'bg-orange-500/10',
+    borderColor: 'border-orange-500/30',
     topicKeys: ['topic.maths.calculus', 'topic.maths.algebra', 'topic.maths.trigonometry', 'topic.maths.coordinate']
   },
   {
     id: 'biology',
     nameKey: 'subject.biology',
     icon: Dna,
+    color: 'from-green-500 to-emerald-500',
+    bgColor: 'bg-green-500/10',
+    borderColor: 'border-green-500/30',
+    topicKeys: ['topic.biology.botany', 'topic.biology.zoology', 'topic.biology.physiology', 'topic.biology.genetics']
+  },
+  {
+    id: 'science',
+    nameKey: 'subject.science',
+    icon: Beaker,
+    color: 'from-teal-500 to-cyan-500',
+    bgColor: 'bg-teal-500/10',
+    borderColor: 'border-teal-500/30',
+    topicKeys: ['topic.science.physics', 'topic.science.chemistry', 'topic.science.biology']
+  },
+  {
+    id: 'social',
+    nameKey: 'subject.social',
+    icon: Globe,
+    color: 'from-amber-500 to-yellow-500',
+    bgColor: 'bg-amber-500/10',
+    borderColor: 'border-amber-500/30',
+    topicKeys: ['topic.social.history', 'topic.social.geography', 'topic.social.civics']
+  },
+  {
+    id: 'english',
+    nameKey: 'subject.english',
+    icon: BookOpen,
+    color: 'from-indigo-500 to-blue-500',
+    bgColor: 'bg-indigo-500/10',
+    borderColor: 'border-indigo-500/30',
+    topicKeys: ['topic.english.grammar', 'topic.english.literature', 'topic.english.writing']
+  },
+  {
+    id: 'hindi',
+    nameKey: 'subject.hindi',
+    icon: Languages,
+    color: 'from-rose-500 to-pink-500',
+    bgColor: 'bg-rose-500/10',
+    borderColor: 'border-rose-500/30',
+    topicKeys: ['topic.hindi.vyakaran', 'topic.hindi.sahitya', 'topic.hindi.lekhan']
+  },
+  {
+    id: 'computer',
+    nameKey: 'subject.computer',
+    icon: Code,
+    color: 'from-violet-500 to-purple-500',
+    bgColor: 'bg-violet-500/10',
+    borderColor: 'border-violet-500/30',
+    topicKeys: ['topic.computer.programming', 'topic.computer.dataStructures', 'topic.computer.algorithms']
+  },
+  {
+    id: 'physical_education',
+    nameKey: 'subject.physicalEducation',
+    icon: Activity,
+    color: 'from-green-500 to-teal-500',
+    bgColor: 'bg-green-500/10',
+    borderColor: 'border-green-500/30',
+    topicKeys: ['topic.pe.sports', 'topic.pe.fitness', 'topic.pe.health']
+  },
+  {
+    id: 'economics',
+    nameKey: 'subject.economics',
+    icon: Building2,
+    color: 'from-emerald-500 to-green-500',
+    bgColor: 'bg-emerald-500/10',
+    borderColor: 'border-emerald-500/30',
+    topicKeys: ['topic.economics.micro', 'topic.economics.macro', 'topic.economics.indian']
+  },
+  {
+    id: 'accountancy',
+    nameKey: 'subject.accountancy',
+    icon: Calculator,
+    color: 'from-sky-500 to-blue-500',
+    bgColor: 'bg-sky-500/10',
+    borderColor: 'border-sky-500/30',
+    topicKeys: ['topic.accountancy.financial', 'topic.accountancy.company', 'topic.accountancy.analysis']
+  },
+  {
+    id: 'business_studies',
+    nameKey: 'subject.businessStudies',
+    icon: Building2,
+    color: 'from-slate-500 to-gray-600',
+    bgColor: 'bg-slate-500/10',
+    borderColor: 'border-slate-500/30',
+    topicKeys: ['topic.business.management', 'topic.business.marketing', 'topic.business.finance']
+  },
+  {
+    id: 'fine_arts',
+    nameKey: 'subject.fineArts',
+    icon: Palette,
     color: 'from-pink-500 to-rose-500',
     bgColor: 'bg-pink-500/10',
     borderColor: 'border-pink-500/30',
-    topicKeys: ['topic.biology.botany', 'topic.biology.zoology', 'topic.biology.physiology', 'topic.biology.genetics']
+    topicKeys: ['topic.arts.painting', 'topic.arts.sculpture', 'topic.arts.drawing']
+  },
+  {
+    id: 'music',
+    nameKey: 'subject.music',
+    icon: Music,
+    color: 'from-fuchsia-500 to-purple-500',
+    bgColor: 'bg-fuchsia-500/10',
+    borderColor: 'border-fuchsia-500/30',
+    topicKeys: ['topic.music.vocal', 'topic.music.instrumental', 'topic.music.theory']
   },
 ];
 
@@ -88,28 +188,27 @@ export default function Tutor() {
     queryKey: ["/api/auth/user"],
   });
 
-  // Filter subjects based on user's profile - only show subjects user has selected
-  // This includes core AI mentor subjects: physics, chemistry, maths, biology
+  // Filter subjects based on user's profile - show only subjects user has selected
   const filteredSubjects = useMemo(() => {
     console.log('[SUBJECT FILTER DEBUG]', {
       userSubjects: user?.subjects,
-      allSubjects: subjects.map(s => s.id)
+      availableSubjects: allSubjects.map(s => s.id)
     });
     
     if (!user?.subjects || user.subjects.length === 0) {
-      // If no subjects set, show all core AI mentor subjects
-      console.log('[SUBJECT FILTER] No user subjects, showing all');
-      return subjects;
+      // If no subjects set, show default core subjects (PCM + Biology)
+      console.log('[SUBJECT FILTER] No user subjects, showing defaults');
+      return allSubjects.filter(s => ['physics', 'chemistry', 'maths', 'biology'].includes(s.id));
     }
     
-    // Filter to only include subjects that are in user's profile AND are core AI mentor subjects
+    // Filter to only include subjects that are in user's profile
     const userSubjectsLower = user.subjects.map(s => s.toLowerCase());
-    const filtered = subjects.filter(subject => userSubjectsLower.includes(subject.id.toLowerCase()));
+    const filtered = allSubjects.filter(subject => userSubjectsLower.includes(subject.id.toLowerCase()));
     
     console.log('[SUBJECT FILTER] Filtered subjects:', filtered.map(s => s.id));
     
-    // If no matching AI mentor subjects found, show all core subjects as fallback
-    return filtered.length > 0 ? filtered : subjects;
+    // If no matching subjects found, show default core subjects as fallback
+    return filtered.length > 0 ? filtered : allSubjects.filter(s => ['physics', 'chemistry', 'maths', 'biology'].includes(s.id));
   }, [user?.subjects]);
 
   // Set default quickStartSubject to first filtered subject when filter changes
