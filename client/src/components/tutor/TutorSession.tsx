@@ -1496,16 +1496,21 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
                     clearAudioSafetyTimeout();
                     setPlayingAudio(null);
 
-                    // 🎯 CRITICAL FIX: Always notify SmartTTSQueue that playback finished
-                    // Use 'html5-fallback' if no ID (SmartTTSQueue handles this case)
-                    voiceTutor.notifyAudioEnded(msg.id || 'html5-fallback');
+                    // Notify SmartTTSQueue with the real chunk ID
+                    if (msg.id) {
+                      voiceTutor.notifyAudioEnded(msg.id);
+                    } else {
+                      console.warn('[TTS] AUDIO_ENDED received without ID - Unity HTML should always send ID');
+                    }
                   } else if (msg.type === 'AUDIO_FAILED') {
-                    console.error('[TTS] Unity audio playback failed:', msg.error);
+                    console.error('[TTS] Unity audio playback failed:', msg.error, 'ID:', msg.id);
                     clearAudioSafetyTimeout();
                     setPlayingAudio(null);
 
-                    // Always notify queue on failure to prevent stalling
-                    voiceTutor.notifyAudioEnded(msg.id || 'html5-fallback');
+                    // Notify queue on failure with real ID
+                    if (msg.id) {
+                      voiceTutor.notifyAudioEnded(msg.id);
+                    }
                   }
                 }}
               />
