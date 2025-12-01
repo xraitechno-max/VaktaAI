@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import { apiRequest } from "@/lib/queryClient";
@@ -87,6 +87,29 @@ export default function Tutor() {
   const { data: user, isLoading: userLoading } = useQuery<User>({
     queryKey: ["/api/auth/user"],
   });
+
+  // Filter subjects based on user's profile - only show subjects user has selected
+  // This includes core AI mentor subjects: physics, chemistry, maths, biology
+  const filteredSubjects = useMemo(() => {
+    if (!user?.subjects || user.subjects.length === 0) {
+      // If no subjects set, show all core AI mentor subjects
+      return subjects;
+    }
+    
+    // Filter to only include subjects that are in user's profile AND are core AI mentor subjects
+    const userSubjectsLower = user.subjects.map(s => s.toLowerCase());
+    const filtered = subjects.filter(subject => userSubjectsLower.includes(subject.id.toLowerCase()));
+    
+    // If no matching AI mentor subjects found, show all core subjects as fallback
+    return filtered.length > 0 ? filtered : subjects;
+  }, [user?.subjects]);
+
+  // Set default quickStartSubject to first filtered subject when filter changes
+  useEffect(() => {
+    if (filteredSubjects.length > 0 && !filteredSubjects.find(s => s.id === quickStartSubject)) {
+      setQuickStartSubject(filteredSubjects[0].id);
+    }
+  }, [filteredSubjects, quickStartSubject]);
 
   // Check if user needs onboarding
   useEffect(() => {
@@ -400,7 +423,7 @@ export default function Tutor() {
               </div>
 
               <div className="flex flex-wrap justify-center gap-2 sm:gap-3 mb-6">
-                {subjects.map((subject) => {
+                {filteredSubjects.map((subject) => {
                   const Icon = subject.icon;
                   const isSelected = quickStartSubject === subject.id;
                   return (
@@ -497,8 +520,8 @@ export default function Tutor() {
             <p className="text-gray-600 dark:text-gray-400">{t('aiMentor.selectTopic')}</p>
           </div>
 
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6">
-            {subjects.map((subject, index) => (
+          <div className={`grid gap-4 sm:gap-6 ${filteredSubjects.length <= 2 ? 'grid-cols-2' : filteredSubjects.length === 3 ? 'grid-cols-3' : 'grid-cols-2 lg:grid-cols-4'}`}>
+            {filteredSubjects.map((subject, index) => (
               <motion.div
                 key={subject.id}
                 initial={{ opacity: 0, y: 20 }}
