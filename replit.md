@@ -53,6 +53,16 @@ Preferred communication style: Simple, everyday language (Hindi/English/Hinglish
 - **React Bridge Fix**: useUnityBridge.ts now forwards chunk id in AUDIO_FAILED events
 - **Flow**: PLAY_TTS_WITH_PHONEMES → enqueueAudio → processAudioQueue → playAudioWithPhonemes → onplay/AUDIO_STARTED → onended/AUDIO_ENDED → next chunk
 
+### TTS Chunk Index Gap Fix (Dec 2025)
+- **Problem**: SmartTTSQueue was stuck waiting for missing chunk indices (2, 5, 10) because the server skipped short sentences (list numbers like "1", "2") but still used the original sentence index for chunkIndex.
+- **Solution**: Added `ws.ttsSentCount` sequential counter that only increments when TTS is actually sent:
+  - Counter resets to 0 when TTS_START is sent
+  - Counter increments in `executeTTSGeneration` right before sending chunk
+  - PHONEME_TTS_CHUNK and TTS_CHUNK now use this sequential counter for chunkIndex
+  - TTS_END uses `ws.ttsSentCount` for accurate totalChunks count
+- **Key Change**: chunkIndex now goes 0, 1, 2, 3... with no gaps, regardless of skipped sentences
+- **Files Modified**: server/services/voiceStreamService.ts, server/types/voiceWebSocket.ts
+
 ## External Dependencies
 
 ### Third-Party APIs

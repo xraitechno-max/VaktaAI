@@ -211,6 +211,7 @@ export class VoiceStreamService {
       };
       ws.send(JSON.stringify(startMsg));
       ws.isTTSActive = true;
+      ws.ttsSentCount = 0; // 🔢 Reset sequential TTS counter for new message
 
       // Voice options for all chunks
       const voiceOptions = {
@@ -315,7 +316,7 @@ export class VoiceStreamService {
           type: 'TTS_END',
           timestamp: new Date().toISOString(),
           sessionId: ws.sessionId,
-          totalChunks: sentences.length
+          totalChunks: ws.ttsSentCount || sentences.length  // 🔢 Use actual sent count
         };
         ws.send(JSON.stringify(endMsg));
 
@@ -782,6 +783,17 @@ export class VoiceStreamService {
       // 🚀 PHASE 2: Send appropriate TTS chunk message
       const finalAudioData = audioBuffer.toString('base64');
 
+      // 🔢 CRITICAL FIX: Use sequential TTS counter instead of sentence index
+      // This prevents gaps when sentences are skipped (e.g., list numbers "1", "2")
+      // Initialize counter if not set
+      if (ws.ttsSentCount === undefined) {
+        ws.ttsSentCount = 0;
+      }
+      const ttsChunkIndex = ws.ttsSentCount;
+      ws.ttsSentCount++; // Increment for next chunk
+
+      console.log(`[TTS INDEX] Mapping sentence ${sequenceNumber} → TTS chunk ${ttsChunkIndex}`);
+
       if (voiceOptions.enablePhonemes && phonemes) {
         // 🎤 Send PHONEME_TTS_CHUNK with audio + phoneme data
         const phonemeMsg: PhonemeTTSChunkMessage = {
@@ -790,8 +802,8 @@ export class VoiceStreamService {
           sessionId: ws.sessionId,
           audio: finalAudioData,
           phonemes: phonemes,
-          chunkIndex: sequenceNumber,
-          totalChunks: isLast ? sequenceNumber + 1 : undefined,
+          chunkIndex: ttsChunkIndex,  // 🔢 Use sequential counter, not sentence index
+          totalChunks: undefined,  // Will be sent in TTS_END
           text: sentence
         };
 
@@ -803,8 +815,8 @@ export class VoiceStreamService {
           timestamp: new Date().toISOString(),
           sessionId: ws.sessionId,
           data: finalAudioData,  // ✅ Direct base64 string (NOT nested!)
-          chunkIndex: sequenceNumber,
-          totalChunks: isLast ? sequenceNumber + 1 : undefined
+          chunkIndex: ttsChunkIndex,  // 🔢 Use sequential counter, not sentence index
+          totalChunks: undefined  // Will be sent in TTS_END
         };
 
         ws.send(JSON.stringify(ttsMsg));
@@ -1021,6 +1033,7 @@ export class VoiceStreamService {
       };
       ws.send(JSON.stringify(startMsg));
       ws.isTTSActive = true;
+      ws.ttsSentCount = 0; // 🔢 Reset sequential TTS counter for new message
 
       // Sentence accumulator and sequence tracking
       let currentSentence = '';
@@ -1092,7 +1105,7 @@ export class VoiceStreamService {
               type: 'TTS_END',
               timestamp: new Date().toISOString(),
               sessionId: ws.sessionId,
-              totalChunks: sentenceIndex + 1
+              totalChunks: ws.ttsSentCount || (sentenceIndex + 1)  // 🔢 Use actual sent count
             };
             ws.send(JSON.stringify(endMsg));
             ws.isTTSActive = false;
@@ -1471,6 +1484,7 @@ ${voiceDemotivationCheck.needsIntervention ? `STUDENT SUPPORT NEEDED: ${voiceDem
                         messageId // Associate with this response
                       };
                       ws.send(JSON.stringify(startMsg));
+                      ws.ttsSentCount = 0; // 🔢 Reset sequential TTS counter for new message
                       console.log(`[TEXT QUERY] 🚀 Sent TTS_START signal for message ${messageId}`);
                     }
 
@@ -1557,7 +1571,7 @@ ${voiceDemotivationCheck.needsIntervention ? `STUDENT SUPPORT NEEDED: ${voiceDem
           type: 'TTS_END',
           timestamp: new Date().toISOString(),
           sessionId: ws.sessionId,
-          totalChunks: sentenceIndex + 1
+          totalChunks: ws.ttsSentCount || (sentenceIndex + 1)  // 🔢 Use actual sent count
         };
         ws.send(JSON.stringify(endMsg));
       }

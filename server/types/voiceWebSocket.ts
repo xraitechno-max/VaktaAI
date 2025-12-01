@@ -223,6 +223,7 @@ export interface VoiceWebSocketClient extends WebSocket {
   audioBuffer?: Buffer[];
   isTTSActive?: boolean;
   ttsSequence?: number; // PHASE 1: Sequence counter for streaming TTS chunks
+  ttsSentCount?: number; // 🔢 Sequential counter for actually sent TTS chunks (no gaps when sentences are skipped)
   ttsInFlightMap?: Map<string, Promise<void>>; // 🔥 ATOMIC: Track in-flight TTS promises to prevent race conditions
 
   // Avatar state management
