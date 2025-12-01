@@ -266,6 +266,14 @@ export class SmartTTSQueue {
 
     if (isMatch && this.playbackResolver) {
       console.log(`[TTS Queue] ✅ Resolving playback promise for: ${this.currentlyPlaying?.id} (Trigger: ${chunkId})`);
+      
+      // 🎯 CRITICAL FIX: Clear safety timeout when audio ends normally
+      if (this.safetyTimeoutId) {
+        clearTimeout(this.safetyTimeoutId);
+        this.safetyTimeoutId = null;
+        console.log('[TTS Queue] 🔕 Safety timeout cleared (audio ended normally)');
+      }
+      
       this.playbackResolver();
       this.playbackResolver = null;
     } else {
@@ -278,15 +286,24 @@ export class SmartTTSQueue {
   }
 
   private playbackResolver: (() => void) | null = null;
+  private safetyTimeoutId: ReturnType<typeof setTimeout> | null = null;
 
   /**
    * Play chunk on Unity avatar with audio-phoneme timing sync
    */
   private async playChunk(chunk: TTSChunk): Promise<void> {
+    // 🎯 Calculate actual duration from phoneme timestamps (more accurate than guessing)
+    const lastPhonemeTime = chunk.phonemes.length > 0 
+      ? Math.max(...chunk.phonemes.map(p => p.time)) 
+      : 0;
+    const estimatedDuration = Math.max(chunk.duration, lastPhonemeTime + 500); // Add 500ms buffer
+    
     console.log('[TTS Queue] ▶️ Playing on avatar:', {
       id: chunk.id,
       phonemes: chunk.phonemes.length,
-      estimatedDuration: chunk.duration
+      providedDuration: chunk.duration,
+      lastPhonemeTime,
+      estimatedDuration
     });
 
     // 🎯 CRITICAL FIX: Adjust phoneme timestamps for Unity audio playback delay
@@ -318,12 +335,14 @@ export class SmartTTSQueue {
     await new Promise<void>((resolve) => {
       this.playbackResolver = resolve;
 
-      // Safety timeout: If Unity doesn't send AUDIO_ENDED within 30 seconds (or duration + 10s), force advance
-      const safetyTimeoutMs = Math.max(30000, chunk.duration + 10000);
+      // 🎯 FIX: Safety timeout based on actual estimated duration (minimum 45 seconds)
+      // This prevents premature timeout while still providing a safety net
+      const safetyTimeoutMs = Math.max(45000, estimatedDuration + 15000);
 
-      const timeoutId = setTimeout(() => {
+      // 🎯 FIX: Store timeout ID so we can clear it when audio ends normally
+      this.safetyTimeoutId = setTimeout(() => {
         if (this.playbackResolver) {
-          console.warn('[TTS Queue] ⏰ Safety timeout waiting for AUDIO_ENDED:', chunk.id);
+          console.warn('[TTS Queue] ⏰ Safety timeout waiting for AUDIO_ENDED:', chunk.id, `(timeout: ${safetyTimeoutMs}ms)`);
           this.playbackResolver();
           this.playbackResolver = null;
         }

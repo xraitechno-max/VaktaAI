@@ -1,0 +1,1349 @@
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+VaktaAI:1 The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+VaktaAI:1 The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+VaktaAI:1 The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+ [Coframe] Replit Enterprise watcher loaded
+ 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+ Download the Apollo DevTools for a better development experience: https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+ [LaunchDarkly] LaunchDarkly client initialized
+VaktaAI:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+ Unrecognized feature: 'ambient-light-sensor'.
+z @ ed1e693c96a75807.js:2
+ Unrecognized feature: 'battery'.
+z @ ed1e693c96a75807.js:2
+ Unrecognized feature: 'execution-while-not-rendered'.
+z @ ed1e693c96a75807.js:2
+ Unrecognized feature: 'execution-while-out-of-viewport'.
+z @ ed1e693c96a75807.js:2
+ Unrecognized feature: 'layout-animations'.
+z @ ed1e693c96a75807.js:2
+ Unrecognized feature: 'legacy-image-formats'.
+z @ ed1e693c96a75807.js:2
+ Unrecognized feature: 'navigation-override'.
+z @ ed1e693c96a75807.js:2
+ Unrecognized feature: 'oversized-images'.
+z @ ed1e693c96a75807.js:2
+ Unrecognized feature: 'publickey-credentials'.
+z @ ed1e693c96a75807.js:2
+ Unrecognized feature: 'speaker-selection'.
+z @ ed1e693c96a75807.js:2
+ Unrecognized feature: 'unoptimized-images'.
+z @ ed1e693c96a75807.js:2
+ Unrecognized feature: 'unsized-media'.
+z @ ed1e693c96a75807.js:2
+ Unrecognized feature: 'pointer-lock'.
+z @ ed1e693c96a75807.js:2
+ Allow attribute will take precedence over 'allowfullscreen'.
+z @ ed1e693c96a75807.js:2
+ Allow attribute will take precedence over 'allowpaymentrequest'.
+z @ ed1e693c96a75807.js:2
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Unrecognized feature: 'battery'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html?initialPath=%2F&id=%3Arhr%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+ Loading the script 'https://replit.com/public/js/beacon.js' violates the following Content Security Policy directive: "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval' https://*.s3.ap-south-1.amazonaws.com https://*.s3.amazonaws.com". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.
+onIframeLoad @ workspace_iframe.htm…2F&id=%3Arhr%3A:142
+WebGL: INVALID_ENUM: getInternalformatParameter: invalid internalformat
+WebGL: INVALID_ENUM: getInternalformatParameter: invalid internalformat
+WebGL: INVALID_ENUM: getInternalformatParameter: invalid internalformat
+WebGL: INVALID_ENUM: getInternalformatParameter: invalid internalformat
+WebGL: INVALID_ENUM: getInternalformatParameter: invalid internalformat
+WebGL: INVALID_ENUM: getInternalformatParameter: invalid internalformat
+ [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 183 Audio unlocked: true
+ [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":50,"blendshape":"viseme_0","weight":1},{"time":100,"blendshape":"viseme_12","weight":1},{"time":225,"blendshape":"viseme_2","weight":1}]
+ [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] 📤 Sending phonemes to AvatarController - Count: 183
+ [Unity] 📦 Phoneme JSON length: 9329 chars
+ [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Avatar] Received phoneme data: {"phonemes":[{"time":50,"blendshape":"viseme_0","weight":1},{"time":100,"blendshape":"viseme_12","weight":1},{"time":225,"blendshape":"viseme_2","weight":1},{"time":325,"blendshape":"viseme_6","weight":1},{"time":437,"blendshape":"viseme_0","weight":1},{"time":450,"blendshape":"viseme_0","weight":1},{"time":550,"blendshape":"viseme_0","weight":1},{"time":637.5,"blendshape":"viseme_0","weight":1},{"time":825,"blendshape":"viseme_0","weight":1},{"time":1237.5,"blendshape":"viseme_2","weight":1},{"time":1425,"blendshape":"viseme_6","weight":1},{"time":1575,"blendshape":"viseme_0","weight":1},{"time":1662.5,"blendshape":"viseme_4","weight":1},{"time":1812.5,"blendshape":"viseme_21","weight":1},{"time":1900,"blendshape":"viseme_0","weight":1},{"time":1912.5,"blendshape":"viseme_0","weight":1},{"time":1962.5,"blendshape":"viseme_0","weight":1},{"time":2025,"blendshape":"viseme_0","weight":1},{"time":2075,"blendshape":"viseme_0","weight":1},{"time":2150,"blendshape":"viseme_0","weight":1},{"time":2225,"blendshape":"viseme_0","weight":1},{"time":2600,"blendshape":"viseme_6","weight":1},{"time":2737.5,"blendshape":"viseme_8","weight":1},{"time":2825,"blendshape":"viseme_13","weight":1},{"time":2950,"blendshape":"viseme_4","weight":1},{"time":3125,"blendshape":"viseme_2","weight":1},{"time":3250,"blendshape":"viseme_6","weight":1},{"time":3325,"blendshape":"viseme_21","weight":1},{"time":3425,"blendshape":"viseme_4","weight":1},{"time":3525,"blendshape":"viseme_19","weight":1},{"time":3600,"blendshape":"viseme_19","weight":1},{"time":3675,"blendshape":"viseme_8","weight":1},{"time":3787.5,"blendshape":"viseme_13","weight":1},{"time":3850,"blendshape":"viseme_18","weight":1},{"time":3937.5,"blendshape":"viseme_2","weight":1},{"time":4000,"blendshape":"viseme_13","weight":1},{"time":4087.5,"blendshape":"viseme_1","weight":1},{"time":4212.5,"blendshape":"viseme_19","weight":1},{"time":4312.5,"blendshape":"viseme_2","weight":1},{"time":4450,"blendshape":"viseme_21","weight":1},{"time":4537.5,"blendshape":"viseme_15","weight":1},{"time":4637.5,"blendshape":"viseme_1","weight":1},{"time":4762.5,"blendshape":"viseme_19","weight":1},{"time":4800,"blendshape":"viseme_19","weight":1},{"time":4850,"blendshape":"viseme_19","weight":1},{"time":4900,"blendshape":"viseme_4","weight":1},{"time":4962.5,"blendshape":"viseme_20","weight":1},{"time":5037.5,"blendshape":"viseme_14","weight":1},{"time":5087.5,"blendshape":"viseme_4","weight":1},{"time":5162.5,"blendshape":"viseme_2","weight":1},{"time":5287.5,"blendshape":"viseme_6","weight":1},{"time":5475,"blendshape":"viseme_0","weight":1},{"time":6350,"blendshape":"viseme_0","weight":1},{"time":6400,"blendshape":"viseme_18","weight":1},{"time":6525,"blendshape":"viseme_6","weight":1},{"time":6737,"blendshape":"viseme_0","weight":1},{"time":6825,"blendshape":"viseme_4","weight":1},{"time":7012.5,"blendshape":"viseme_14","weight":1},{"time":7087.5,"blendshape":"viseme_4","weight":1},{"time":7162.5,"blendshape":"viseme_14","weight":1},{"time":7200,"blendshape":"viseme_14","weight":1},{"time":7300,"blendshape":"viseme_1","weight":1},{"time":7425,"blendshape":"viseme_13","weight":1},{"time":7475,"blendshape":"viseme_19","weight":1},{"time":7537.5,"blendshape":"viseme_15","weight":1},{"time":7637.5,"blendshape":"viseme_19","weight":1},{"time":7687.5,"blendshape":"viseme_4","weight":1},{"time":7775,"blendshape":"viseme_21","weight":1},{"time":7812.5,"blendshape":"viseme_21","weight":1},{"time":7862.5,"blendshape":"viseme_2","weight":1},{"time":7962.5,"blendshape":"viseme_6","weight":1},{"time":8037.5,"blendshape":"viseme_15","weight":1},{"time":8125,"blendshape":"viseme_19","weight":1},{"time":8187.5,"blendshape":"viseme_4","weight":1},{"time":8275,"blendshape":"viseme_21","weight":1},{"time":8337.5,"blendshape":"viseme_19","weight":1},{"time":8412.5,"blendshape":"viseme_4","weight":1},{"time":8475,"blendshape":"viseme_20","weight":1},{"time":8537.5,"blendshape":"viseme_4","weight":1},{"time":8650,"blendshape":"viseme_19","weight":1},{"time":8700,"blendshape":"viseme_1","weight":1},{"time":8775,"blendshape":"viseme_13","weight":1},{"time":8912,"blendshape":"viseme_0","weight":1},{"time":9025,"blendshape":"viseme_2","weight":1},{"time":9212.5,"blendshape":"viseme_6","weight":1},{"time":9375,"blendshape":"viseme_0","weight":1},{"time":9475,"blendshape":"viseme_4","weight":1},{"time":9662.5,"blendshape":"viseme_14","weight":1},{"time":9737.5,"blendshape":"viseme_4","weight":1},{"time":9812.5,"blendshape":"viseme_14","weight":1},{"time":9887.5,"blendshape":"viseme_20","weight":1},{"time":9962.5,"blendshape":"viseme_2","weight":1},{"time":10075,"blendshape":"viseme_6","weight":1},{"time":10162.5,"blendshape":"viseme_19","weight":1},{"time":10225,"blendshape":"viseme_6","weight":1},{"time":10300,"blendshape":"viseme_7","weight":1},{"time":10412.5,"blendshape":"viseme_18","weight":1},{"time":10475,"blendshape":"viseme_6","weight":1},{"time":10525,"blendshape":"viseme_19","weight":1},{"time":10587.5,"blendshape":"viseme_20","weight":1},{"time":10662.5,"blendshape":"viseme_18","weight":1},{"time":10712.5,"blendshape":"viseme_4","weight":1},{"time":10800,"blendshape":"viseme_15","weight":1},{"time":10862.5,"blendshape":"viseme_19","weight":1},{"time":10906.25,"blendshape":"viseme_16","weight":1},{"time":10950,"blendshape":"viseme_1","weight":1},{"time":11000,"blendshape":"viseme_19","weight":1},{"time":11112.5,"blendshape":"viseme_15","weight":1},{"time":11237,"blendshape":"viseme_0","weight":1},{"time":11400,"blendshape":"viseme_19","weight":1},{"time":11512.5,"blendshape":"viseme_2","weight":1},{"time":11637.5,"blendshape":"viseme_19","weight":1},{"time":11712.5,"blendshape":"viseme_19","weight":1},{"time":11762.5,"blendshape":"viseme_16","weight":1},{"time":11812.5,"blendshape":"viseme_1","weight":1},{"time":11937.5,"blendshape":"viseme_15","weight":1},{"time":12012.5,"blendshape":"viseme_19","weight":1},{"time":12100,"blendshape":"viseme_1","weight":1},{"time":12237.5,"blendshape":"viseme_19","weight":1},{"time":12312.5,"blendshape":"viseme_15","weight":1},{"time":12412.5,"blendshape":"viseme_1","weight":1},{"time":12525,"blendshape":"viseme_13","weight":1},{"time":12612.5,"blendshape":"viseme_15","weight":1},{"time":12762,"blendshape":"viseme_0","weight":1},{"time":13625,"blendshape":"viseme_0","weight":1},{"time":13675,"blendshape":"viseme_20","weight":1},{"time":13725,"blendshape":"viseme_18","weight":1},{"time":13787.5,"blendshape":"viseme_6","weight":1},{"time":13862.5,"blendshape":"viseme_20","weight":1},{"time":13937.5,"blendshape":"viseme_19","weight":1},{"time":13987.5,"blendshape":"viseme_16","weight":1},{"time":14037.5,"blendshape":"viseme_4","weight":1},{"time":14175,"blendshape":"viseme_20","weight":1},{"time":14300,"blendshape":"viseme_0","weight":1},{"time":14537.5,"blendshape":"viseme_12","weight":1},{"time":14637.5,"blendshape":"viseme_1","weight":1},{"time":14700,"blendshape":"viseme_18","weight":1},{"time":14762.5,"blendshape":"viseme_6","weight":1},{"time":14837.5,"blendshape":"viseme_7","weight":1},{"time":14912.5,"blendshape":"viseme_15","weight":1},{"time":15012.5,"blendshape":"viseme_19","weight":1},{"time":15062.5,"blendshape":"viseme_1","weight":1},{"time":15137.5,"blendshape":"viseme_19","weight":1},{"time":15187.5,"blendshape":"viseme_6","weight":1},{"time":15337.5,"blendshape":"viseme_19","weight":1},{"time":15450,"blendshape":"viseme_1","weight":1},{"time":15612.5,"blendshape":"viseme_19","weight":1},{"time":15700,"blendshape":"viseme_2","weight":1},{"time":15837.5,"blendshape":"viseme_21","weight":1},{"time":15925,"blendshape":"viseme_15","weight":1},{"time":16012.5,"blendshape":"viseme_1","weight":1},{"time":16112.5,"blendshape":"viseme_19","weight":1},{"time":16150,"blendshape":"viseme_19","weight":1},{"time":16200,"blendshape":"viseme_19","weight":1},{"time":16250,"blendshape":"viseme_4","weight":1},{"time":16312.5,"blendshape":"viseme_20","weight":1},{"time":16387.5,"blendshape":"viseme_14","weight":1},{"time":16450,"blendshape":"viseme_4","weight":1},{"time":16525,"blendshape":"viseme_2","weight":1},{"time":16612.5,"blendshape":"viseme_6","weight":1},{"time":
+ [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 183 Audio unlocked: true
+ [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":50,"blendshape":"viseme_0","weight":1},{"time":100,"blendshape":"viseme_12","weight":1},{"time":225,"blendshape":"viseme_2","weight":1}]
+ [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 183
+ [Unity] [Unity] 📦 Phoneme JSON length: 9329 chars
+ [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":50,"blendshape":"viseme_0","weight":1},{"time":100,"blendshape":"viseme_12","weight":1},{"time":225,"blendshape":"viseme_2","weight":1},{"time":325,"blendshape":"viseme_6","weight":1},{"time":437,"blendshape":"viseme_0","weight":1},{"time":450,"blendshape":"viseme_0","weight":1},{"time":550,"blendshape":"viseme_0","weight":1},{"time":637.5,"blendshape":"viseme_0","weight":1},{"time":825,"blendshape":"viseme_0","weight":1},{"time":1237.5,"blendshape":"viseme_2","weight":1},{"time":1425,"blendshape":"viseme_6","weight":1},{"time":1575,"blendshape":"viseme_0","weight":1},{"time":1662.5,"blendshape":"viseme_4","weight":1},{"time":1812.5,"blendshape":"viseme_21","weight":1},{"time":1900,"blendshape":"viseme_0","weight":1},{"time":1912.5,"blendshape":"viseme_0","weight":1},{"time":1962.5,"blendshape":"viseme_0","weight":1},{"time":2025,"blendshape":"viseme_0","weight":1},{"time":2075,"blendshape":"viseme_0","weight":1},{"time":2150,"blendshape":"viseme_0","weight":1},{"time":2225,"blendshape":"viseme_0","weight":1},{"time":2600,"blendshape":"viseme_6","weight":1},{"time":2737.5,"blendshape":"viseme_8","weight":1},{"time":2825,"blendshape":"viseme_13","weight":1},{"time":2950,"blendshape":"viseme_4","weight":1},{"time":3125,"blendshape":"viseme_2","weight":1},{"time":3250,"blendshape":"viseme_6","weight":1},{"time":3325,"blendshape":"viseme_21","weight":1},{"time":3425,"blendshape":"viseme_4","weight":1},{"time":3525,"blendshape":"viseme_19","weight":1},{"time":3600,"blendshape":"viseme_19","weight":1},{"time":3675,"blendshape":"viseme_8","weight":1},{"time":3787.5,"blendshape":"viseme_13","weight":1},{"time":3850,"blendshape":"viseme_18","weight":1},{"time":3937.5,"blendshape":"viseme_2","weight":1},{"time":4000,"blendshape":"viseme_13","weight":1},{"time":4087.5,"blendshape":"viseme_1","weight":1},{"time":4212.5,"blendshape":"viseme_19","weight":1},{"time":4312.5,"blendshape":"viseme_2","weight":1},{"time":4450,"blendshape":"viseme_21","weight":1},{"time":4537.5,"blendshape":"viseme_15","weight":1},{"time":4637.5,"blendshape":"viseme_1","weight":1},{"time":4762.5,"blendshape":"viseme_19","weight":1},{"time":4800,"blendshape":"viseme_19","weight":1},{"time":4850,"blendshape":"viseme_19","weight":1},{"time":4900,"blendshape":"viseme_4","weight":1},{"time":4962.5,"blendshape":"viseme_20","weight":1},{"time":5037.5,"blendshape":"viseme_14","weight":1},{"time":5087.5,"blendshape":"viseme_4","weight":1},{"time":5162.5,"blendshape":"viseme_2","weight":1},{"time":5287.5,"blendshape":"viseme_6","weight":1},{"time":5475,"blendshape":"viseme_0","weight":1},{"time":6350,"blendshape":"viseme_0","weight":1},{"time":6400,"blendshape":"viseme_18","weight":1},{"time":6525,"blendshape":"viseme_6","weight":1},{"time":6737,"blendshape":"viseme_0","weight":1},{"time":6825,"blendshape":"viseme_4","weight":1},{"time":7012.5,"blendshape":"viseme_14","weight":1},{"time":7087.5,"blendshape":"viseme_4","weight":1},{"time":7162.5,"blendshape":"viseme_14","weight":1},{"time":7200,"blendshape":"viseme_14","weight":1},{"time":7300,"blendshape":"viseme_1","weight":1},{"time":7425,"blendshape":"viseme_13","weight":1},{"time":7475,"blendshape":"viseme_19","weight":1},{"time":7537.5,"blendshape":"viseme_15","weight":1},{"time":7637.5,"blendshape":"viseme_19","weight":1},{"time":7687.5,"blendshape":"viseme_4","weight":1},{"time":7775,"blendshape":"viseme_21","weight":1},{"time":7812.5,"blendshape":"viseme_21","weight":1},{"time":7862.5,"blendshape":"viseme_2","weight":1},{"time":7962.5,"blendshape":"viseme_6","weight":1},{"time":8037.5,"blendshape":"viseme_15","weight":1},{"time":8125,"blendshape":"viseme_19","weight":1},{"time":8187.5,"blendshape":"viseme_4","weight":1},{"time":8275,"blendshape":"viseme_21","weight":1},{"time":8337.5,"blendshape":"viseme_19","weight":1},{"time":8412.5,"blendshape":"viseme_4","weight":1},{"time":8475,"blendshape":"viseme_20","weight":1},{"time":8537.5,"blendshape":"viseme_4","weight":1},{"time":8650,"blendshape":"viseme_19","weight":1},{"time":8700,"blendshape":"viseme_1","weight":1},{"time":8775,"blendshape":"viseme_13","weight":1},{"time":8912,"blendshape":"viseme_0","weight":1},{"time":9025,"blendshape":"viseme_2","weight":1},{"time":9212.5,"blendshape":"viseme_6","weight":1},{"time":9375,"blendshape":"viseme_0","weight":1},{"time":9475,"blendshape":"viseme_4","weight":1},{"time":9662.5,"blendshape":"viseme_14","weight":1},{"time":9737.5,"blendshape":"viseme_4","weight":1},{"time":9812.5,"blendshape":"viseme_14","weight":1},{"time":9887.5,"blendshape":"viseme_20","weight":1},{"time":9962.5,"blendshape":"viseme_2","weight":1},{"time":10075,"blendshape":"viseme_6","weight":1},{"time":10162.5,"blendshape":"viseme_19","weight":1},{"time":10225,"blendshape":"viseme_6","weight":1},{"time":10300,"blendshape":"viseme_7","weight":1},{"time":10412.5,"blendshape":"viseme_18","weight":1},{"time":10475,"blendshape":"viseme_6","weight":1},{"time":10525,"blendshape":"viseme_19","weight":1},{"time":10587.5,"blendshape":"viseme_20","weight":1},{"time":10662.5,"blendshape":"viseme_18","weight":1},{"time":10712.5,"blendshape":"viseme_4","weight":1},{"time":10800,"blendshape":"viseme_15","weight":1},{"time":10862.5,"blendshape":"viseme_19","weight":1},{"time":10906.25,"blendshape":"viseme_16","weight":1},{"time":10950,"blendshape":"viseme_1","weight":1},{"time":11000,"blendshape":"viseme_19","weight":1},{"time":11112.5,"blendshape":"viseme_15","weight":1},{"time":11237,"blendshape":"viseme_0","weight":1},{"time":11400,"blendshape":"viseme_19","weight":1},{"time":11512.5,"blendshape":"viseme_2","weight":1},{"time":11637.5,"blendshape":"viseme_19","weight":1},{"time":11712.5,"blendshape":"viseme_19","weight":1},{"time":11762.5,"blendshape":"viseme_16","weight":1},{"time":11812.5,"blendshape":"viseme_1","weight":1},{"time":11937.5,"blendshape":"viseme_15","weight":1},{"time":12012.5,"blendshape":"viseme_19","weight":1},{"time":12100,"blendshape":"viseme_1","weight":1},{"time":12237.5,"blendshape":"viseme_19","weight":1},{"time":12312.5,"blendshape":"viseme_15","weight":1},{"time":12412.5,"blendshape":"viseme_1","weight":1},{"time":12525,"blendshape":"viseme_13","weight":1},{"time":12612.5,"blendshape":"viseme_15","weight":1},{"time":12762,"blendshape":"viseme_0","weight":1},{"time":13625,"blendshape":"viseme_0","weight":1},{"time":13675,"blendshape":"viseme_20","weight":1},{"time":13725,"blendshape":"viseme_18","weight":1},{"time":13787.5,"blendshape":"viseme_6","weight":1},{"time":13862.5,"blendshape":"viseme_20","weight":1},{"time":13937.5,"blendshape":"viseme_19","weight":1},{"time":13987.5,"blendshape":"viseme_16","weight":1},{"time":14037.5,"blendshape":"viseme_4","weight":1},{"time":14175,"blendshape":"viseme_20","weight":1},{"time":14300,"blendshape":"viseme_0","weight":1},{"time":14537.5,"blendshape":"viseme_12","weight":1},{"time":14637.5,"blendshape":"viseme_1","weight":1},{"time":14700,"blendshape":"viseme_18","weight":1},{"time":14762.5,"blendshape":"viseme_6","weight":1},{"time":14837.5,"blendshape":"viseme_7","weight":1},{"time":14912.5,"blendshape":"viseme_15","weight":1},{"time":15012.5,"blendshape":"viseme_19","weight":1},{"time":15062.5,"blendshape":"viseme_1","weight":1},{"time":15137.5,"blendshape":"viseme_19","weight":1},{"time":15187.5,"blendshape":"viseme_6","weight":1},{"time":15337.5,"blendshape":"viseme_19","weight":1},{"time":15450,"blendshape":"viseme_1","weight":1},{"time":15612.5,"blendshape":"viseme_19","weight":1},{"time":15700,"blendshape":"viseme_2","weight":1},{"time":15837.5,"blendshape":"viseme_21","weight":1},{"time":15925,"blendshape":"viseme_15","weight":1},{"time":16012.5,"blendshape":"viseme_1","weight":1},{"time":16112.5,"blendshape":"viseme_19","weight":1},{"time":16150,"blendshape":"viseme_19","weight":1},{"time":16200,"blendshape":"viseme_19","weight":1},{"time":16250,"blendshape":"viseme_4","weight":1},{"time":16312.5,"blendshape":"viseme_20","weight":1},{"time":16387.5,"blendshape":"viseme_14","weight":1},{"time":16450,"blendshape":"viseme_4","weight":1},{"time":16525,"blendshape":"viseme_2","weight":1},{"time":16612.5,"blendshape":"viseme_6","weight":1},{"time":
+ [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity Bridge] ✅ Audio playback started: greeting-1764585973120
+ [Unity] [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TutorSession] Sending text query via WebSocket: I have a doubt about Atoms and Nuclei
+ [TEXT QUERY] Sent: "I have a doubt about Atoms and Nuclei..."
+ [VOICE] 🔊 AudioContext initialized on user interaction
+ [Unity] HTML5 Audio ended
+ [Unity] [Unity] HTML5 Audio ended
+ [Unity Bridge] 🐛 Intercepted HTML5 Audio end log - synthesizing AUDIO_ENDED event
+ [Unity Avatar] Message from Unity: Object
+ [TTS] Unity audio playback ended: html5-fallback
+ [Voice Tutor] 🎤 Audio ended notification: html5-fallback
+ [TTS Queue] 🎤 Audio ended notification received: html5-fallback
+ [TTS Queue] ⚠️ Received audio ended for non-playing chunk: Object
+(anonymous) @ injected.js:37
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] 🆕 New message started: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586000955
+ [TEXT QUERY] 📝 Chunk #0 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586000955]: "Koi baat nahi ..." (total: 1 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586000955 - content: Koi baat nahi 
+ [TTS Queue] 🧹 Clearing queue: Object
+ [TTS START] 🆕 New message started (ID: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586000955) - Queue Reset
+ [Unity] 📩 Message received: STOP_AUDIO | unityInstance ready: true | audioUnlocked: true
+ SendMessage: object AvatarController does not have receiver for function StopAudio!
+
+ [Unity] Audio stopped (HTML5 + Unity)
+ [Unity] [Unity] 📩 Message received: STOP_AUDIO | unityInstance ready: true | audioUnlocked: true
+ [Unity] SendMessage: object AvatarController does not have receiver for function StopAudio!
+
+ [Unity] [Unity] Audio stopped (HTML5 + Unity)
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] 📝 Chunk #1 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586000955]: "Atoms and Nuclei ek complex topic hai, but we can ..." (total: 1 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586000955 - content: Atoms and Nuclei ek complex topic hai, but we can 
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] 📝 Chunk #2 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586000955]: "Aapko kaisa doubt hai ..." (total: 2 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586000955 - content: Aapko kaisa doubt hai 
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 0: 12 phonemes for "Koi baat nahi..."
+ [TTS Queue] ✅ Enqueued: Object
+ [TTS Queue] ▶️ Playing on avatar: Object
+ [TTS Queue] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay: Object
+ [Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes: 12
+ [Unity Bridge] ✅ Audio + phonemes sent to Unity iframe
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [TEXT QUERY] 📝 Chunk #3 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586000955]: "Kya aapko atoms ke structure ke baare mein samajhn..." (total: 3 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586000955 - content: Kya aapko atoms ke structure ke baare mein samajhn
+ [TEXT QUERY] 📝 Chunk #4 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586000955]: "Let's narrow it down ..." (total: 4 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586000955 - content: Let's narrow it down 
+ [STREAMING TTS] ✅ TTS ended - Total chunks: 6
+ [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 12 Audio unlocked: true
+ [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]
+ [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] 📤 Sending phonemes to AvatarController - Count: 12
+ [Unity] 📦 Phoneme JSON length: 506 chars
+ [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]}
+
+ [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 12 Audio unlocked: true
+ [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]
+ [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 12
+ [Unity] [Unity] 📦 Phoneme JSON length: 506 chars
+ [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]}
+
+ [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity Bridge] ✅ Audio playback started: tts-chunk-0
+ [Unity] [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 2: 16 phonemes for "Aapko kaisa doubt hai..."
+ [TTS Queue] ⏳ Buffering out-of-order chunk 2 (waiting for 1)
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 1: 57 phonemes for "Atoms and Nuclei ek complex to..."
+ [TTS Queue] ✅ Enqueued: Object
+ [TTS Queue] 🔓 Unbuffering chunk 2
+ [TTS Queue] ✅ Enqueued: Object
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 4: 18 phonemes for "Let's narrow it down..."
+ [TTS Queue] ⏳ Buffering out-of-order chunk 4 (waiting for 3)
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [TEXT QUERY] ✅ Response complete - Emotion: confused, Phase: greeting
+ [TEXT QUERY] Refetching messages query to get SSML metadata...
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 3: 86 phonemes for "Kya aapko atoms ke structure k..."
+ [TTS Queue] ✅ Enqueued: Object
+ [TTS Queue] 🔓 Unbuffering chunk 4
+ [TTS Queue] ✅ Enqueued: Object
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity] HTML5 Audio ended
+ [Unity] [Unity] HTML5 Audio ended
+ [Unity Bridge] 🐛 Intercepted HTML5 Audio end log - synthesizing AUDIO_ENDED event
+ [Unity Avatar] Message from Unity: Object
+ [TTS] Unity audio playback ended: html5-fallback
+ [Voice Tutor] 🎤 Audio ended notification: html5-fallback
+ [TTS Queue] 🎤 Audio ended notification received: html5-fallback
+ [TTS Queue] ✅ Resolving playback promise for: tts-chunk-0 (Trigger: html5-fallback)
+ [TTS Queue] ✅ Played: Object
+ [TTS Queue] ▶️ Playing on avatar: Object
+ [TTS Queue] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay: Object
+ [Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes: 57
+ [Unity Bridge] ✅ Audio + phonemes sent to Unity iframe
+ [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 57 Audio unlocked: true
+ [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":120,"blendshape":"T_L_D_N","weight":0.55}]
+ [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] 📤 Sending phonemes to AvatarController - Count: 57
+ [Unity] 📦 Phoneme JSON length: 2781 chars
+ [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":120,"blendshape":"T_L_D_N","weight":0.55},{"time":220,"blendshape":"Ah","weight":0.65},{"time":357.5,"blendshape":"B_M_P","weight":0.55},{"time":445,"blendshape":"S_Z","weight":0.45},{"time":507.5,"blendshape":"Ah","weight":0.65},{"time":582.5,"blendshape":"T_L_D_N","weight":0.55},{"time":620,"blendshape":"T_L_D_N","weight":0.55},{"time":670,"blendshape":"T_L_D_N","weight":0.55},{"time":720,"blendshape":"AE","weight":0.65},{"time":782.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":857.5,"blendshape":"T_L_D_N","weight":0.55},{"time":920,"blendshape":"AE","weight":0.65},{"time":1020,"blendshape":"Ah","weight":0.65},{"time":1157.5,"blendshape":"IH","weight":0.65},{"time":1270,"blendshape":"sil","weight":0},{"time":1282.5,"blendshape":"sil","weight":0},{"time":1445,"blendshape":"K_G_H_NG","weight":0.45},{"time":1520,"blendshape":"Ah","weight":0.65},{"time":1595,"blendshape":"B_M_P","weight":0.55},{"time":1682.5,"blendshape":"B_M_P","weight":0.55},{"time":1770,"blendshape":"T_L_D_N","weight":0.55},{"time":1845,"blendshape":"AE","weight":0.65},{"time":1895,"blendshape":"K_G_H_NG","weight":0.45},{"time":1957.5,"blendshape":"S_Z","weight":0.45},{"time":2020,"blendshape":"T_L_D_N","weight":0.55},{"time":2095,"blendshape":"Ah","weight":0.65},{"time":2157.5,"blendshape":"B_M_P","weight":0.55},{"time":2257.5,"blendshape":"IH","weight":0.65},{"time":2332.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":2407.5,"blendshape":"sil","weight":0},{"time":2482,"blendshape":"sil","weight":0},{"time":2495,"blendshape":"sil","weight":0},{"time":2657.5,"blendshape":"B_M_P","weight":0.55},{"time":2945,"blendshape":"Ah","weight":0.65},{"time":3020,"blendshape":"T_L_D_N","weight":0.55},{"time":3095,"blendshape":"F_V","weight":0.55},{"time":3157.5,"blendshape":"IH","weight":0.65},{"time":3220,"blendshape":"K_G_H_NG","weight":0.45},{"time":3295,"blendshape":"Ah","weight":0.65},{"time":3357.5,"blendshape":"T_L_D_N","weight":0.55},{"time":3432.5,"blendshape":"T_L_D_N","weight":0.55},{"time":3507.5,"blendshape":"Ah","weight":0.65},{"time":3595,"blendshape":"K_G_H_NG","weight":0.45},{"time":3720,"blendshape":"Ah","weight":0.65},{"time":3795,"blendshape":"T_L_D_N","weight":0.55},{"time":3845,"blendshape":"IH","weight":0.65},{"time":3907.5,"blendshape":"T_L_D_N","weight":0.55},{"time":3982.5,"blendshape":"T_L_D_N","weight":0.55},{"time":4045,"blendshape":"AE","weight":0.65},{"time":4107.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":4170,"blendshape":"AE","weight":0.65},{"time":4232.5,"blendshape":"T_L_D_N","weight":0.55},{"time":4357.5,"blendshape":"Ah","weight":0.65},{"time":4420,"blendshape":"R","weight":0.45},{"time":4482.5,"blendshape":"sil","weight":0}]}
+
+ [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 57 Audio unlocked: true
+ [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":120,"blendshape":"T_L_D_N","weight":0.55}]
+ [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 57
+ [Unity] [Unity] 📦 Phoneme JSON length: 2781 chars
+ [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":120,"blendshape":"T_L_D_N","weight":0.55},{"time":220,"blendshape":"Ah","weight":0.65},{"time":357.5,"blendshape":"B_M_P","weight":0.55},{"time":445,"blendshape":"S_Z","weight":0.45},{"time":507.5,"blendshape":"Ah","weight":0.65},{"time":582.5,"blendshape":"T_L_D_N","weight":0.55},{"time":620,"blendshape":"T_L_D_N","weight":0.55},{"time":670,"blendshape":"T_L_D_N","weight":0.55},{"time":720,"blendshape":"AE","weight":0.65},{"time":782.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":857.5,"blendshape":"T_L_D_N","weight":0.55},{"time":920,"blendshape":"AE","weight":0.65},{"time":1020,"blendshape":"Ah","weight":0.65},{"time":1157.5,"blendshape":"IH","weight":0.65},{"time":1270,"blendshape":"sil","weight":0},{"time":1282.5,"blendshape":"sil","weight":0},{"time":1445,"blendshape":"K_G_H_NG","weight":0.45},{"time":1520,"blendshape":"Ah","weight":0.65},{"time":1595,"blendshape":"B_M_P","weight":0.55},{"time":1682.5,"blendshape":"B_M_P","weight":0.55},{"time":1770,"blendshape":"T_L_D_N","weight":0.55},{"time":1845,"blendshape":"AE","weight":0.65},{"time":1895,"blendshape":"K_G_H_NG","weight":0.45},{"time":1957.5,"blendshape":"S_Z","weight":0.45},{"time":2020,"blendshape":"T_L_D_N","weight":0.55},{"time":2095,"blendshape":"Ah","weight":0.65},{"time":2157.5,"blendshape":"B_M_P","weight":0.55},{"time":2257.5,"blendshape":"IH","weight":0.65},{"time":2332.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":2407.5,"blendshape":"sil","weight":0},{"time":2482,"blendshape":"sil","weight":0},{"time":2495,"blendshape":"sil","weight":0},{"time":2657.5,"blendshape":"B_M_P","weight":0.55},{"time":2945,"blendshape":"Ah","weight":0.65},{"time":3020,"blendshape":"T_L_D_N","weight":0.55},{"time":3095,"blendshape":"F_V","weight":0.55},{"time":3157.5,"blendshape":"IH","weight":0.65},{"time":3220,"blendshape":"K_G_H_NG","weight":0.45},{"time":3295,"blendshape":"Ah","weight":0.65},{"time":3357.5,"blendshape":"T_L_D_N","weight":0.55},{"time":3432.5,"blendshape":"T_L_D_N","weight":0.55},{"time":3507.5,"blendshape":"Ah","weight":0.65},{"time":3595,"blendshape":"K_G_H_NG","weight":0.45},{"time":3720,"blendshape":"Ah","weight":0.65},{"time":3795,"blendshape":"T_L_D_N","weight":0.55},{"time":3845,"blendshape":"IH","weight":0.65},{"time":3907.5,"blendshape":"T_L_D_N","weight":0.55},{"time":3982.5,"blendshape":"T_L_D_N","weight":0.55},{"time":4045,"blendshape":"AE","weight":0.65},{"time":4107.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":4170,"blendshape":"AE","weight":0.65},{"time":4232.5,"blendshape":"T_L_D_N","weight":0.55},{"time":4357.5,"blendshape":"Ah","weight":0.65},{"time":4420,"blendshape":"R","weight":0.45},{"time":4482.5,"blendshape":"sil","weight":0}]}
+
+ [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity Bridge] ✅ Audio playback started: tts-chunk-1
+ [Unity] [Unity] HTML5 Audio playing, starting amplitude meter
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [TEXT QUERY] ✅ Messages refetched with SSML metadata
+ [STREAMING] ✅ New assistant message detected (40644fdc-5290-4845-b376-5393722351b6), clearing streaming response
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] IH → 2.6° rotation
+
+ [Unity] [Jaw] IH → 2.6° rotation
+
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Jaw] IH → 2.6° rotation
+
+ [Unity] [Jaw] IH → 2.6° rotation
+
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] IH → 2.6° rotation
+
+ [Unity] [Jaw] IH → 2.6° rotation
+
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Jaw] IH → 2.6° rotation
+
+ [Unity] [Jaw] IH → 2.6° rotation
+
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity] HTML5 Audio ended
+ [Unity] [Unity] HTML5 Audio ended
+ [Unity Bridge] 🐛 Intercepted HTML5 Audio end log - synthesizing AUDIO_ENDED event
+ [Unity Avatar] Message from Unity: Object
+ [TTS] Unity audio playback ended: html5-fallback
+ [Voice Tutor] 🎤 Audio ended notification: html5-fallback
+ [TTS Queue] 🎤 Audio ended notification received: html5-fallback
+ [TTS Queue] ✅ Resolving playback promise for: tts-chunk-1 (Trigger: html5-fallback)
+ [TTS Queue] ✅ Played: Object
+ [TTS Queue] ▶️ Playing on avatar: Object
+ [TTS Queue] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay: Object
+ [Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes: 16
+ [Unity Bridge] ✅ Audio + phonemes sent to Unity iframe
+ [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 16 Audio unlocked: true
+ [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]
+ [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] 📤 Sending phonemes to AvatarController - Count: 16
+ [Unity] 📦 Phoneme JSON length: 704 chars
+ [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":132.5,"blendshape":"Ah","weight":0.65},{"time":195,"blendshape":"AE","weight":0.65},{"time":270,"blendshape":"T_L_D_N","weight":0.55},{"time":382,"blendshape":"sil","weight":0},{"time":395,"blendshape":"sil","weight":0},{"time":482.5,"blendshape":"sil","weight":0}]}
+
+ [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 16 Audio unlocked: true
+ [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]
+ [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 16
+ [Unity] [Unity] 📦 Phoneme JSON length: 704 chars
+ [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":132.5,"blendshape":"Ah","weight":0.65},{"time":195,"blendshape":"AE","weight":0.65},{"time":270,"blendshape":"T_L_D_N","weight":0.55},{"time":382,"blendshape":"sil","weight":0},{"time":395,"blendshape":"sil","weight":0},{"time":482.5,"blendshape":"sil","weight":0}]}
+
+ [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity Bridge] ✅ Audio playback started: tts-chunk-2
+ [Unity] [Unity] HTML5 Audio playing, starting amplitude meter
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity] HTML5 Audio ended
+ [Unity] [Unity] HTML5 Audio ended
+ [Unity Bridge] 🐛 Intercepted HTML5 Audio end log - synthesizing AUDIO_ENDED event
+ [Unity Avatar] Message from Unity: Object
+ [TTS] Unity audio playback ended: html5-fallback
+ [Voice Tutor] 🎤 Audio ended notification: html5-fallback
+ [TTS Queue] 🎤 Audio ended notification received: html5-fallback
+ [TTS Queue] ✅ Resolving playback promise for: tts-chunk-2 (Trigger: html5-fallback)
+ [TTS Queue] ✅ Played: Object
+ [TTS Queue] ▶️ Playing on avatar: Object
+ [TTS Queue] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay: Object
+ [Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes: 86
+ [Unity Bridge] ✅ Audio + phonemes sent to Unity iframe
+ [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 86 Audio unlocked: true
+ [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]
+ [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] 📤 Sending phonemes to AvatarController - Count: 86
+ [Unity] 📦 Phoneme JSON length: 4001 chars
+ [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":70,"blendshape":"Ah","weight":0.65},{"time":270,"blendshape":"B_M_P","weight":0.55},{"time":420,"blendshape":"S_Z","weight":0.45},{"time":495,"blendshape":"sil","weight":0},{"time":570,"blendshape":"sil","weight":0},{"time":707.5,"blendshape":"S_Z","weight":0.45},{"time":820,"blendshape":"T_L_D_N","weight":0.55},{"time":920,"blendshape":"R","weight":0.45},{"time":1070,"blendshape":"Ah","weight":0.65},{"time":1145,"blendshape":"K_G_H_NG","weight":0.45},{"time":1220,"blendshape":"T_L_D_N","weight":0.55},{"time":1251.25,"blendshape":"Ch_J","weight":0.45},{"time":1282.5,"blendshape":"Ah","weight":0.65},{"time":1357.5,"blendshape":"R","weight":0.45},{"time":1445,"blendshape":"sil","weight":0},{"time":1520,"blendshape":"sil","weight":0},{"time":1557.5,"blendshape":"sil","weight":0},{"time":1632.5,"blendshape":"sil","weight":0},{"time":1695,"blendshape":"sil","weight":0},{"time":1782.5,"blendshape":"sil","weight":0},{"time":1857.5,"blendshape":"sil","weight":0},{"time":1895,"blendshape":"sil","weight":0},{"time":1907.5,"blendshape":"sil","weight":0},{"time":1957.5,"blendshape":"sil","weight":0},{"time":2032,"blendshape":"sil","weight":0},{"time":2045,"blendshape":"sil","weight":0},{"time":2132.5,"blendshape":"sil","weight":0},{"time":2257.5,"blendshape":"sil","weight":0},{"time":2307.5,"blendshape":"sil","weight":0},{"time":2357,"blendshape":"sil","weight":0},{"time":2370,"blendshape":"sil","weight":0},{"time":2432.5,"blendshape":"IH","weight":0.65},{"time":2507.5,"blendshape":"Ah","weight":0.65},{"time":2620,"blendshape":"T_L_D_N","weight":0.55},{"time":2695,"blendshape":"AE","weight":0.65},{"time":2782.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":2857.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2882.5,"blendshape":"AE","weight":0.65},{"time":2932.5,"blendshape":"Ah","weight":0.65},{"time":3082.5,"blendshape":"IH","weight":0.65},{"time":3232.5,"blendshape":"sil","weight":0},{"time":3370,"blendshape":"sil","weight":0},{"time":3382.5,"blendshape":"B_M_P","weight":0.55},{"time":3520,"blendshape":"R","weight":0.45},{"time":3570,"blendshape":"Oh","weight":0.65},{"time":3645,"blendshape":"S_Z","weight":0.45},{"time":3720,"blendshape":"AE","weight":0.65},{"time":3820,"blendshape":"S_Z","weight":0.45},{"time":3882.5,"blendshape":"AE","weight":0.65},{"time":3957.5,"blendshape":"S_Z","weight":0.45},{"time":4057.5,"blendshape":"T_L_D_N","weight":0.55},{"time":4120,"blendshape":"Ah","weight":0.65},{"time":4182.5,"blendshape":"IH","weight":0.65},{"time":4270,"blendshape":"K_G_H_NG","weight":0.45},{"time":4345,"blendshape":"R","weight":0.45},{"time":4395,"blendshape":"AE","weight":0.65},{"time":4457.5,"blendshape":"T_L_D_N","weight":0.55},{"time":4570,"blendshape":"IH","weight":0.65},{"time":4670,"blendshape":"Oh","weight":0.65},{"time":4770,"blendshape":"Ah","weight":0.65},{"time":4870,"blendshape":"K_G_H_NG","weight":0.45},{"time":4970,"blendshape":"T_L_D_N","weight":0.55},{"time":5045,"blendshape":"IH","weight":0.65},{"time":5132.5,"blendshape":"F_V","weight":0.55},{"time":5195,"blendshape":"IH","weight":0.65},{"time":5270,"blendshape":"T_L_D_N","weight":0.55},{"time":5345,"blendshape":"IH","weight":0.65},{"time":5420,"blendshape":"sil","weight":0},{"time":5470,"blendshape":"sil","weight":0},{"time":5532.5,"blendshape":"sil","weight":0},{"time":5607.5,"blendshape":"sil","weight":0},{"time":5707.5,"blendshape":"sil","weight":0},{"time":5770,"blendshape":"sil","weight":0},{"time":5832.5,"blendshape":"sil","weight":0},{"time":5895,"blendshape":"sil","weight":0},{"time":5957.5,"blendshape":"sil","weight":0}]}
+
+ [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 86 Audio unlocked: true
+ [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]
+ [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 86
+ [Unity] [Unity] 📦 Phoneme JSON length: 4001 chars
+ [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":70,"blendshape":"Ah","weight":0.65},{"time":270,"blendshape":"B_M_P","weight":0.55},{"time":420,"blendshape":"S_Z","weight":0.45},{"time":495,"blendshape":"sil","weight":0},{"time":570,"blendshape":"sil","weight":0},{"time":707.5,"blendshape":"S_Z","weight":0.45},{"time":820,"blendshape":"T_L_D_N","weight":0.55},{"time":920,"blendshape":"R","weight":0.45},{"time":1070,"blendshape":"Ah","weight":0.65},{"time":1145,"blendshape":"K_G_H_NG","weight":0.45},{"time":1220,"blendshape":"T_L_D_N","weight":0.55},{"time":1251.25,"blendshape":"Ch_J","weight":0.45},{"time":1282.5,"blendshape":"Ah","weight":0.65},{"time":1357.5,"blendshape":"R","weight":0.45},{"time":1445,"blendshape":"sil","weight":0},{"time":1520,"blendshape":"sil","weight":0},{"time":1557.5,"blendshape":"sil","weight":0},{"time":1632.5,"blendshape":"sil","weight":0},{"time":1695,"blendshape":"sil","weight":0},{"time":1782.5,"blendshape":"sil","weight":0},{"time":1857.5,"blendshape":"sil","weight":0},{"time":1895,"blendshape":"sil","weight":0},{"time":1907.5,"blendshape":"sil","weight":0},{"time":1957.5,"blendshape":"sil","weight":0},{"time":2032,"blendshape":"sil","weight":0},{"time":2045,"blendshape":"sil","weight":0},{"time":2132.5,"blendshape":"sil","weight":0},{"time":2257.5,"blendshape":"sil","weight":0},{"time":2307.5,"blendshape":"sil","weight":0},{"time":2357,"blendshape":"sil","weight":0},{"time":2370,"blendshape":"sil","weight":0},{"time":2432.5,"blendshape":"IH","weight":0.65},{"time":2507.5,"blendshape":"Ah","weight":0.65},{"time":2620,"blendshape":"T_L_D_N","weight":0.55},{"time":2695,"blendshape":"AE","weight":0.65},{"time":2782.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":2857.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2882.5,"blendshape":"AE","weight":0.65},{"time":2932.5,"blendshape":"Ah","weight":0.65},{"time":3082.5,"blendshape":"IH","weight":0.65},{"time":3232.5,"blendshape":"sil","weight":0},{"time":3370,"blendshape":"sil","weight":0},{"time":3382.5,"blendshape":"B_M_P","weight":0.55},{"time":3520,"blendshape":"R","weight":0.45},{"time":3570,"blendshape":"Oh","weight":0.65},{"time":3645,"blendshape":"S_Z","weight":0.45},{"time":3720,"blendshape":"AE","weight":0.65},{"time":3820,"blendshape":"S_Z","weight":0.45},{"time":3882.5,"blendshape":"AE","weight":0.65},{"time":3957.5,"blendshape":"S_Z","weight":0.45},{"time":4057.5,"blendshape":"T_L_D_N","weight":0.55},{"time":4120,"blendshape":"Ah","weight":0.65},{"time":4182.5,"blendshape":"IH","weight":0.65},{"time":4270,"blendshape":"K_G_H_NG","weight":0.45},{"time":4345,"blendshape":"R","weight":0.45},{"time":4395,"blendshape":"AE","weight":0.65},{"time":4457.5,"blendshape":"T_L_D_N","weight":0.55},{"time":4570,"blendshape":"IH","weight":0.65},{"time":4670,"blendshape":"Oh","weight":0.65},{"time":4770,"blendshape":"Ah","weight":0.65},{"time":4870,"blendshape":"K_G_H_NG","weight":0.45},{"time":4970,"blendshape":"T_L_D_N","weight":0.55},{"time":5045,"blendshape":"IH","weight":0.65},{"time":5132.5,"blendshape":"F_V","weight":0.55},{"time":5195,"blendshape":"IH","weight":0.65},{"time":5270,"blendshape":"T_L_D_N","weight":0.55},{"time":5345,"blendshape":"IH","weight":0.65},{"time":5420,"blendshape":"sil","weight":0},{"time":5470,"blendshape":"sil","weight":0},{"time":5532.5,"blendshape":"sil","weight":0},{"time":5607.5,"blendshape":"sil","weight":0},{"time":5707.5,"blendshape":"sil","weight":0},{"time":5770,"blendshape":"sil","weight":0},{"time":5832.5,"blendshape":"sil","weight":0},{"time":5895,"blendshape":"sil","weight":0},{"time":5957.5,"blendshape":"sil","weight":0}]}
+
+ [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity Bridge] ✅ Audio playback started: tts-chunk-3
+ [Unity] [Unity] HTML5 Audio playing, starting amplitude meter
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] IH → 2.6° rotation
+
+ [Unity] [Jaw] IH → 2.6° rotation
+
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Jaw] IH → 2.6° rotation
+
+ [Unity] [Jaw] IH → 2.6° rotation
+
+ [Jaw] Oh → 5.2° rotation
+
+ [Unity] [Jaw] Oh → 5.2° rotation
+
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Jaw] IH → 2.6° rotation
+
+ [Unity] [Jaw] IH → 2.6° rotation
+
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Jaw] IH → 2.6° rotation
+
+ [Unity] [Jaw] IH → 2.6° rotation
+
+ [Jaw] Oh → 5.2° rotation
+
+ [Unity] [Jaw] Oh → 5.2° rotation
+
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] IH → 2.6° rotation
+
+ [Unity] [Jaw] IH → 2.6° rotation
+
+ [Jaw] IH → 2.6° rotation
+
+ [Unity] [Jaw] IH → 2.6° rotation
+
+ [Jaw] IH → 2.6° rotation
+
+ [Unity] [Jaw] IH → 2.6° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity] HTML5 Audio ended
+ [Unity] [Unity] HTML5 Audio ended
+ [Unity Bridge] 🐛 Intercepted HTML5 Audio end log - synthesizing AUDIO_ENDED event
+ [Unity Avatar] Message from Unity: Object
+ [TTS] Unity audio playback ended: html5-fallback
+ [Voice Tutor] 🎤 Audio ended notification: html5-fallback
+ [TTS Queue] 🎤 Audio ended notification received: html5-fallback
+ [TTS Queue] ✅ Resolving playback promise for: tts-chunk-3 (Trigger: html5-fallback)
+ [TTS Queue] ✅ Played: Object
+ [TTS Queue] ▶️ Playing on avatar: Object
+ [TTS Queue] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay: Object
+ [Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes: 18
+ [Unity Bridge] ✅ Audio + phonemes sent to Unity iframe
+ [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 18 Audio unlocked: true
+ [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":57.5,"blendshape":"AE","weight":0.65}]
+ [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] 📤 Sending phonemes to AvatarController - Count: 18
+ [Unity] 📦 Phoneme JSON length: 866 chars
+ [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":57.5,"blendshape":"AE","weight":0.65},{"time":207.5,"blendshape":"T_L_D_N","weight":0.55},{"time":332,"blendshape":"sil","weight":0},{"time":432.5,"blendshape":"AE","weight":0.65},{"time":582.5,"blendshape":"S_Z","weight":0.45},{"time":707.5,"blendshape":"T_L_D_N","weight":0.55},{"time":795,"blendshape":"Ah","weight":0.65},{"time":920,"blendshape":"R","weight":0.45},{"time":982.5,"blendshape":"Oh","weight":0.65},{"time":1107.5,"blendshape":"IH","weight":0.65},{"time":1195,"blendshape":"T_L_D_N","weight":0.55},{"time":1257.5,"blendshape":"T_L_D_N","weight":0.55},{"time":1320,"blendshape":"Ah","weight":0.65},{"time":1445,"blendshape":"AE","weight":0.65},{"time":1545,"blendshape":"T_L_D_N","weight":0.55},{"time":1695,"blendshape":"sil","weight":0}]}
+
+ [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 18 Audio unlocked: true
+ [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":57.5,"blendshape":"AE","weight":0.65}]
+ [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 18
+ [Unity] [Unity] 📦 Phoneme JSON length: 866 chars
+ [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":57.5,"blendshape":"AE","weight":0.65},{"time":207.5,"blendshape":"T_L_D_N","weight":0.55},{"time":332,"blendshape":"sil","weight":0},{"time":432.5,"blendshape":"AE","weight":0.65},{"time":582.5,"blendshape":"S_Z","weight":0.45},{"time":707.5,"blendshape":"T_L_D_N","weight":0.55},{"time":795,"blendshape":"Ah","weight":0.65},{"time":920,"blendshape":"R","weight":0.45},{"time":982.5,"blendshape":"Oh","weight":0.65},{"time":1107.5,"blendshape":"IH","weight":0.65},{"time":1195,"blendshape":"T_L_D_N","weight":0.55},{"time":1257.5,"blendshape":"T_L_D_N","weight":0.55},{"time":1320,"blendshape":"Ah","weight":0.65},{"time":1445,"blendshape":"AE","weight":0.65},{"time":1545,"blendshape":"T_L_D_N","weight":0.55},{"time":1695,"blendshape":"sil","weight":0}]}
+
+ [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity Bridge] ✅ Audio playback started: tts-chunk-4
+ [Unity] [Unity] HTML5 Audio playing, starting amplitude meter
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] Oh → 5.2° rotation
+
+ [Unity] [Jaw] Oh → 5.2° rotation
+
+ [Jaw] IH → 2.6° rotation
+
+ [Unity] [Jaw] IH → 2.6° rotation
+
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity] HTML5 Audio ended
+ [Unity] [Unity] HTML5 Audio ended
+ [Unity Bridge] 🐛 Intercepted HTML5 Audio end log - synthesizing AUDIO_ENDED event
+ [Unity Avatar] Message from Unity: Object
+ [TTS] Unity audio playback ended: html5-fallback
+ [Voice Tutor] 🎤 Audio ended notification: html5-fallback
+ [TTS Queue] 🎤 Audio ended notification received: html5-fallback
+ [TTS Queue] ✅ Resolving playback promise for: tts-chunk-4 (Trigger: html5-fallback)
+ [TTS Queue] ✅ Played: Object
+ [TTS Queue] 📭 Queue empty
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TutorSession] Sending text query via WebSocket: atoms ke structure ke baare
+ [TEXT QUERY] Sent: "atoms ke structure ke baare..."
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] 🆕 New message started: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764
+ [TEXT QUERY] 📝 Chunk #0 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764]: "Great ..." (total: 1 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764 - content: Great 
+ [TTS Queue] 🧹 Clearing queue: Object
+ [TTS START] 🆕 New message started (ID: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764) - Queue Reset
+ [Unity] 📩 Message received: STOP_AUDIO | unityInstance ready: true | audioUnlocked: true
+ SendMessage: object AvatarController does not have receiver for function StopAudio!
+
+ [Unity] Audio stopped (HTML5 + Unity)
+ [Unity] [Unity] 📩 Message received: STOP_AUDIO | unityInstance ready: true | audioUnlocked: true
+ [Unity] SendMessage: object AvatarController does not have receiver for function StopAudio!
+
+ [Unity] [Unity] Audio stopped (HTML5 + Unity)
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] 📝 Chunk #1 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764]: "**Atoms ka structure** samajhna fundamental hai ..." (total: 1 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764 - content: **Atoms ka structure** samajhna fundamental hai 
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] 📝 Chunk #2 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764]: "Chalo, shuru karte hain ..." (total: 2 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764 - content: Chalo, shuru karte hain 
+ [TEXT QUERY] 📝 Chunk #3 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764]: "1 ..." (total: 3 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764 - content: 1 
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 0: 6 phonemes for "Great..."
+ [TTS Queue] ✅ Enqueued: Object
+ [TTS Queue] ▶️ Playing on avatar: Object
+ [TTS Queue] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay: Object
+ [Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes: 6
+ [Unity Bridge] ✅ Audio + phonemes sent to Unity iframe
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [TEXT QUERY] 📝 Chunk #4 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764]: "**Atoms are made up of three main subatomic partic..." (total: 4 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764 - content: **Atoms are made up of three main subatomic partic
+ [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 6 Audio unlocked: true
+ [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"K_G_H_NG","weight":0.45},{"time":20,"blendshape":"R","weight":0.45}]
+ [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] 📤 Sending phonemes to AvatarController - Count: 6
+ [Unity] 📦 Phoneme JSON length: 287 chars
+ [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"K_G_H_NG","weight":0.45},{"time":20,"blendshape":"R","weight":0.45},{"time":107.5,"blendshape":"AE","weight":0.65},{"time":295,"blendshape":"T_L_D_N","weight":0.55},{"time":457,"blendshape":"sil","weight":0}]}
+
+ [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 6 Audio unlocked: true
+ [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"K_G_H_NG","weight":0.45},{"time":20,"blendshape":"R","weight":0.45}]
+ [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 6
+ [Unity] [Unity] 📦 Phoneme JSON length: 287 chars
+ [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"K_G_H_NG","weight":0.45},{"time":20,"blendshape":"R","weight":0.45},{"time":107.5,"blendshape":"AE","weight":0.65},{"time":295,"blendshape":"T_L_D_N","weight":0.55},{"time":457,"blendshape":"sil","weight":0}]}
+
+ [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity Bridge] ✅ Audio playback started: tts-chunk-0
+ [Unity] [Unity] HTML5 Audio playing, starting amplitude meter
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 2: 18 phonemes for "Chalo, shuru karte hain..."
+ [TTS Queue] ⏳ Buffering out-of-order chunk 2 (waiting for 1)
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 1: 38 phonemes for "**Atoms ka structure** samajhn..."
+ [TTS Queue] ✅ Enqueued: Object
+ [TTS Queue] 🔓 Unbuffering chunk 2
+ [TTS Queue] ✅ Enqueued: Object
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [TEXT QUERY] 📝 Chunk #5 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764]: "Aapko kya lagta hai, protons aur neutrons kahan ho..." (total: 5 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586028764 - content: Aapko kya lagta hai, protons aur neutrons kahan ho
+ [STREAMING TTS] ✅ TTS ended - Total chunks: 7
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity] HTML5 Audio ended
+ [Unity] [Unity] HTML5 Audio ended
+ [Unity Bridge] 🐛 Intercepted HTML5 Audio end log - synthesizing AUDIO_ENDED event
+ [Unity Avatar] Message from Unity: Object
+ [TTS] Unity audio playback ended: html5-fallback
+ [Voice Tutor] 🎤 Audio ended notification: html5-fallback
+ [TTS Queue] 🎤 Audio ended notification received: html5-fallback
+ [TTS Queue] ✅ Resolving playback promise for: tts-chunk-0 (Trigger: html5-fallback)
+ [TTS Queue] ✅ Played: Object
+ [TTS Queue] ▶️ Playing on avatar: Object
+ [TTS Queue] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay: Object
+ [Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes: 38
+ [Unity Bridge] ✅ Audio + phonemes sent to Unity iframe
+ [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 38 Audio unlocked: true
+ [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":82.5,"blendshape":"T_L_D_N","weight":0.55}]
+ [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] 📤 Sending phonemes to AvatarController - Count: 38
+ [Unity] 📦 Phoneme JSON length: 1805 chars
+ [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":82.5,"blendshape":"T_L_D_N","weight":0.55},{"time":170,"blendshape":"Ah","weight":0.65},{"time":307.5,"blendshape":"B_M_P","weight":0.55},{"time":395,"blendshape":"S_Z","weight":0.45},{"time":457,"blendshape":"sil","weight":0},{"time":470,"blendshape":"sil","weight":0},{"time":532.5,"blendshape":"S_Z","weight":0.45},{"time":632.5,"blendshape":"T_L_D_N","weight":0.55},{"time":720,"blendshape":"R","weight":0.45},{"time":795,"blendshape":"Ah","weight":0.65},{"time":832.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":907.5,"blendshape":"T_L_D_N","weight":0.55},{"time":938.75,"blendshape":"Ch_J","weight":0.45},{"time":970,"blendshape":"Ah","weight":0.65},{"time":1057.5,"blendshape":"R","weight":0.45},{"time":1132.5,"blendshape":"sil","weight":0},{"time":1170,"blendshape":"sil","weight":0},{"time":1182.5,"blendshape":"sil","weight":0},{"time":1270,"blendshape":"sil","weight":0},{"time":1345,"blendshape":"sil","weight":0},{"time":1432.5,"blendshape":"sil","weight":0},{"time":1495,"blendshape":"sil","weight":0},{"time":1520,"blendshape":"F_V","weight":0.55},{"time":1570,"blendshape":"Ah","weight":0.65},{"time":1670,"blendshape":"T_L_D_N","weight":0.55},{"time":1782.5,"blendshape":"T_L_D_N","weight":0.55},{"time":1870,"blendshape":"Ah","weight":0.65},{"time":1932.5,"blendshape":"B_M_P","weight":0.55},{"time":1970,"blendshape":"AE","weight":0.65},{"time":2007.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2070,"blendshape":"T_L_D_N","weight":0.55},{"time":2145,"blendshape":"Ah","weight":0.65},{"time":2207.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2282.5,"blendshape":"sil","weight":0},{"time":2332.5,"blendshape":"sil","weight":0},{"time":2395,"blendshape":"sil","weight":0}]}
+
+ [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 38 Audio unlocked: true
+ [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":82.5,"blendshape":"T_L_D_N","weight":0.55}]
+ [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 38
+ [Unity] [Unity] 📦 Phoneme JSON length: 1805 chars
+ [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":82.5,"blendshape":"T_L_D_N","weight":0.55},{"time":170,"blendshape":"Ah","weight":0.65},{"time":307.5,"blendshape":"B_M_P","weight":0.55},{"time":395,"blendshape":"S_Z","weight":0.45},{"time":457,"blendshape":"sil","weight":0},{"time":470,"blendshape":"sil","weight":0},{"time":532.5,"blendshape":"S_Z","weight":0.45},{"time":632.5,"blendshape":"T_L_D_N","weight":0.55},{"time":720,"blendshape":"R","weight":0.45},{"time":795,"blendshape":"Ah","weight":0.65},{"time":832.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":907.5,"blendshape":"T_L_D_N","weight":0.55},{"time":938.75,"blendshape":"Ch_J","weight":0.45},{"time":970,"blendshape":"Ah","weight":0.65},{"time":1057.5,"blendshape":"R","weight":0.45},{"time":1132.5,"blendshape":"sil","weight":0},{"time":1170,"blendshape":"sil","weight":0},{"time":1182.5,"blendshape":"sil","weight":0},{"time":1270,"blendshape":"sil","weight":0},{"time":1345,"blendshape":"sil","weight":0},{"time":1432.5,"blendshape":"sil","weight":0},{"time":1495,"blendshape":"sil","weight":0},{"time":1520,"blendshape":"F_V","weight":0.55},{"time":1570,"blendshape":"Ah","weight":0.65},{"time":1670,"blendshape":"T_L_D_N","weight":0.55},{"time":1782.5,"blendshape":"T_L_D_N","weight":0.55},{"time":1870,"blendshape":"Ah","weight":0.65},{"time":1932.5,"blendshape":"B_M_P","weight":0.55},{"time":1970,"blendshape":"AE","weight":0.65},{"time":2007.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2070,"blendshape":"T_L_D_N","weight":0.55},{"time":2145,"blendshape":"Ah","weight":0.65},{"time":2207.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2282.5,"blendshape":"sil","weight":0},{"time":2332.5,"blendshape":"sil","weight":0},{"time":2395,"blendshape":"sil","weight":0}]}
+
+ [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity Bridge] ✅ Audio playback started: tts-chunk-1
+ [Unity] [Unity] HTML5 Audio playing, starting amplitude meter
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [TEXT QUERY] ✅ Response complete - Emotion: neutral, Phase: greeting
+ [TEXT QUERY] Refetching messages query to get SSML metadata...
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [TTS Queue] ⏰ Safety timeout waiting for AUDIO_ENDED: tts-chunk-0
+(anonymous) @ injected.js:37
+ [TTS Queue] ✅ Played: Object
+ [TTS Queue] ▶️ Playing on avatar: Object
+ [TTS Queue] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay: Object
+ [Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes: 18
+ [Unity Bridge] ✅ Audio + phonemes sent to Unity iframe
+ [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 18 Audio unlocked: true
+ [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]
+ [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] 📤 Sending phonemes to AvatarController - Count: 18
+ [Unity] 📦 Phoneme JSON length: 752 chars
+ [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]}
+
+ [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 18 Audio unlocked: true
+ [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]
+ [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 18
+ [Unity] [Unity] 📦 Phoneme JSON length: 752 chars
+ [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]}
+
+ [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity Bridge] ✅ Audio playback started: tts-chunk-2
+ [Unity] [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 5: 59 phonemes for "Aapko kya lagta hai, protons a..."
+ [TTS Queue] ⏳ Buffering out-of-order chunk 5 (waiting for 3)
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 4: 164 phonemes for "**Atoms are made up of three m..."
+ [TTS Queue] ⏳ Buffering out-of-order chunk 4 (waiting for 3)
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] ✅ Messages refetched with SSML metadata
+ [STREAMING] ✅ New assistant message detected (039be2c7-3712-4357-99bb-80636f177fbc), clearing streaming response
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TTS Queue] ⏰ Safety timeout waiting for AUDIO_ENDED: tts-chunk-1
+(anonymous) @ injected.js:37
+ [TTS Queue] ✅ Played: Object
+ [TTS Queue] 📭 Queue empty
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity] HTML5 Audio ended
+ [Unity] [Unity] HTML5 Audio ended
+ [Unity Bridge] 🐛 Intercepted HTML5 Audio end log - synthesizing AUDIO_ENDED event
+ [Unity Avatar] Message from Unity: Object
+ [TTS] Unity audio playback ended: html5-fallback
+ [Voice Tutor] 🎤 Audio ended notification: html5-fallback
+ [TTS Queue] 🎤 Audio ended notification received: html5-fallback
+ [TTS Queue] ⚠️ Received audio ended for non-playing chunk: Object
+(anonymous) @ injected.js:37
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ Performance Warning: Recreating Offscreen FBO (1048x1244 => 1048x1284)
+
+ [Unity] Performance Warning: Recreating Offscreen FBO (1048x1244 => 1048x1284)
+
+ [Unity Bridge] Already initialized, skipping handshake
+ Performance Warning: Recreating Offscreen FBO (1048x1284 => 1048x1244)
+
+ [Unity] Performance Warning: Recreating Offscreen FBO (1048x1284 => 1048x1244)
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TutorSession] Sending text query via WebSocket: bolo
+ [TEXT QUERY] Sent: "bolo..."
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] 🆕 New message started: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318
+ [TEXT QUERY] 📝 Chunk #0 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318]: "Chalo, thoda detail mein jaate hain ..." (total: 1 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318 - content: Chalo, thoda detail mein jaate hain 
+ [TTS Queue] 🧹 Clearing queue: Object
+ [TTS START] 🆕 New message started (ID: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318) - Queue Reset
+ [Unity] 📩 Message received: STOP_AUDIO | unityInstance ready: true | audioUnlocked: true
+ SendMessage: object AvatarController does not have receiver for function StopAudio!
+
+ [Unity] Audio stopped (HTML5 + Unity)
+ [Unity] [Unity] 📩 Message received: STOP_AUDIO | unityInstance ready: true | audioUnlocked: true
+ [Unity] SendMessage: object AvatarController does not have receiver for function StopAudio!
+
+ [Unity] [Unity] Audio stopped (HTML5 + Unity)
+ [TEXT QUERY] 📝 Chunk #1 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318]: "**Atoms ka structure** aise hota hai:
+
+1 ..." (total: 1 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318 - content: **Atoms ka structure** aise hota hai:
+
+1 
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] 📝 Chunk #2 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318]: "**Nucleus**:
+   - **Protons** aur **Neutrons** nuc..." (total: 2 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318 - content: **Nucleus**:
+   - **Protons** aur **Neutrons** nuc
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] 📝 Chunk #3 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318]: "- Yahan pe protons ka positive charge aur neutrons..." (total: 3 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318 - content: - Yahan pe protons ka positive charge aur neutrons
+ [TEXT QUERY] 📝 Chunk #4 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318]: "2 ..." (total: 4 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318 - content: 2 
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 0: 24 phonemes for "Chalo, thoda detail mein jaate..."
+ [TTS Queue] ✅ Enqueued: Object
+ [TTS Queue] ▶️ Playing on avatar: Object
+ [TTS Queue] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay: Object
+ [Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes: 24
+ [Unity Bridge] ✅ Audio + phonemes sent to Unity iframe
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 24 Audio unlocked: true
+ [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]
+ [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] 📤 Sending phonemes to AvatarController - Count: 24
+ [Unity] 📦 Phoneme JSON length: 1060 chars
+ [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":45,"blendshape":"IH","weight":0.65},{"time":145,"blendshape":"T_L_D_N","weight":0.55},{"time":232.5,"blendshape":"AE","weight":0.65},{"time":595,"blendshape":"T_L_D_N","weight":0.55},{"time":682.5,"blendshape":"sil","weight":0},{"time":795,"blendshape":"sil","weight":0},{"time":857.5,"blendshape":"sil","weight":0},{"time":945,"blendshape":"sil","weight":0},{"time":957.5,"blendshape":"sil","weight":0},{"time":1045,"blendshape":"sil","weight":0},{"time":1145,"blendshape":"sil","weight":0},{"time":1220,"blendshape":"sil","weight":0},{"time":1345,"blendshape":"sil","weight":0}]}
+
+ [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 24 Audio unlocked: true
+ [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]
+ [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 24
+ [Unity] [Unity] 📦 Phoneme JSON length: 1060 chars
+ [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":45,"blendshape":"IH","weight":0.65},{"time":145,"blendshape":"T_L_D_N","weight":0.55},{"time":232.5,"blendshape":"AE","weight":0.65},{"time":595,"blendshape":"T_L_D_N","weight":0.55},{"time":682.5,"blendshape":"sil","weight":0},{"time":795,"blendshape":"sil","weight":0},{"time":857.5,"blendshape":"sil","weight":0},{"time":945,"blendshape":"sil","weight":0},{"time":957.5,"blendshape":"sil","weight":0},{"time":1045,"blendshape":"sil","weight":0},{"time":1145,"blendshape":"sil","weight":0},{"time":1220,"blendshape":"sil","weight":0},{"time":1345,"blendshape":"sil","weight":0}]}
+
+ [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity Bridge] ✅ Audio playback started: tts-chunk-0
+ [Unity] [Unity] HTML5 Audio playing, starting amplitude meter
+ [Jaw] IH → 2.6° rotation
+
+ [Unity] [Jaw] IH → 2.6° rotation
+
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 1: 30 phonemes for "**Atoms ka structure** aise ho..."
+ [TTS Queue] ✅ Enqueued: Object
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [TEXT QUERY] 📝 Chunk #5 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318]: "**Electron Cloud**:
+   - **Electrons** nucleus ke ..." (total: 5 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318 - content: **Electron Cloud**:
+   - **Electrons** nucleus ke 
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 2: 47 phonemes for "**Nucleus**:
+   - **Protons** ..."
+ [TTS Queue] ✅ Enqueued: Object
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] 📝 Chunk #6 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318]: "- Ye electrons negative charge rakhte hain aur nuc..." (total: 6 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318 - content: - Ye electrons negative charge rakhte hain aur nuc
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 3: 64 phonemes for "- Yahan pe protons ka positive..."
+ [TTS Queue] ✅ Enqueued: Object
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] 📝 Chunk #7 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318]: "Toh agar hum atom ka structure imagine karein, toh..." (total: 7 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318 - content: Toh agar hum atom ka structure imagine karein, toh
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] 📝 Chunk #8 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318]: "- Iske aas-paas ke space mein **electrons** circul..." (total: 8 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318 - content: - Iske aas-paas ke space mein **electrons** circul
+ [Unity Bridge] Already initialized, skipping handshake
+ [TEXT QUERY] 📝 Chunk #9 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318]: "Aapko yeh layout samajh aaya ..." (total: 9 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318 - content: Aapko yeh layout samajh aaya 
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 5: 92 phonemes for "**Electron Cloud**:
+   - **Ele..."
+ [TTS Queue] ⏳ Buffering out-of-order chunk 5 (waiting for 4)
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [TEXT QUERY] 📝 Chunk #10 received [voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318]: "Kya aapko electron configurations ya atomic models..." (total: 10 chunks)
+ [CHUNK TTS] Chunk received: voice_70413f1e-f399-48a0-8929-a7df10eb4271_1764585974115-1764586055318 - content: Kya aapko electron configurations ya atomic models
+ [STREAMING TTS] ✅ TTS ended - Total chunks: 12
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 6: 95 phonemes for "- Ye electrons negative charge..."
+ [TTS Queue] ⏳ Buffering out-of-order chunk 6 (waiting for 4)
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 7: 94 phonemes for "Toh agar hum atom ka structure..."
+ [TTS Queue] ⏳ Buffering out-of-order chunk 7 (waiting for 4)
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 9: 21 phonemes for "Aapko yeh layout samajh aaya..."
+ [TTS Queue] ⏳ Buffering out-of-order chunk 9 (waiting for 4)
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [Unity] HTML5 Audio ended
+ [Unity] [Unity] HTML5 Audio ended
+ [Unity Bridge] 🐛 Intercepted HTML5 Audio end log - synthesizing AUDIO_ENDED event
+ [Unity Avatar] Message from Unity: Object
+ [TTS] Unity audio playback ended: html5-fallback
+ [Voice Tutor] 🎤 Audio ended notification: html5-fallback
+ [TTS Queue] 🎤 Audio ended notification received: html5-fallback
+ [TTS Queue] ✅ Resolving playback promise for: tts-chunk-0 (Trigger: html5-fallback)
+ [TTS Queue] ✅ Played: Object
+ [TTS Queue] ▶️ Playing on avatar: Object
+ [TTS Queue] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay: Object
+ [Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes: 30
+ [Unity Bridge] ✅ Audio + phonemes sent to Unity iframe
+ [TTS Queue] ⏰ Safety timeout waiting for AUDIO_ENDED: tts-chunk-0
+(anonymous) @ injected.js:37
+ [TTS Queue] ✅ Played: Object
+ [TTS Queue] ▶️ Playing on avatar: Object
+ [TTS Queue] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay: Object
+ [Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes: 47
+ [Unity Bridge] ✅ Audio + phonemes sent to Unity iframe
+ [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 30 Audio unlocked: true
+ [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":82.5,"blendshape":"T_L_D_N","weight":0.55}]
+ [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] 📤 Sending phonemes to AvatarController - Count: 30
+ [Unity] 📦 Phoneme JSON length: 1395 chars
+ [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":82.5,"blendshape":"T_L_D_N","weight":0.55},{"time":182.5,"blendshape":"Ah","weight":0.65},{"time":320,"blendshape":"B_M_P","weight":0.55},{"time":407.5,"blendshape":"S_Z","weight":0.45},{"time":470,"blendshape":"sil","weight":0},{"time":482.5,"blendshape":"sil","weight":0},{"time":545,"blendshape":"S_Z","weight":0.45},{"time":657.5,"blendshape":"T_L_D_N","weight":0.55},{"time":757.5,"blendshape":"R","weight":0.45},{"time":832.5,"blendshape":"Ah","weight":0.65},{"time":870,"blendshape":"K_G_H_NG","weight":0.45},{"time":957.5,"blendshape":"T_L_D_N","weight":0.55},{"time":988.75,"blendshape":"Ch_J","weight":0.45},{"time":1020,"blendshape":"Ah","weight":0.65},{"time":1107.5,"blendshape":"R","weight":0.45},{"time":1220,"blendshape":"sil","weight":0},{"time":1320,"blendshape":"sil","weight":0},{"time":1332.5,"blendshape":"sil","weight":0},{"time":1457.5,"blendshape":"sil","weight":0},{"time":1557.5,"blendshape":"sil","weight":0},{"time":1607,"blendshape":"sil","weight":0},{"time":1620,"blendshape":"sil","weight":0},{"time":1695,"blendshape":"sil","weight":0},{"time":1795,"blendshape":"sil","weight":0},{"time":1870,"blendshape":"sil","weight":0},{"time":1982,"blendshape":"sil","weight":0},{"time":1995,"blendshape":"sil","weight":0},{"time":2145,"blendshape":"sil","weight":0}]}
+
+ [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 47 Audio unlocked: true
+ [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":45,"blendshape":"AE","weight":0.65}]
+ [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] 📤 Sending phonemes to AvatarController - Count: 47
+ [Unity] 📦 Phoneme JSON length: 2225 chars
+ [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":45,"blendshape":"AE","weight":0.65},{"time":120,"blendshape":"K_G_H_NG","weight":0.45},{"time":207.5,"blendshape":"T_L_D_N","weight":0.55},{"time":270,"blendshape":"AE","weight":0.65},{"time":345,"blendshape":"Ah","weight":0.65},{"time":457.5,"blendshape":"S_Z","weight":0.45},{"time":620,"blendshape":"sil","weight":0},{"time":845,"blendshape":"B_M_P","weight":0.55},{"time":895,"blendshape":"R","weight":0.45},{"time":945,"blendshape":"Oh","weight":0.65},{"time":1057.5,"blendshape":"T_L_D_N","weight":0.55},{"time":1157.5,"blendshape":"Ah","weight":0.65},{"time":1320,"blendshape":"T_L_D_N","weight":0.55},{"time":1407.5,"blendshape":"S_Z","weight":0.45},{"time":1457,"blendshape":"sil","weight":0},{"time":1470,"blendshape":"sil","weight":0},{"time":1557.5,"blendshape":"T_L_D_N","weight":0.55},{"time":1632.5,"blendshape":"IH","weight":0.65},{"time":1707.5,"blendshape":"W_OO","weight":0.65},{"time":1770,"blendshape":"T_L_D_N","weight":0.55},{"time":1870,"blendshape":"R","weight":0.45},{"time":1970,"blendshape":"Ah","weight":0.65},{"time":2020,"blendshape":"T_L_D_N","weight":0.55},{"time":2132.5,"blendshape":"S_Z","weight":0.45},{"time":2207.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2307.5,"blendshape":"AE","weight":0.65},{"time":2382.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":2445,"blendshape":"T_L_D_N","weight":0.55},{"time":2532.5,"blendshape":"AE","weight":0.65},{"time":2595,"blendshape":"Ah","weight":0.65},{"time":2657.5,"blendshape":"S_Z","weight":0.45},{"time":2720,"blendshape":"sil","weight":0},{"time":2795,"blendshape":"sil","weight":0},{"time":2807.5,"blendshape":"sil","weight":0},{"time":2870,"blendshape":"sil","weight":0},{"time":2995,"blendshape":"sil","weight":0},{"time":3007.5,"blendshape":"sil","weight":0},{"time":3132.5,"blendshape":"sil","weight":0},{"time":3220,"blendshape":"sil","weight":0},{"time":3257.5,"blendshape":"sil","weight":0},{"time":3320,"blendshape":"sil","weight":0},{"time":3357,"blendshape":"sil","weight":0},{"time":3370,"blendshape":"sil","weight":0},{"time":3457.5,"blendshape":"sil","weight":0},{"time":3545,"blendshape":"sil","weight":0}]}
+
+ [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity] HTML5 Audio play failed: 
+(anonymous) @ injected.js:37
+ [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 30 Audio unlocked: true
+ [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":82.5,"blendshape":"T_L_D_N","weight":0.55}]
+ [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 30
+ [Unity] [Unity] 📦 Phoneme JSON length: 1395 chars
+ [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"Ah","weight":0.65},{"time":82.5,"blendshape":"T_L_D_N","weight":0.55},{"time":182.5,"blendshape":"Ah","weight":0.65},{"time":320,"blendshape":"B_M_P","weight":0.55},{"time":407.5,"blendshape":"S_Z","weight":0.45},{"time":470,"blendshape":"sil","weight":0},{"time":482.5,"blendshape":"sil","weight":0},{"time":545,"blendshape":"S_Z","weight":0.45},{"time":657.5,"blendshape":"T_L_D_N","weight":0.55},{"time":757.5,"blendshape":"R","weight":0.45},{"time":832.5,"blendshape":"Ah","weight":0.65},{"time":870,"blendshape":"K_G_H_NG","weight":0.45},{"time":957.5,"blendshape":"T_L_D_N","weight":0.55},{"time":988.75,"blendshape":"Ch_J","weight":0.45},{"time":1020,"blendshape":"Ah","weight":0.65},{"time":1107.5,"blendshape":"R","weight":0.45},{"time":1220,"blendshape":"sil","weight":0},{"time":1320,"blendshape":"sil","weight":0},{"time":1332.5,"blendshape":"sil","weight":0},{"time":1457.5,"blendshape":"sil","weight":0},{"time":1557.5,"blendshape":"sil","weight":0},{"time":1607,"blendshape":"sil","weight":0},{"time":1620,"blendshape":"sil","weight":0},{"time":1695,"blendshape":"sil","weight":0},{"time":1795,"blendshape":"sil","weight":0},{"time":1870,"blendshape":"sil","weight":0},{"time":1982,"blendshape":"sil","weight":0},{"time":1995,"blendshape":"sil","weight":0},{"time":2145,"blendshape":"sil","weight":0}]}
+
+ [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity Bridge] ✅ Audio playback started: tts-chunk-1
+ [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+ [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 47 Audio unlocked: true
+ [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":45,"blendshape":"AE","weight":0.65}]
+ [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+ [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+ [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+ [Unity] HTML5 Audio playing, starting amplitude meter
+ [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 47
+ [Unity] [Unity] 📦 Phoneme JSON length: 2225 chars
+ [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+ [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"T_L_D_N","weight":0.55},{"time":45,"blendshape":"AE","weight":0.65},{"time":120,"blendshape":"K_G_H_NG","weight":0.45},{"time":207.5,"blendshape":"T_L_D_N","weight":0.55},{"time":270,"blendshape":"AE","weight":0.65},{"time":345,"blendshape":"Ah","weight":0.65},{"time":457.5,"blendshape":"S_Z","weight":0.45},{"time":620,"blendshape":"sil","weight":0},{"time":845,"blendshape":"B_M_P","weight":0.55},{"time":895,"blendshape":"R","weight":0.45},{"time":945,"blendshape":"Oh","weight":0.65},{"time":1057.5,"blendshape":"T_L_D_N","weight":0.55},{"time":1157.5,"blendshape":"Ah","weight":0.65},{"time":1320,"blendshape":"T_L_D_N","weight":0.55},{"time":1407.5,"blendshape":"S_Z","weight":0.45},{"time":1457,"blendshape":"sil","weight":0},{"time":1470,"blendshape":"sil","weight":0},{"time":1557.5,"blendshape":"T_L_D_N","weight":0.55},{"time":1632.5,"blendshape":"IH","weight":0.65},{"time":1707.5,"blendshape":"W_OO","weight":0.65},{"time":1770,"blendshape":"T_L_D_N","weight":0.55},{"time":1870,"blendshape":"R","weight":0.45},{"time":1970,"blendshape":"Ah","weight":0.65},{"time":2020,"blendshape":"T_L_D_N","weight":0.55},{"time":2132.5,"blendshape":"S_Z","weight":0.45},{"time":2207.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2307.5,"blendshape":"AE","weight":0.65},{"time":2382.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":2445,"blendshape":"T_L_D_N","weight":0.55},{"time":2532.5,"blendshape":"AE","weight":0.65},{"time":2595,"blendshape":"Ah","weight":0.65},{"time":2657.5,"blendshape":"S_Z","weight":0.45},{"time":2720,"blendshape":"sil","weight":0},{"time":2795,"blendshape":"sil","weight":0},{"time":2807.5,"blendshape":"sil","weight":0},{"time":2870,"blendshape":"sil","weight":0},{"time":2995,"blendshape":"sil","weight":0},{"time":3007.5,"blendshape":"sil","weight":0},{"time":3132.5,"blendshape":"sil","weight":0},{"time":3220,"blendshape":"sil","weight":0},{"time":3257.5,"blendshape":"sil","weight":0},{"time":3320,"blendshape":"sil","weight":0},{"time":3357,"blendshape":"sil","weight":0},{"time":3370,"blendshape":"sil","weight":0},{"time":3457.5,"blendshape":"sil","weight":0},{"time":3545,"blendshape":"sil","weight":0}]}
+
+ [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+ [Unity Bridge] ✅ Audio playback started: tts-chunk-2
+ [Unity] [Unity] HTML5 Audio play failed: 
+(anonymous) @ injected.js:37
+ [Unity] [Unity] HTML5 Audio playing, starting amplitude meter
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 8: 53 phonemes for "- Iske aas-paas ke space mein ..."
+ [TTS Queue] ⏳ Buffering out-of-order chunk 8 (waiting for 4)
+ [Smart TTS Queue] 📊 Enqueue result: true
+ [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] AE → 5.85° rotation
+
+ [Unity] [Jaw] AE → 5.85° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Jaw] Ah → 6.5° rotation
+
+ [Unity] [Jaw] Ah → 6.5° rotation
+
+ [Unity Bridge] Already initialized, skipping handshake
+ [Unity Bridge] Already initialized, skipping handshake
+ [PHONEME STREAM] 🎤 Received phoneme TTS chunk 10: 72 phonemes for "Kya aapko electron configurati..."
+injected.js:37 [TTS Queue] ⏳ Buffering out-of-order chunk 10 (waiting for 4)
+injected.js:37 [Smart TTS Queue] 📊 Enqueue result: true
+injected.js:37 [PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)
+injected.js:37 [TEXT QUERY] ✅ Response complete - Emotion: neutral, Phase: greeting
+injected.js:37 [TEXT QUERY] Refetching messages query to get SSML metadata...
+injected.js:37 [Jaw] Oh → 5.2° rotation
+
+injected.js:37 [Unity] [Jaw] Oh → 5.2° rotation
+
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Unity] [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [TTS Queue] ⏰ Safety timeout waiting for AUDIO_ENDED: tts-chunk-1
+(anonymous) @ injected.js:37
+injected.js:37 [TTS Queue] ✅ Played: Object
+injected.js:37 [TTS Queue] ▶️ Playing on avatar: Object
+injected.js:37 [TTS Queue] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay: Object
+injected.js:37 [Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes: 64
+injected.js:37 [Unity Bridge] ✅ Audio + phonemes sent to Unity iframe
+injected.js:37 [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+injected.js:37 [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 64 Audio unlocked: true
+injected.js:37 [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]
+injected.js:37 [Unity] ✅ Playing audio + sending phonemes to Unity...
+injected.js:37 [Unity] 🔍 DEBUG - Unity instance exists: true
+injected.js:37 [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+injected.js:37 [Unity] 📤 Sending phonemes to AvatarController - Count: 64
+injected.js:37 [Unity] 📦 Phoneme JSON length: 3030 chars
+injected.js:37 [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+injected.js:37 [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"B_M_P","weight":0.55},{"time":82.5,"blendshape":"R","weight":0.45},{"time":132.5,"blendshape":"Oh","weight":0.65},{"time":182.5,"blendshape":"T_L_D_N","weight":0.55},{"time":270,"blendshape":"Ah","weight":0.65},{"time":345,"blendshape":"T_L_D_N","weight":0.55},{"time":445,"blendshape":"S_Z","weight":0.45},{"time":532.5,"blendshape":"sil","weight":0},{"time":595,"blendshape":"sil","weight":0},{"time":682.5,"blendshape":"B_M_P","weight":0.55},{"time":770,"blendshape":"Ah","weight":0.65},{"time":920,"blendshape":"S_Z","weight":0.45},{"time":995,"blendshape":"IH","weight":0.65},{"time":1057.5,"blendshape":"T_L_D_N","weight":0.55},{"time":1120,"blendshape":"IH","weight":0.65},{"time":1207.5,"blendshape":"F_V","weight":0.55},{"time":1295,"blendshape":"T_L_D_N","weight":0.55},{"time":1357.5,"blendshape":"Ch_J","weight":0.45},{"time":1420,"blendshape":"Ah","weight":0.65},{"time":1495,"blendshape":"R","weight":0.45},{"time":1545,"blendshape":"T_L_D_N","weight":0.55},{"time":1576.25,"blendshape":"Ch_J","weight":0.45},{"time":1607.5,"blendshape":"sil","weight":0},{"time":1682.5,"blendshape":"sil","weight":0},{"time":1757.5,"blendshape":"T_L_D_N","weight":0.55},{"time":1857.5,"blendshape":"IH","weight":0.65},{"time":2032.5,"blendshape":"W_OO","weight":0.65},{"time":2082.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2170,"blendshape":"R","weight":0.45},{"time":2307.5,"blendshape":"Ah","weight":0.65},{"time":2382.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2457.5,"blendshape":"S_Z","weight":0.45},{"time":2532.5,"blendshape":"sil","weight":0},{"time":2620,"blendshape":"sil","weight":0},{"time":2707.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2757.5,"blendshape":"IH","weight":0.65},{"time":2895,"blendshape":"W_OO","weight":0.65},{"time":2970,"blendshape":"T_L_D_N","weight":0.55},{"time":3045,"blendshape":"R","weight":0.45},{"time":3120,"blendshape":"Ah","weight":0.65},{"time":3195,"blendshape":"T_L_D_N","weight":0.55},{"time":3307.5,"blendshape":"T_L_D_N","weight":0.55},{"time":3338.75,"blendshape":"Ch_J","weight":0.45},{"time":3370,"blendshape":"Ah","weight":0.65},{"time":3457.5,"blendshape":"R","weight":0.45},{"time":3545,"blendshape":"T_L_D_N","weight":0.55},{"time":3563.75,"blendshape":"Ch_J","weight":0.45},{"time":3582.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":3620,"blendshape":"Ah","weight":0.65},{"time":3695,"blendshape":"IH","weight":0.65},{"time":3807.5,"blendshape":"sil","weight":0},{"time":3970,"blendshape":"sil","weight":0},{"time":4007.5,"blendshape":"sil","weight":0},{"time":4070,"blendshape":"sil","weight":0},{"time":4082.5,"blendshape":"sil","weight":0},{"time":4195,"blendshape":"sil","weight":0},{"time":4295,"blendshape":"sil","weight":0}]}
+
+injected.js:37 [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+injected.js:37 [Unity] [Unity] 📩 Message received: PLAY_TTS_WITH_PHONEMES | unityInstance ready: true | audioUnlocked: true
+injected.js:37 [Unity] [Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes: 64 Audio unlocked: true
+injected.js:37 [Unity] [Unity] 🔍 DEBUG - First 3 phonemes: [{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0}]
+injected.js:37 [Unity] [Unity] ✅ Playing audio + sending phonemes to Unity...
+injected.js:37 [Unity] [Unity] 🔍 DEBUG - Unity instance exists: true
+injected.js:37 [Unity] [Unity] Using HTML5 Audio fallback with amplitude lip-sync
+injected.js:37 [Unity] HTML5 Audio playing, starting amplitude meter
+injected.js:37 [Unity] [Unity] 📤 Sending phonemes to AvatarController - Count: 64
+injected.js:37 [Unity] [Unity] 📦 Phoneme JSON length: 3030 chars
+injected.js:37 [Unity] [Unity] 🚀 CALLING PlayPhonemeSequence NOW...
+injected.js:37 [Unity] [Avatar] Received phoneme data: {"phonemes":[{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"sil","weight":0},{"time":0,"blendshape":"B_M_P","weight":0.55},{"time":82.5,"blendshape":"R","weight":0.45},{"time":132.5,"blendshape":"Oh","weight":0.65},{"time":182.5,"blendshape":"T_L_D_N","weight":0.55},{"time":270,"blendshape":"Ah","weight":0.65},{"time":345,"blendshape":"T_L_D_N","weight":0.55},{"time":445,"blendshape":"S_Z","weight":0.45},{"time":532.5,"blendshape":"sil","weight":0},{"time":595,"blendshape":"sil","weight":0},{"time":682.5,"blendshape":"B_M_P","weight":0.55},{"time":770,"blendshape":"Ah","weight":0.65},{"time":920,"blendshape":"S_Z","weight":0.45},{"time":995,"blendshape":"IH","weight":0.65},{"time":1057.5,"blendshape":"T_L_D_N","weight":0.55},{"time":1120,"blendshape":"IH","weight":0.65},{"time":1207.5,"blendshape":"F_V","weight":0.55},{"time":1295,"blendshape":"T_L_D_N","weight":0.55},{"time":1357.5,"blendshape":"Ch_J","weight":0.45},{"time":1420,"blendshape":"Ah","weight":0.65},{"time":1495,"blendshape":"R","weight":0.45},{"time":1545,"blendshape":"T_L_D_N","weight":0.55},{"time":1576.25,"blendshape":"Ch_J","weight":0.45},{"time":1607.5,"blendshape":"sil","weight":0},{"time":1682.5,"blendshape":"sil","weight":0},{"time":1757.5,"blendshape":"T_L_D_N","weight":0.55},{"time":1857.5,"blendshape":"IH","weight":0.65},{"time":2032.5,"blendshape":"W_OO","weight":0.65},{"time":2082.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2170,"blendshape":"R","weight":0.45},{"time":2307.5,"blendshape":"Ah","weight":0.65},{"time":2382.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2457.5,"blendshape":"S_Z","weight":0.45},{"time":2532.5,"blendshape":"sil","weight":0},{"time":2620,"blendshape":"sil","weight":0},{"time":2707.5,"blendshape":"T_L_D_N","weight":0.55},{"time":2757.5,"blendshape":"IH","weight":0.65},{"time":2895,"blendshape":"W_OO","weight":0.65},{"time":2970,"blendshape":"T_L_D_N","weight":0.55},{"time":3045,"blendshape":"R","weight":0.45},{"time":3120,"blendshape":"Ah","weight":0.65},{"time":3195,"blendshape":"T_L_D_N","weight":0.55},{"time":3307.5,"blendshape":"T_L_D_N","weight":0.55},{"time":3338.75,"blendshape":"Ch_J","weight":0.45},{"time":3370,"blendshape":"Ah","weight":0.65},{"time":3457.5,"blendshape":"R","weight":0.45},{"time":3545,"blendshape":"T_L_D_N","weight":0.55},{"time":3563.75,"blendshape":"Ch_J","weight":0.45},{"time":3582.5,"blendshape":"K_G_H_NG","weight":0.45},{"time":3620,"blendshape":"Ah","weight":0.65},{"time":3695,"blendshape":"IH","weight":0.65},{"time":3807.5,"blendshape":"sil","weight":0},{"time":3970,"blendshape":"sil","weight":0},{"time":4007.5,"blendshape":"sil","weight":0},{"time":4070,"blendshape":"sil","weight":0},{"time":4082.5,"blendshape":"sil","weight":0},{"time":4195,"blendshape":"sil","weight":0},{"time":4295,"blendshape":"sil","weight":0}]}
+
+injected.js:37 [Unity] [Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅
+injected.js:37 [Unity Bridge] ✅ Audio playback started: tts-chunk-3
+injected.js:37 [Unity] [Unity] HTML5 Audio playing, starting amplitude meter
+injected.js:37 [Jaw] Oh → 5.2° rotation
+
+injected.js:37 [Unity] [Jaw] Oh → 5.2° rotation
+
+injected.js:37 [TEXT QUERY] ✅ Messages refetched with SSML metadata
+injected.js:37 [STREAMING] ✅ Matching DB message found, clearing streaming response to prevent duplicate
+injected.js:37 [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Unity] [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [TTS Queue] ⏰ Safety timeout waiting for AUDIO_ENDED: tts-chunk-2
+(anonymous) @ injected.js:37
+injected.js:37 [TTS Queue] ✅ Played: Object
+injected.js:37 [TTS Queue] 📭 Queue empty
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Unity] [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Jaw] IH → 2.6° rotation
+
+injected.js:37 [Unity] [Jaw] IH → 2.6° rotation
+
+injected.js:37 [Jaw] IH → 2.6° rotation
+
+injected.js:37 [Unity] [Jaw] IH → 2.6° rotation
+
+injected.js:37 [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Unity] [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Jaw] IH → 2.6° rotation
+
+injected.js:37 [Unity] [Jaw] IH → 2.6° rotation
+
+injected.js:37 [Jaw] W_OO → 3.9° rotation
+
+injected.js:37 [Unity] [Jaw] W_OO → 3.9° rotation
+
+injected.js:37 [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Unity] [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Jaw] IH → 2.6° rotation
+
+injected.js:37 [Unity] [Jaw] IH → 2.6° rotation
+
+injected.js:37 [Jaw] W_OO → 3.9° rotation
+
+injected.js:37 [Unity] [Jaw] W_OO → 3.9° rotation
+
+injected.js:37 [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Unity] [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Unity] [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity] [Jaw] Ah → 6.5° rotation
+
+injected.js:37 [Jaw] IH → 2.6° rotation
+
+injected.js:37 [Unity] [Jaw] IH → 2.6° rotation
+
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity] HTML5 Audio ended
+injected.js:37 [Unity] [Unity] HTML5 Audio ended
+injected.js:37 [Unity Bridge] 🐛 Intercepted HTML5 Audio end log - synthesizing AUDIO_ENDED event
+injected.js:37 [Unity Avatar] Message from Unity: Object
+injected.js:37 [TTS] Unity audio playback ended: html5-fallback
+injected.js:37 [Voice Tutor] 🎤 Audio ended notification: html5-fallback
+injected.js:37 [TTS Queue] 🎤 Audio ended notification received: html5-fallback
+injected.js:37 [TTS Queue] ⚠️ Received audio ended for non-playing chunk: Object
+(anonymous) @ injected.js:37
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 Performance Warning: Recreating Offscreen FBO (1048x1244 => 802x800)
+
+injected.js:37 [Unity] Performance Warning: Recreating Offscreen FBO (1048x1244 => 802x800)
+
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake

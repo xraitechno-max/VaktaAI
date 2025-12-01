@@ -330,13 +330,22 @@ export function useVoiceTutor({
           if (audio && phonemes) {
             console.log(`[PHONEME STREAM] 🎤 Received phoneme TTS chunk ${chunkIndex}: ${phonemes.length} phonemes for "${text?.substring(0, 30)}..."`);
 
+            // 🎯 Calculate duration from phoneme timestamps (more accurate than hardcoded value)
+            const lastPhonemeTime = phonemes.length > 0 
+              ? Math.max(...phonemes.map((p: { time: number }) => p.time)) 
+              : 0;
+            // Add 500ms buffer to last phoneme time, minimum 2000ms for short chunks
+            const estimatedDuration = Math.max(2000, lastPhonemeTime + 500);
+            
+            console.log(`[PHONEME STREAM] ⏱️ Duration estimate: ${estimatedDuration}ms (last phoneme: ${lastPhonemeTime}ms)`);
+
             // 🎭 Enqueue through Smart TTS Queue with avatar state validation
             const enqueueResult = smartTTSQueueRef.current.enqueue({
               id: `tts-chunk-${chunkIndex}`,
               chunkIndex: chunkIndex ?? 0, // 🔢 Pass chunkIndex for ordering
               audio,
               phonemes,
-              duration: 1000, // Estimate 1 second per chunk (actual duration from Unity)
+              duration: estimatedDuration, // 🎯 Use phoneme-based duration estimate
               timestamp: Date.now()
             });
 
