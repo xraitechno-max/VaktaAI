@@ -597,13 +597,21 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
             // 🎯 Use phoneme-based method if phonemes available
             if (phonemes.length > 0 && usePhonemeTTS) {
               console.log('[Avatar] 🎵 Sending phoneme-based lip-sync - Phonemes:', phonemes.length);
+
+              // 🎯 CENTRALIZED OFFSET: Match SmartTTSQueue's Unity audio delay compensation
+              const UNITY_AUDIO_INIT_DELAY_MS = 180;
+              const adjustedPhonemes = phonemes.map(p => ({
+                ...p,
+                time: Math.max(0, p.time - UNITY_AUDIO_INIT_DELAY_MS)
+              }));
+
               // Convert blob to base64 for phoneme method
               const audioBase64 = await new Promise<string>((resolve) => {
                 const reader = new FileReader();
                 reader.onloadend = () => resolve(reader.result?.toString().split(',')[1] || '');
                 reader.readAsDataURL(audioBlob);
               });
-              avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, phonemes, messageId);
+              avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, adjustedPhonemes, messageId);
             } else {
               console.log('[Avatar] 🔊 Sending amplitude-based lip-sync (no phonemes)');
               await avatarRef.current.sendAudioToAvatar(audioBlob);
@@ -629,7 +637,15 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
           // 🎯 Use phoneme-based method if phonemes available
           if (phonemes.length > 0 && usePhonemeTTS) {
             console.log('🔍🔍🔍 [Avatar] 🎵🎵🎵 SENDING PHONEME-BASED LIP-SYNC - Phonemes:', phonemes.length);
-            console.log('🔍🔍🔍 [Avatar] First 3 phonemes being sent:', JSON.stringify(phonemes.slice(0, 3)));
+
+            // 🎯 CENTRALIZED OFFSET: Match SmartTTSQueue's Unity audio delay compensation
+            const UNITY_AUDIO_INIT_DELAY_MS = 180;
+            const adjustedPhonemes = phonemes.map(p => ({
+              ...p,
+              time: Math.max(0, p.time - UNITY_AUDIO_INIT_DELAY_MS)
+            }));
+
+            console.log('🔍🔍🔍 [Avatar] First 3 adjusted phonemes:', JSON.stringify(adjustedPhonemes.slice(0, 3)));
 
             // Convert blob to base64 for phoneme method
             const audioBase64 = await new Promise<string>((resolve) => {
@@ -641,7 +657,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
             console.log('🔍 DEBUG: Base64 audio length:', audioBase64.length);
             console.log('🔍 DEBUG: Calling sendAudioWithPhonemesToAvatar...');
 
-            avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, phonemes, messageId);
+            avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, adjustedPhonemes, messageId);
 
             console.log('🔍 DEBUG: ✅ sendAudioWithPhonemesToAvatar called successfully!');
           } else {
@@ -858,11 +874,19 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
             if (phonemes.length > 0) {
               console.log('[Avatar] 🎵 Sending SSML phoneme-based lip-sync - Phonemes:', phonemes.length);
 
-              // 🎯 FIX: Trust phoneme timestamps directly from Azure TTS
-              // Removed 180ms offset - Azure timestamps are accurate for HTML5 Audio
-              console.log('[Avatar] 🎤 Sending phonemes directly to Unity:', {
-                firstPhonemeTime: phonemes[0]?.time || 0,
-                lastPhonemeTime: phonemes[phonemes.length - 1]?.time || 0,
+              // 🎯 CENTRALIZED OFFSET: Match SmartTTSQueue's Unity audio delay compensation
+              // Unity WebGL has ~150-200ms audio initialization overhead
+              // Subtract offset to make visemes arrive EARLIER to sync with delayed audio playback
+              const UNITY_AUDIO_INIT_DELAY_MS = 180;
+              const adjustedPhonemes = phonemes.map((p: { time: number; blendshape: string; weight: number }) => ({
+                ...p,
+                time: Math.max(0, p.time - UNITY_AUDIO_INIT_DELAY_MS)
+              }));
+
+              console.log('[Avatar] 🎤 Sending phonemes with Unity delay compensation:', {
+                originalFirst: phonemes[0]?.time || 0,
+                adjustedFirst: adjustedPhonemes[0]?.time || 0,
+                offset: `-${UNITY_AUDIO_INIT_DELAY_MS}ms`,
                 totalPhonemes: phonemes.length
               });
 
@@ -871,7 +895,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
                 reader.onloadend = () => resolve(reader.result?.toString().split(',')[1] || '');
                 reader.readAsDataURL(audioBlob);
               });
-              avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, phonemes, messageId);
+              avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, adjustedPhonemes, messageId);
             } else {
               console.log('[Avatar] 🔊 Sending amplitude-based lip-sync (no phonemes)');
               await avatarRef.current.sendAudioToAvatar(audioBlob);
@@ -895,11 +919,19 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
           if (phonemes.length > 0) {
             console.log('[Avatar] 🎵 Sending SSML phoneme-based lip-sync - Phonemes:', phonemes.length);
 
-            // 🎯 FIX: Trust phoneme timestamps directly from Azure TTS
-            // Removed 180ms offset - Azure timestamps are accurate for HTML5 Audio
-            console.log('[Avatar] 🎤 Sending phonemes directly to Unity:', {
-              firstPhonemeTime: phonemes[0]?.time || 0,
-              lastPhonemeTime: phonemes[phonemes.length - 1]?.time || 0,
+            // 🎯 CENTRALIZED OFFSET: Match SmartTTSQueue's Unity audio delay compensation
+            // Unity WebGL has ~150-200ms audio initialization overhead
+            // Subtract offset to make visemes arrive EARLIER to sync with delayed audio playback
+            const UNITY_AUDIO_INIT_DELAY_MS = 180;
+            const adjustedPhonemes = phonemes.map((p: { time: number; blendshape: string; weight: number }) => ({
+              ...p,
+              time: Math.max(0, p.time - UNITY_AUDIO_INIT_DELAY_MS)
+            }));
+
+            console.log('[Avatar] 🎤 Sending phonemes with Unity delay compensation:', {
+              originalFirst: phonemes[0]?.time || 0,
+              adjustedFirst: adjustedPhonemes[0]?.time || 0,
+              offset: `-${UNITY_AUDIO_INIT_DELAY_MS}ms`,
               totalPhonemes: phonemes.length
             });
 
@@ -908,7 +940,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
               reader.onloadend = () => resolve(reader.result?.toString().split(',')[1] || '');
               reader.readAsDataURL(audioBlob);
             });
-            avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, phonemes, messageId);
+            avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, adjustedPhonemes, messageId);
           } else {
             console.log('[Avatar] 🔊 Sending amplitude-based lip-sync (no phonemes)');
             await avatarRef.current.sendAudioToAvatar(audioBlob);
@@ -1464,20 +1496,16 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
                     clearAudioSafetyTimeout();
                     setPlayingAudio(null);
 
-                    // 🎯 CRITICAL FIX: Notify SmartTTSQueue that playback finished
-                    // This allows the queue to process the next chunk
-                    if (msg.id) {
-                      voiceTutor.notifyAudioEnded(msg.id);
-                    }
+                    // 🎯 CRITICAL FIX: Always notify SmartTTSQueue that playback finished
+                    // Use 'html5-fallback' if no ID (SmartTTSQueue handles this case)
+                    voiceTutor.notifyAudioEnded(msg.id || 'html5-fallback');
                   } else if (msg.type === 'AUDIO_FAILED') {
                     console.error('[TTS] Unity audio playback failed:', msg.error);
                     clearAudioSafetyTimeout();
                     setPlayingAudio(null);
 
-                    // Also notify queue on failure to prevent stalling
-                    if (msg.id) {
-                      voiceTutor.notifyAudioEnded(msg.id);
-                    }
+                    // Always notify queue on failure to prevent stalling
+                    voiceTutor.notifyAudioEnded(msg.id || 'html5-fallback');
                   }
                 }}
               />
