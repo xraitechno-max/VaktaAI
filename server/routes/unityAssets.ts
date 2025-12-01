@@ -1,9 +1,10 @@
-import { Router } from 'express';
+import { Router, Response } from 'express';
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { GetObjectCommand, HeadObjectCommand, PutObjectCommand } from '@aws-sdk/client-s3';
 import { s3Client } from '../objectStorage';
 import * as fs from 'fs';
 import * as path from 'path';
+import { Readable } from 'stream';
 
 const router = Router();
 
@@ -140,6 +141,100 @@ router.get('/urls', async (req, res) => {
       success: false,
       error: 'Failed to generate Unity asset URLs',
     });
+  }
+});
+
+/**
+ * GET /api/unity-assets/file/:filename
+ * Proxy endpoint to stream Unity files from S3 (bypasses CORS)
+ */
+router.get('/file/:filename', async (req, res) => {
+  const filename = req.params.filename;
+  
+  // Validate filename
+  if (!Object.keys(UNITY_FILES).includes(filename)) {
+    return res.status(404).json({ error: 'File not found' });
+  }
+  
+  try {
+    const fullS3Key = UNITY_S3_PREFIX + filename;
+    console.log(`[Unity S3] 📥 Streaming ${filename} from S3...`);
+    
+    const command = new GetObjectCommand({
+      Bucket: BUCKET_NAME,
+      Key: fullS3Key,
+    });
+    
+    const response = await s3Client.send(command);
+    
+    if (!response.Body) {
+      return res.status(404).json({ error: 'File not found in S3' });
+    }
+    
+    // Set headers for Unity WebGL
+    res.setHeader('Content-Type', response.ContentType || 'application/octet-stream');
+    res.setHeader('Content-Length', response.ContentLength?.toString() || '0');
+    res.setHeader('Content-Encoding', 'gzip');
+    res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    
+    // Stream the file
+    const stream = response.Body as Readable;
+    stream.pipe(res);
+    
+    stream.on('end', () => {
+      console.log(`[Unity S3] ✅ Finished streaming ${filename}`);
+    });
+    
+    stream.on('error', (err) => {
+      console.error(`[Unity S3] ❌ Error streaming ${filename}:`, err);
+      if (!res.headersSent) {
+        res.status(500).json({ error: 'Failed to stream file' });
+      }
+    });
+  } catch (error: any) {
+    console.error(`[Unity S3] ❌ Error fetching ${filename}:`, error);
+    res.status(500).json({ error: 'Failed to fetch file from S3' });
+  }
+});
+
+/**
+ * POST /api/unity-assets/refresh
+ * Force refresh all presigned URLs (clear cache)
+ */
+router.post('/refresh', async (req, res) => {
+  try {
+    console.log('[Unity S3] 🔄 Force refreshing all presigned URLs...');
+    
+    // Clear cache
+    Object.keys(urlCache).forEach(key => delete urlCache[key]);
+    
+    // Generate fresh URLs
+    const urls: Record<string, string> = {};
+    for (const s3Key of Object.keys(UNITY_FILES)) {
+      const fullS3Key = UNITY_S3_PREFIX + s3Key;
+      
+      const command = new GetObjectCommand({
+        Bucket: BUCKET_NAME,
+        Key: fullS3Key,
+      });
+      
+      const presignedUrl = await getSignedUrl(s3Client, command, {
+        expiresIn: URL_EXPIRY_SECONDS,
+      });
+      
+      urlCache[s3Key] = {
+        url: presignedUrl,
+        expiresAt: Date.now() + (URL_EXPIRY_SECONDS * 1000),
+      };
+      
+      urls[s3Key] = presignedUrl;
+      console.log(`[Unity S3] ✅ Refreshed URL for ${s3Key}`);
+    }
+    
+    res.json({ success: true, message: 'URLs refreshed', urls });
+  } catch (error) {
+    console.error('[Unity S3] Error refreshing URLs:', error);
+    res.status(500).json({ success: false, error: 'Failed to refresh URLs' });
   }
 });
 

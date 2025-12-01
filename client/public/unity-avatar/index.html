@@ -719,51 +719,26 @@
         updateBannerVisibility();
       }
 
-      // 🚀 Unity S3 CDN Configuration
+      // 🚀 Unity S3 CDN Configuration via Server Proxy
       var buildUrl = "Build";
       var loaderUrl = buildUrl + "/Build.loader.js"; // Loader always local (small file)
       
-      // Fetch S3 presigned URLs for fast CDN loading
-      console.log('[Unity] 📡 Fetching S3 presigned URLs...');
-      fetch('/api/unity-assets/urls')
-        .then(res => res.json())
-        .then(data => {
-          if (!data.success || !data.urls) {
-            throw new Error('Failed to fetch Unity S3 URLs');
-          }
-          
-          console.log('[Unity] ✅ S3 URLs fetched successfully');
-          
-          var config = {
-            dataUrl: data.urls['Build.data.gz'],
-            frameworkUrl: data.urls['Build.framework.js.gz'],
-            codeUrl: data.urls['Build.wasm.gz'],
-            streamingAssetsUrl: "StreamingAssets",
-            companyName: "VaktaAI",
-            productName: "AI Tutor Avatar",
-            productVersion: "1.0",
-            showBanner: unityShowBanner,
-          };
-          
-          loadUnityWithConfig(config);
-        })
-        .catch(err => {
-          console.warn('[Unity] ⚠️ S3 fetch failed, falling back to local files:', err);
-          
-          // Fallback to local files
-          var config = {
-            dataUrl: buildUrl + "/Build.data.gz",
-            frameworkUrl: buildUrl + "/Build.framework.js.gz",
-            codeUrl: buildUrl + "/Build.wasm.gz",
-            streamingAssetsUrl: "StreamingAssets",
-            companyName: "VaktaAI",
-            productName: "AI Tutor Avatar",
-            productVersion: "1.0",
-            showBanner: unityShowBanner,
-          };
-          
-          loadUnityWithConfig(config);
-        });
+      // Use server proxy endpoints for Unity files (bypasses CORS issues)
+      console.log('[Unity] 📡 Using server proxy for Unity files...');
+      
+      var config = {
+        dataUrl: '/api/unity-assets/file/Build.data.gz',
+        frameworkUrl: '/api/unity-assets/file/Build.framework.js.gz',
+        codeUrl: '/api/unity-assets/file/Build.wasm.gz',
+        streamingAssetsUrl: "StreamingAssets",
+        companyName: "VaktaAI",
+        productName: "AI Tutor Avatar",
+        productVersion: "1.0",
+        showBanner: unityShowBanner,
+      };
+      
+      console.log('[Unity] ✅ Using proxy URLs:', config.dataUrl);
+      loadUnityWithConfig(config);
       
       // Extracted Unity loading function
       function loadUnityWithConfig(config) {
