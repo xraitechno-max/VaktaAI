@@ -191,7 +191,43 @@ export class TutorSessionService {
     user: User
   ): Promise<TutorSession> {
     const existing = await storage.getTutorSession(chatId);
+    
     if (existing) {
+      // 🎯 FIX: Check if user's language preference has changed since session was created
+      // Map user's language preference to expected format
+      let currentLanguage = user.languagePreference || 'english';
+      if (currentLanguage === 'hindi') {
+        currentLanguage = 'hinglish';
+      }
+      
+      const sessionLanguage = existing.profileSnapshot?.preferredLanguage || 'english';
+      
+      // If language preference changed, update the session's profile snapshot
+      if (currentLanguage !== sessionLanguage) {
+        console.log('[TutorSession] 🔄 Language preference changed:', {
+          old: sessionLanguage,
+          new: currentLanguage,
+          chatId
+        });
+        
+        // Update profile snapshot with new language
+        const updatedProfileSnapshot = {
+          ...existing.profileSnapshot,
+          preferredLanguage: currentLanguage
+        };
+        
+        // Update session in storage
+        await storage.updateTutorSession(chatId, {
+          profileSnapshot: updatedProfileSnapshot
+        });
+        
+        // Return updated session
+        return {
+          ...existing,
+          profileSnapshot: updatedProfileSnapshot
+        };
+      }
+      
       return existing;
     }
 
