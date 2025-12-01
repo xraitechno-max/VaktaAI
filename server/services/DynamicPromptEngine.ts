@@ -160,11 +160,17 @@ export class DynamicPromptEngine {
   }
 
   private getBaseLanguagePrompt(detected: DetectedLanguage, preferred?: DetectedLanguage): string {
-    const targetLanguage = preferred || detected;
+    // 🎯 NEW LOGIC: Default English, switch only when user speaks Hindi/Hinglish
+    // User's DETECTED language (what they actually typed) takes precedence
+    // Profile preference is ONLY for greeting, not for response language
     
-    if (targetLanguage === 'hindi' || targetLanguage === 'hinglish') {
+    // If user is typing in Hindi/Hinglish, respond in Hindi/Hinglish
+    // Otherwise, always respond in English (default)
+    if (detected === 'hindi' || detected === 'hinglish') {
+      console.log('[DynamicPrompt] 🇮🇳 User speaking Hindi/Hinglish - responding in Hindi');
       return SYSTEM_PROMPTS.hindi_hinglish.core;
     } else {
+      console.log('[DynamicPrompt] 🇬🇧 User speaking English - responding in English (default)');
       return SYSTEM_PROMPTS.english_pure.core;
     }
   }
