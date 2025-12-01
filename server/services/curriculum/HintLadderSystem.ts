@@ -42,6 +42,16 @@ const HINT_LEVEL_CONFIGS: HintLevelConfig[] = [
     name: 'Direct Explanation',
     description: 'Full step-by-step solution with explanation',
   },
+  {
+    level: 7,
+    name: 'Extended Analysis',
+    description: 'Deep dive with JEE/NEET exam strategies and common pitfalls',
+  },
+  {
+    level: 8,
+    name: 'Comprehensive Mastery',
+    description: 'Complete solution with variations, extensions, and exam tips',
+  },
 ];
 
 const HINT_TEMPLATES: Record<HintLevel, Record<SubjectCode, string[]>> = {
@@ -185,14 +195,55 @@ const HINT_TEMPLATES: Record<HintLevel, Record<SubjectCode, string[]>> = {
       "Full solution for this {topic} problem:\n\n**Concept Review:** Key principles involved\n**Step-by-step Analysis:**\n- Break down the process\n- Apply genetic/metabolic principles\n- Calculate ratios/quantities\n\n**Conclusion:** Answer with explanation",
     ],
   },
+  7: {
+    physics: [
+      "**Extended Analysis for {topic}:**\n\n**Solution:** {problem}\n\n**JEE/NEET Exam Strategy:**\n- Common question patterns\n- Time-saving shortcuts\n- Typical numerical values to expect\n\n**Common Pitfalls:**\n- Sign errors in direction\n- Unit conversion mistakes\n- Forgetting constraints\n\n**Quick Check:** Verify dimensions match",
+      "**Deep Dive: {topic}**\n\n**Conceptual Understanding:**\n- Why this principle works\n- Physical intuition behind equations\n\n**Problem Variations:**\n- What if friction were present?\n- What if mass changed?\n\n**Exam Tips:** Practice similar problems from past papers",
+    ],
+    chemistry: [
+      "**Extended Analysis for {topic}:**\n\n**Complete Solution:** {problem}\n\n**JEE/NEET Strategy:**\n- Memory tricks for reactions\n- Common exam patterns\n- Numerical shortcuts\n\n**Watch Out For:**\n- Balancing coefficient errors\n- Wrong oxidation states\n- Limiting reagent confusion\n\n**Verification:** Always check atom balance",
+      "**Deep Dive: {topic}**\n\n**Conceptual Foundation:**\n- Electronic basis of reactions\n- Energy considerations\n\n**Related Concepts:**\n- How this connects to other chapters\n- Interdisciplinary applications\n\n**Past Year Patterns:** Focus on calculation-heavy variants",
+    ],
+    math: [
+      "**Extended Analysis for {topic}:**\n\n**Full Solution:** {problem}\n\n**JEE Strategy:**\n- Alternative approaches\n- Faster calculation methods\n- Graphical shortcuts\n\n**Common Errors:**\n- Domain restrictions forgotten\n- Sign errors in algebra\n- Missing solutions\n\n**Quick Verify:** Substitute back to check",
+      "**Deep Dive: {topic}**\n\n**Mathematical Insight:**\n- Geometric interpretation\n- Connection to other topics\n\n**Variations to Practice:**\n- Parametric forms\n- Boundary conditions\n\n**Exam Focus:** Master the standard forms",
+    ],
+    biology: [
+      "**Extended Analysis for {topic}:**\n\n**Complete Explanation:** {problem}\n\n**NEET Exam Focus:**\n- High-yield facts\n- Diagram-based questions\n- Assertion-reason patterns\n\n**Common Confusions:**\n- Similar-sounding terms\n- Process sequence errors\n- Ratio calculation mistakes\n\n**Memory Aid:** Use mnemonics for pathways",
+      "**Deep Dive: {topic}**\n\n**Biological Significance:**\n- Why this process evolved\n- Clinical/ecological relevance\n\n**Connected Concepts:**\n- How systems integrate\n- Feedback mechanisms\n\n**NEET Pattern:** Focus on NCERT diagrams and flowcharts",
+    ],
+  },
+  8: {
+    physics: [
+      "**Comprehensive Mastery: {topic}**\n\n**Complete Solution:** {problem}\n\n**All Approaches:**\n1. Energy method\n2. Force analysis\n3. Momentum approach\n4. Dimensional analysis\n\n**Variations & Extensions:**\n- Non-ideal conditions\n- Advanced scenarios\n- Numerical problems with twists\n\n**JEE Advanced Level:**\n- Multi-concept integration\n- Assertion-reason type\n\n**Final Tips:** Practice 10+ similar problems for mastery",
+      "**Master Level: {topic}**\n\n**Problem:** {problem}\n\n**Expert Solution:**\n- Most elegant approach\n- Time optimization\n- Error prevention\n\n**Advanced Extensions:**\n- Relativistic corrections (if applicable)\n- Real-world deviations\n\n**Competition Prep:**\n- Olympiad-level variations\n- Multi-step problem chains",
+    ],
+    chemistry: [
+      "**Comprehensive Mastery: {topic}**\n\n**Full Solution:** {problem}\n\n**All Methods:**\n1. Ion-electron method\n2. Oxidation number method\n3. Shortcut formulas\n\n**Variations:**\n- Acidic vs basic medium\n- Disproportionation\n- Comproportionation\n\n**JEE Advanced Focus:**\n- Electrochemistry links\n- Thermodynamic coupling\n\n**Practice Plan:** Solve past 10 years JEE questions on this topic",
+      "**Master Level: {topic}**\n\n**Problem:** {problem}\n\n**Expert Analysis:**\n- Mechanism understanding\n- Reaction intermediates\n\n**Beyond NCERT:**\n- Inorganic correlations\n- Organic applications\n\n**Competition Edge:**\n- Time-efficient approaches\n- Pattern recognition",
+    ],
+    math: [
+      "**Comprehensive Mastery: {topic}**\n\n**Solution:** {problem}\n\n**All Solution Methods:**\n1. Direct approach\n2. Substitution method\n3. Graphical interpretation\n4. Calculus-based (if applicable)\n\n**Advanced Variations:**\n- General case solutions\n- Special cases\n- Limiting behavior\n\n**JEE Advanced Prep:**\n- Integer-type questions\n- Matrix-match patterns\n\n**Mastery Path:** Build speed with timed practice",
+      "**Master Level: {topic}**\n\n**Problem:** {problem}\n\n**Expert Insight:**\n- Underlying theory\n- Proof techniques\n\n**Extensions:**\n- Higher dimensions\n- Complex number analogues\n\n**Competition Tips:**\n- Pattern recognition\n- Elegant solutions",
+    ],
+    biology: [
+      "**Comprehensive Mastery: {topic}**\n\n**Complete Explanation:** {problem}\n\n**Integrated Understanding:**\n1. Molecular level\n2. Cellular level\n3. Organism level\n4. Ecological perspective\n\n**NEET Mastery:**\n- Diagram-based analysis\n- Flow chart questions\n- Match-the-following\n\n**Beyond NCERT:**\n- Research connections\n- Medical applications\n\n**Study Strategy:** Create concept maps linking all related topics",
+      "**Master Level: {topic}**\n\n**Topic:** {problem}\n\n**Expert Knowledge:**\n- Latest research findings\n- Clinical significance\n\n**Interdisciplinary Links:**\n- Physics of biology\n- Chemistry of life\n\n**Competition Edge:**\n- Olympiad-level depth\n- Assertion-reason mastery",
+    ],
+  },
 };
 
 const MODE_CONSTRAINTS: Record<TeachingMode, { entryLevel: HintLevel; maxLevel: HintLevel }> = {
   socratic: { entryLevel: 1, maxLevel: 3 },
-  direct: { entryLevel: 6, maxLevel: 6 },
-  scaffolded_direct: { entryLevel: 3, maxLevel: 6 },
+  direct: { entryLevel: 6, maxLevel: 8 },
+  scaffolded_direct: { entryLevel: 3, maxLevel: 8 },
   revision_mode: { entryLevel: 4, maxLevel: 6 },
-  worked_example: { entryLevel: 5, maxLevel: 6 },
+  worked_example: { entryLevel: 5, maxLevel: 8 },
+  analogical: { entryLevel: 2, maxLevel: 5 },
+  case_study: { entryLevel: 4, maxLevel: 7 },
+  spaced_retrieval: { entryLevel: 2, maxLevel: 5 },
+  elaborative: { entryLevel: 1, maxLevel: 4 },
+  metacognitive: { entryLevel: 2, maxLevel: 5 },
 };
 
 export class HintLadderSystem {
@@ -323,6 +374,10 @@ export class HintLadderSystem {
         return `Let me show you a similar solved example for ${topic}...`;
       case 6:
         return `Here's the complete solution with step-by-step explanation for ${topic}...`;
+      case 7:
+        return `Extended analysis for ${topic} with JEE/NEET exam strategies, common pitfalls, and verification tips...`;
+      case 8:
+        return `Comprehensive mastery guide for ${topic} with all solution approaches, variations, extensions, and competition-level prep...`;
       default:
         return `${name}: Here's a hint for ${topic}`;
     }

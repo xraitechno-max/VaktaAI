@@ -990,9 +990,19 @@ export const documentReferenceLinks = pgTable('document_reference_links', {
 // ========== AI MENTOR CURRICULUM SYSTEM TYPES ==========
 
 // Teaching Mode Types
-export type TeachingMode = 'socratic' | 'direct' | 'scaffolded_direct' | 'revision_mode' | 'worked_example';
+export type TeachingMode = 
+  | 'socratic'           // Guided discovery through questions
+  | 'direct'             // Clear, efficient explanation
+  | 'scaffolded_direct'  // Step-by-step structured guidance
+  | 'revision_mode'      // Quick review for exam prep
+  | 'worked_example'     // Learn by solving similar problems
+  | 'analogical'         // Explain using relatable analogies
+  | 'case_study'         // Real-world application examples
+  | 'spaced_retrieval'   // Active recall with spacing
+  | 'elaborative'        // Deep "why" and "how" questioning
+  | 'metacognitive';     // Teaching self-reflection on learning
 
-export type HintLevel = 1 | 2 | 3 | 4 | 5 | 6;
+export type HintLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8;
 
 export type EmotionalState = 'confident' | 'confused' | 'frustrated' | 'bored' | 'neutral';
 

@@ -71,6 +71,17 @@ Ultra Pro AI Tutor Phase 1 implemented with 4 core components:
 - **DynamicPromptEngine Integration**: Enhanced with knowledge enrichment sections including NCERT citations, formula injection, prerequisite checks, and misconception warnings
 - **Key Files**: server/services/curriculum/KnowledgeIntelligenceService.ts, server/services/curriculum/FormulaBankService.ts, server/services/DynamicPromptEngine.ts
 
+### Phase 2: Pedagogical & Cognitive Foundations (Dec 2025) - IN PROGRESS
+Enhanced pedagogical components for adaptive tutoring:
+- **StudentCognitiveModelService with Deep Knowledge Tracing (DKT)**: Hybrid BKT+DKT implementation combining:
+  - **Bayesian Knowledge Tracing (BKT)**: P(L_0) prior, P(T) transition, P(G) guess, P(S) slip parameters with subject-specific tuning
+  - **Deep Knowledge Tracing (DKT)**: Sequence-based learning with hidden state vectors (64-dim), temporal attention mechanisms, forgetting curve modeling (Ebbinghaus decay), knowledge transfer across related topics via curriculum graph, and cross-subject similarity matrix
+  - **DKT Features**: `runDeepKnowledgeTracing()` computes hidden states, temporal factors (recency, spacing, consistency), knowledge transfer bonuses; `updateMasteryWithDKT()` fuses BKT and DKT predictions (60/40 weighted); `getKnowledgeGaps()` and `getOptimalReviewSchedule()` for personalized spaced repetition; `buildEnhancedCognitiveProfile()` with learning momentum and transfer opportunities
+- **TeachingModeEngine**: Expanded from 5 to 10 teaching strategies (socratic, direct, scaffolded_direct, revision_mode, worked_example, analogical, case_study, spaced_retrieval, elaborative, metacognitive)
+- **HintLadderSystem**: Extended from 6 to 8 hint levels with Level 7 (Extended Analysis - JEE/NEET strategies) and Level 8 (Comprehensive Mastery - all approaches + competition prep). Subject-specific templates for Physics, Chemistry, Math, Biology
+- **MisconceptionDetectorService**: Pattern-based misconception detection using trigger patterns from misconception_database, confidence scoring, severity-based prioritization, automated remediation plan generation with teaching mode recommendations
+- **Key Files**: server/services/curriculum/StudentCognitiveModelService.ts, server/services/curriculum/TeachingModeEngine.ts, server/services/curriculum/HintLadderSystem.ts, server/services/curriculum/MisconceptionDetectorService.ts
+
 ## External Dependencies
 
 ### Third-Party APIs
