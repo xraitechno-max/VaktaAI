@@ -858,17 +858,12 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
             if (phonemes.length > 0) {
               console.log('[Avatar] 🎵 Sending SSML phoneme-based lip-sync - Phonemes:', phonemes.length);
 
-              // 🎯 CRITICAL FIX: Adjust phoneme timestamps for Unity audio delay
-              // Unity WebGL audio has ~150-200ms initialization delay on low-end devices
-              const UNITY_AUDIO_START_OFFSET_MS = 180;
-              const adjustedPhonemes = phonemes.map((p: any) => ({
-                ...p,
-                time: Math.max(0, p.time - UNITY_AUDIO_START_OFFSET_MS)
-              }));
-              console.log('[Avatar] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay:', {
-                originalFirst: phonemes[0]?.time || 0,
-                adjustedFirst: adjustedPhonemes[0]?.time || 0,
-                fixedOffset: UNITY_AUDIO_START_OFFSET_MS
+              // 🎯 FIX: Trust phoneme timestamps directly from Azure TTS
+              // Removed 180ms offset - Azure timestamps are accurate for HTML5 Audio
+              console.log('[Avatar] 🎤 Sending phonemes directly to Unity:', {
+                firstPhonemeTime: phonemes[0]?.time || 0,
+                lastPhonemeTime: phonemes[phonemes.length - 1]?.time || 0,
+                totalPhonemes: phonemes.length
               });
 
               const audioBase64 = await new Promise<string>((resolve) => {
@@ -876,7 +871,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
                 reader.onloadend = () => resolve(reader.result?.toString().split(',')[1] || '');
                 reader.readAsDataURL(audioBlob);
               });
-              avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, adjustedPhonemes, messageId);
+              avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, phonemes, messageId);
             } else {
               console.log('[Avatar] 🔊 Sending amplitude-based lip-sync (no phonemes)');
               await avatarRef.current.sendAudioToAvatar(audioBlob);
@@ -900,17 +895,12 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
           if (phonemes.length > 0) {
             console.log('[Avatar] 🎵 Sending SSML phoneme-based lip-sync - Phonemes:', phonemes.length);
 
-            // 🎯 CRITICAL FIX: Adjust phoneme timestamps for Unity audio delay
-            // Unity WebGL audio has ~150-200ms initialization delay on low-end devices
-            const UNITY_AUDIO_START_OFFSET_MS = 180;
-            const adjustedPhonemes = phonemes.map((p: any) => ({
-              ...p,
-              time: Math.max(0, p.time - UNITY_AUDIO_START_OFFSET_MS)
-            }));
-            console.log('[Avatar] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay:', {
-              originalFirst: phonemes[0]?.time || 0,
-              adjustedFirst: adjustedPhonemes[0]?.time || 0,
-              fixedOffset: UNITY_AUDIO_START_OFFSET_MS
+            // 🎯 FIX: Trust phoneme timestamps directly from Azure TTS
+            // Removed 180ms offset - Azure timestamps are accurate for HTML5 Audio
+            console.log('[Avatar] 🎤 Sending phonemes directly to Unity:', {
+              firstPhonemeTime: phonemes[0]?.time || 0,
+              lastPhonemeTime: phonemes[phonemes.length - 1]?.time || 0,
+              totalPhonemes: phonemes.length
             });
 
             const audioBase64 = await new Promise<string>((resolve) => {
@@ -918,7 +908,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
               reader.onloadend = () => resolve(reader.result?.toString().split(',')[1] || '');
               reader.readAsDataURL(audioBlob);
             });
-            avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, adjustedPhonemes, messageId);
+            avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, phonemes, messageId);
           } else {
             console.log('[Avatar] 🔊 Sending amplitude-based lip-sync (no phonemes)');
             await avatarRef.current.sendAudioToAvatar(audioBlob);

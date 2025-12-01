@@ -306,27 +306,20 @@ export class SmartTTSQueue {
       estimatedDuration
     });
 
-    // 🎯 CRITICAL FIX: Adjust phoneme timestamps for Unity audio playback delay
-    // Unity WebGL audio has ~150-200ms initialization delay on low-end devices
-    const UNITY_AUDIO_START_OFFSET_MS = 180; // Empirical average delay for Unity WebGL audio init
-
-    // 🎯 ADJUST PHONEME TIMESTAMPS: Subtract Unity delay from all phonemes
-    const adjustedPhonemes = chunk.phonemes.map(p => ({
-      ...p,
-      time: Math.max(0, p.time - UNITY_AUDIO_START_OFFSET_MS) // Ensure no negative timestamps
-    }));
-
-    console.log('[TTS Queue] 🎯 Phoneme timestamps PRE-ADJUSTED for Unity delay:', {
-      originalFirst: chunk.phonemes[0]?.time || 0,
-      adjustedFirst: adjustedPhonemes[0]?.time || 0,
-      fixedOffset: UNITY_AUDIO_START_OFFSET_MS,
+    // 🎯 FIX: Trust phoneme timestamps directly from Azure TTS
+    // Removed 180ms offset adjustment - was causing timing issues
+    // Azure timestamps are already accurate for HTML5 Audio playback
+    
+    console.log('[TTS Queue] 🎤 Sending phonemes directly to Unity:', {
+      firstPhonemeTime: chunk.phonemes[0]?.time || 0,
+      lastPhonemeTime: chunk.phonemes[chunk.phonemes.length - 1]?.time || 0,
       totalPhonemes: chunk.phonemes.length
     });
 
-    // Send to Unity avatar with ADJUSTED phonemes for perfect sync
+    // Send to Unity avatar with original phoneme timestamps
     this.avatarRef.current?.sendAudioWithPhonemesToAvatar(
       chunk.audio,
-      adjustedPhonemes, // 🎯 USE ADJUSTED TIMESTAMPS
+      chunk.phonemes, // 🎯 USE ORIGINAL TIMESTAMPS - no adjustment needed
       chunk.id
     );
 

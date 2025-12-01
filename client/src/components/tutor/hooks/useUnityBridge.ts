@@ -207,6 +207,14 @@ export function useUnityBridge({
           console.log('[Unity Bridge] ✅ Audio playback started:', payload?.id);
           break;
 
+        case 'AUDIO_EVENT':
+          // 🎯 FIX: Handle AUDIO_EVENT from Unity HTML5 fallback (state: 'ended')
+          if (payload?.state === 'ended') {
+            console.log('[Unity Bridge] ✅ Audio playback ended (via AUDIO_EVENT):', payload?.id);
+            onMessage?.({ type: 'AUDIO_ENDED', id: payload?.id });
+          }
+          break;
+
         case 'AUDIO_ENDED':
           // Audio playback completed in Unity
           console.log('[Unity Bridge] ✅ Audio playback ended:', payload?.id);
