@@ -91,14 +91,22 @@ export default function Tutor() {
   // Filter subjects based on user's profile - only show subjects user has selected
   // This includes core AI mentor subjects: physics, chemistry, maths, biology
   const filteredSubjects = useMemo(() => {
+    console.log('[SUBJECT FILTER DEBUG]', {
+      userSubjects: user?.subjects,
+      allSubjects: subjects.map(s => s.id)
+    });
+    
     if (!user?.subjects || user.subjects.length === 0) {
       // If no subjects set, show all core AI mentor subjects
+      console.log('[SUBJECT FILTER] No user subjects, showing all');
       return subjects;
     }
     
     // Filter to only include subjects that are in user's profile AND are core AI mentor subjects
     const userSubjectsLower = user.subjects.map(s => s.toLowerCase());
     const filtered = subjects.filter(subject => userSubjectsLower.includes(subject.id.toLowerCase()));
+    
+    console.log('[SUBJECT FILTER] Filtered subjects:', filtered.map(s => s.id));
     
     // If no matching AI mentor subjects found, show all core subjects as fallback
     return filtered.length > 0 ? filtered : subjects;
