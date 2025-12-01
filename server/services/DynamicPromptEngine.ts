@@ -160,24 +160,19 @@ export class DynamicPromptEngine {
   }
 
   private getBaseLanguagePrompt(detected: DetectedLanguage, preferred?: DetectedLanguage): string {
-    // 🎯 NEW LOGIC: Default English, switch only when user speaks Hindi/Hinglish
-    // User's DETECTED language (what they actually typed) takes precedence
-    // Profile preference is ONLY for greeting, not for response language
+    // 🎯 FIXED LOGIC: Always respond in ENGLISH by default
+    // Indian students are learning in English medium schools
+    // Hindi/Hinglish creates confusion and inconsistency
+    // AI Mentor should maintain professional English throughout
     
-    // If user is typing in Hindi/Hinglish, respond in Hindi/Hinglish
-    // Otherwise, always respond in English (default)
-    if (detected === 'hindi' || detected === 'hinglish') {
-      console.log('[DynamicPrompt] 🇮🇳 User speaking Hindi/Hinglish - responding in Hindi');
-      return SYSTEM_PROMPTS.hindi_hinglish.core;
-    } else {
-      console.log('[DynamicPrompt] 🇬🇧 User speaking English - responding in English (default)');
-      return SYSTEM_PROMPTS.english_pure.core;
-    }
+    // Always use English - consistent, clear, and professional
+    console.log('[DynamicPrompt] 🇬🇧 Using English (consistent language policy)');
+    return SYSTEM_PROMPTS.english_pure.core;
   }
 
   private getIntentOverride(language: DetectedLanguage, intent: IntentType): string | null {
-    const isHindi = language === 'hindi' || language === 'hinglish';
-    const basePrompt = isHindi ? SYSTEM_PROMPTS.hindi_hinglish : SYSTEM_PROMPTS.english_pure;
+    // Always use English prompts for consistency
+    const basePrompt = SYSTEM_PROMPTS.english_pure;
     
     const override = (basePrompt.intent_overrides as Record<string, string>)[intent];
     return override || null;
