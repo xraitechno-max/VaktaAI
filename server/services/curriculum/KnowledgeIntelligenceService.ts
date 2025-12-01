@@ -1,16 +1,12 @@
 import { db } from '../../db.js';
-import { sql, and, eq, gte, inArray, desc, asc } from 'drizzle-orm';
-import { generateEmbedding } from '../embedding/embeddingService.js';
+import { and, eq, desc } from 'drizzle-orm';
 import { NCERTRetriever, type RetrievedChunk, type SearchFilters } from './NCERTRetriever.js';
+import { formulaBankService, type FormulaBankEntry } from './FormulaBankService.js';
 import {
-  ncertCurriculumChunks,
   topicPrerequisites,
-  formulaBank,
   studentTopicMastery,
   misconceptionDatabase,
-  type NCERTCurriculumChunk,
   type TopicPrerequisite,
-  type FormulaBank,
   type StudentTopicMastery,
   type MisconceptionDatabase,
   type ClassLevel,
@@ -22,7 +18,7 @@ export interface KnowledgeContext {
   classLevel: ClassLevel;
   topic: string;
   chapterNumber?: string;
-  examTarget?: 'board' | 'jee' | 'neet';
+  examTarget?: 'board' | 'jee' | 'neet' | 'jee_advanced';
   studentId?: string;
 }
 
@@ -212,32 +208,40 @@ export class KnowledgeIntelligenceService {
     }
   }
 
-  private async retrieveFormulas(context: KnowledgeContext): Promise<FormulaBank[]> {
+  private async retrieveFormulas(context: KnowledgeContext): Promise<FormulaBankEntry[]> {
     try {
-      const results = await db
-        .select()
-        .from(formulaBank)
-        .where(
-          and(
-            eq(formulaBank.subject, context.subject),
-            eq(formulaBank.topic, context.topic)
-          )
-        )
-        .orderBy(
-          desc(
-            context.examTarget === 'jee'
-              ? formulaBank.jeeWeightage
-              : context.examTarget === 'neet'
-              ? formulaBank.neetWeightage
-              : formulaBank.boardWeightage
-          )
-        )
-        .limit(MAX_FORMULAS);
+      const examTarget = this.mapExamTarget(context.examTarget);
+      
+      const formulas = await formulaBankService.getFormulasForTopic(
+        context.subject,
+        context.topic,
+        {
+          classLevel: context.classLevel,
+          examTarget,
+          limit: MAX_FORMULAS
+        }
+      );
 
-      return results;
+      return formulas;
     } catch (error) {
       console.error('[KnowledgeIntelligence] Formula retrieval error:', error);
       return [];
+    }
+  }
+
+  private mapExamTarget(
+    target?: 'board' | 'jee' | 'neet' | 'jee_advanced'
+  ): 'jee_main' | 'jee_advanced' | 'neet' | 'boards' {
+    switch (target) {
+      case 'jee':
+        return 'jee_main';
+      case 'jee_advanced':
+        return 'jee_advanced';
+      case 'neet':
+        return 'neet';
+      case 'board':
+      default:
+        return 'boards';
     }
   }
 
