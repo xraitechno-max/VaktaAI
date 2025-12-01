@@ -296,7 +296,8 @@ export class SmartTTSQueue {
     const lastPhonemeTime = chunk.phonemes.length > 0 
       ? Math.max(...chunk.phonemes.map(p => p.time)) 
       : 0;
-    const estimatedDuration = Math.max(chunk.duration, lastPhonemeTime + 500); // Add 500ms buffer
+    // Add 500ms buffer after last phoneme
+    const estimatedDuration = Math.max(chunk.duration, lastPhonemeTime + 500);
     
     console.log('[TTS Queue] ▶️ Playing on avatar:', {
       id: chunk.id,
@@ -306,20 +307,28 @@ export class SmartTTSQueue {
       estimatedDuration
     });
 
-    // 🎯 FIX: Trust phoneme timestamps directly from Azure TTS
-    // Removed 180ms offset adjustment - was causing timing issues
-    // Azure timestamps are already accurate for HTML5 Audio playback
+    // 🎯 CENTRALIZED OFFSET: Compensate for Unity WebGL audio initialization delay
+    // Azure phoneme timestamps start at ~50-100ms while audio playback begins immediately
+    // Unity WebGL has ~150-200ms audio initialization overhead
+    // Subtract offset to make visemes arrive EARLIER to sync with delayed audio playback
+    const UNITY_AUDIO_INIT_DELAY_MS = 180;
     
-    console.log('[TTS Queue] 🎤 Sending phonemes directly to Unity:', {
-      firstPhonemeTime: chunk.phonemes[0]?.time || 0,
-      lastPhonemeTime: chunk.phonemes[chunk.phonemes.length - 1]?.time || 0,
+    const adjustedPhonemes = chunk.phonemes.map(p => ({
+      ...p,
+      time: Math.max(0, p.time - UNITY_AUDIO_INIT_DELAY_MS) // Shift visemes earlier
+    }));
+    
+    console.log('[TTS Queue] 🎤 Sending phonemes with Unity audio delay compensation:', {
+      originalFirst: chunk.phonemes[0]?.time || 0,
+      adjustedFirst: adjustedPhonemes[0]?.time || 0,
+      offset: `-${UNITY_AUDIO_INIT_DELAY_MS}ms`,
       totalPhonemes: chunk.phonemes.length
     });
 
-    // Send to Unity avatar with original phoneme timestamps
+    // Send to Unity avatar with adjusted phoneme timestamps
     this.avatarRef.current?.sendAudioWithPhonemesToAvatar(
       chunk.audio,
-      chunk.phonemes, // 🎯 USE ORIGINAL TIMESTAMPS - no adjustment needed
+      adjustedPhonemes,
       chunk.id
     );
 
