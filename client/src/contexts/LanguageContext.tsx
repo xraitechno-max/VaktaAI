@@ -1,4 +1,5 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, { createContext, useContext, useState, useEffect } from 'react';
+import type { ReactNode } from 'react';
 
 type Language = 'en' | 'hi';
 
@@ -22,7 +23,7 @@ const translations: Translations = {
   'nav.studyPlan': { en: 'Study Plan', hi: 'स्टडी प्लान' },
   'nav.notes': { en: 'Notes', hi: 'नोट्स' },
   'nav.settings': { en: 'Settings', hi: 'सेटिंग्स' },
-  
+
   // Sidebar
   'sidebar.tagline': { en: 'Your Study Companion', hi: 'आपका स्टडी साथी' },
   'sidebar.quickStart': { en: 'Quick Start', hi: 'क्विक स्टार्ट' },
@@ -65,21 +66,21 @@ const translations: Translations = {
   // Features
   'features.title': { en: 'Everything You Need to Excel', hi: 'उत्कृष्टता के लिए सब कुछ' },
   'features.subtitle': { en: 'Five powerful tools to help you study smarter', hi: 'होशियारी से पढ़ाई के लिए पांच शक्तिशाली टूल्स' },
-  
+
   // AI Mentor Feature
   'features.aiMentor.title': { en: 'AI Mentor', hi: 'AI मेंटर' },
   'features.aiMentor.desc': { en: 'Talk to Garima Ma\'am - your personal AI tutor available 24/7 for Physics, Chemistry, Maths & Biology.', hi: 'गरिमा मैम से बात करें - आपकी पर्सनल AI ट्यूटर जो 24/7 फिजिक्स, केमिस्ट्री, मैथ्स और बायोलॉजी के लिए उपलब्ध है।' },
   'features.aiMentor.step1': { en: 'Choose your subject', hi: 'अपना विषय चुनें' },
   'features.aiMentor.step2': { en: 'Ask your doubt', hi: 'अपना डाउट पूछें' },
   'features.aiMentor.step3': { en: 'Get instant explanation', hi: 'तुरंत स्पष्टीकरण पाएं' },
-  
+
   // DocSathi Feature
   'features.docSathi.title': { en: 'DocSathi', hi: 'डॉकसाथी' },
   'features.docSathi.desc': { en: 'Upload PDFs, notes or YouTube videos. Ask questions and get instant explanations.', hi: 'PDF, नोट्स या YouTube वीडियो अपलोड करें। सवाल पूछें और तुरंत स्पष्टीकरण पाएं।' },
   'features.docSathi.step1': { en: 'Upload any document', hi: 'कोई भी डॉक्यूमेंट अपलोड करें' },
   'features.docSathi.step2': { en: 'Ask questions about it', hi: 'इसके बारे में सवाल पूछें' },
   'features.docSathi.step3': { en: 'Get answers with citations', hi: 'सिटेशन के साथ जवाब पाएं' },
-  
+
   // DocSathi Hero Section
   'docSathi.badge': { en: 'AI Document Assistant', hi: 'AI डॉक्यूमेंट असिस्टेंट' },
   'docSathi.tagline': { en: 'Your Study Companion', hi: 'आपका स्टडी साथी' },
@@ -92,28 +93,28 @@ const translations: Translations = {
   'docSathi.feature2': { en: 'Answers with exact page citations', hi: 'सटीक पेज सिटेशन के साथ जवाब' },
   'docSathi.feature3': { en: 'Ask in Hindi or English, anytime', hi: 'हिंदी या अंग्रेजी में पूछें, कभी भी' },
   'docSathi.cta': { en: 'Try DocSathi Free', hi: 'डॉकसाथी मुफ्त में आज़माएं' },
-  
+
   // Quiz Feature
   'features.quiz.title': { en: 'AI Quiz Generator', hi: 'AI क्विज जेनरेटर' },
   'features.quiz.desc': { en: 'Generate practice quizzes from any topic. Track your progress and improve.', hi: 'किसी भी विषय से अभ्यास क्विज बनाएं। अपनी प्रगति ट्रैक करें और सुधार करें।' },
   'features.quiz.step1': { en: 'Pick your topic', hi: 'अपना टॉपिक चुनें' },
   'features.quiz.step2': { en: 'Generate quiz instantly', hi: 'तुरंत क्विज बनाएं' },
   'features.quiz.step3': { en: 'Practice and improve', hi: 'अभ्यास करें और सुधारें' },
-  
+
   // Study Plan Feature
   'features.studyPlan.title': { en: 'Smart Study Plan', hi: 'स्मार्ट स्टडी प्लान' },
   'features.studyPlan.desc': { en: 'AI creates personalized study schedules based on your goals and exam dates.', hi: 'AI आपके लक्ष्यों और परीक्षा तिथियों के आधार पर व्यक्तिगत स्टडी शेड्यूल बनाता है।' },
   'features.studyPlan.step1': { en: 'Set your exam date', hi: 'अपनी परीक्षा तिथि सेट करें' },
   'features.studyPlan.step2': { en: 'AI creates schedule', hi: 'AI शेड्यूल बनाता है' },
   'features.studyPlan.step3': { en: 'Follow daily tasks', hi: 'रोजाना टास्क फॉलो करें' },
-  
+
   // Notes Feature
   'features.notes.title': { en: 'Smart Notes', hi: 'स्मार्ट नोट्स' },
   'features.notes.desc': { en: 'Take notes with AI assistance. Summarize, explain, and organize automatically.', hi: 'AI सहायता से नोट्स लें। स्वचालित रूप से सारांश, व्याख्या और व्यवस्थित करें।' },
   'features.notes.step1': { en: 'Write or import notes', hi: 'नोट्स लिखें या इम्पोर्ट करें' },
   'features.notes.step2': { en: 'AI organizes them', hi: 'AI उन्हें व्यवस्थित करता है' },
   'features.notes.step3': { en: 'Revise anytime', hi: 'कभी भी दोहराएं' },
-  
+
   'features.tryNow': { en: 'Try Now', hi: 'अभी आज़माएं' },
 
   // Comparison
@@ -171,7 +172,7 @@ const translations: Translations = {
   'auth.createAccount': { en: 'Create account', hi: 'अकाउंट बनाएं' },
   'auth.loginSubtitle': { en: 'Sign in to continue your learning journey', hi: 'अपनी पढ़ाई जारी रखने के लिए साइन इन करें' },
   'auth.signupSubtitle': { en: 'Join 10 lakh+ students learning with AI', hi: '10 लाख+ छात्रों के साथ AI से सीखें' },
-  
+
   // Form Labels
   'auth.email': { en: 'Email address', hi: 'ईमेल एड्रेस' },
   'auth.emailPlaceholder': { en: 'you@example.com', hi: 'you@example.com' },
@@ -182,13 +183,13 @@ const translations: Translations = {
   'auth.lastName': { en: 'Last name', hi: 'आखिरी नाम' },
   'auth.lastNamePlaceholder': { en: 'Kumar', hi: 'कुमार' },
   'auth.passwordHint': { en: 'Min 8 characters', hi: 'कम से कम 8 अक्षर' },
-  
+
   // Buttons
   'auth.signinButton': { en: 'Sign in', hi: 'साइन इन करें' },
   'auth.signingIn': { en: 'Signing in...', hi: 'साइन इन हो रहा है...' },
   'auth.createButton': { en: 'Create account', hi: 'अकाउंट बनाएं' },
   'auth.creatingAccount': { en: 'Creating account...', hi: 'अकाउंट बन रहा है...' },
-  
+
   // Messages
   'auth.loginSuccess': { en: 'Welcome back!', hi: 'वापस स्वागत है!' },
   'auth.loginSuccessDesc': { en: 'You have successfully logged in.', hi: 'आप सफलतापूर्वक लॉगिन हो गए।' },
@@ -198,19 +199,19 @@ const translations: Translations = {
   'auth.loginFailedDesc': { en: 'Invalid email or password', hi: 'गलत ईमेल या पासवर्ड' },
   'auth.signupFailed': { en: 'Signup failed', hi: 'साइनअप असफल' },
   'auth.signupFailedDesc': { en: 'Could not create account', hi: 'अकाउंट नहीं बन सका' },
-  
+
   // Validation
   'auth.invalidEmail': { en: 'Please enter a valid email', hi: 'कृपया सही ईमेल डालें' },
   'auth.passwordRequired': { en: 'Password is required', hi: 'पासवर्ड ज़रूरी है' },
   'auth.passwordMin': { en: 'Password must be at least 8 characters', hi: 'पासवर्ड कम से कम 8 अक्षर का होना चाहिए' },
   'auth.firstNameRequired': { en: 'First name is required', hi: 'पहला नाम ज़रूरी है' },
-  
+
   // Benefits
   'auth.benefit1': { en: '24/7 AI Mentor Access', hi: '24/7 AI मेंटर एक्सेस' },
   'auth.benefit2': { en: 'Personalized Study Plans', hi: 'व्यक्तिगत स्टडी प्लान' },
   'auth.benefit3': { en: 'Unlimited Doubt Solving', hi: 'असीमित डाउट सॉल्विंग' },
   'auth.freeForever': { en: 'Free forever for basic features', hi: 'बेसिक फीचर्स हमेशा के लिए मुफ्त' },
-  
+
   // Brand
   'brand.name': { en: 'VaktaAI', hi: 'VaktaAI' },
   'brand.logoAlt': { en: 'VaktaAI Logo', hi: 'VaktaAI लोगो' },
@@ -219,13 +220,13 @@ const translations: Translations = {
   'onboarding.welcome': { en: 'Welcome to VaktaAI', hi: 'VaktaAI में स्वागत है' },
   'onboarding.subtitle': { en: 'Let\'s personalize your learning experience', hi: 'आपका सीखने का अनुभव बेहतर बनाते हैं' },
   'onboarding.stepOf': { en: 'Step {current} of {total}', hi: 'स्टेप {current} / {total}' },
-  
+
   // Onboarding - Language Step
   'onboarding.language.title': { en: 'Choose Your Language', hi: 'अपनी भाषा चुनें' },
   'onboarding.language.subtitle': { en: 'Select your preferred learning language', hi: 'अपनी पसंदीदा सीखने की भाषा चुनें' },
   'onboarding.language.english': { en: 'English', hi: 'English' },
   'onboarding.language.hindi': { en: 'Hindi', hi: 'हिंदी' },
-  
+
   // Onboarding - Board Step
   'onboarding.board.title': { en: 'Select Your Board', hi: 'अपना बोर्ड चुनें' },
   'onboarding.board.subtitle': { en: 'Which education board are you studying in?', hi: 'आप किस बोर्ड में पढ़ रहे हो?' },
@@ -233,7 +234,7 @@ const translations: Translations = {
   'onboarding.board.icse': { en: 'ICSE', hi: 'ICSE' },
   'onboarding.board.state': { en: 'State Board', hi: 'स्टेट बोर्ड' },
   'onboarding.board.other': { en: 'Other', hi: 'अन्य' },
-  
+
   // Onboarding - Class Step
   'onboarding.class.title': { en: 'Select Your Class', hi: 'अपनी क्लास चुनें' },
   'onboarding.class.subtitle': { en: 'Which class are you currently in?', hi: 'आप किस क्लास में हो?' },
@@ -241,7 +242,7 @@ const translations: Translations = {
   'onboarding.class.11th': { en: 'Class 11', hi: 'क्लास 11' },
   'onboarding.class.12th': { en: 'Class 12', hi: 'क्लास 12' },
   'onboarding.class.dropper': { en: 'Dropper', hi: 'ड्रॉपर' },
-  
+
   // Onboarding - Exam Step
   'onboarding.exam.title': { en: 'Your Exam Goal', hi: 'आपका एग्जाम गोल' },
   'onboarding.exam.subtitle': { en: 'What exam are you preparing for?', hi: 'किस एग्जाम की तैयारी कर रहे हो?' },
@@ -249,7 +250,7 @@ const translations: Translations = {
   'onboarding.exam.jeeMain': { en: 'JEE Main', hi: 'JEE Main' },
   'onboarding.exam.jeeAdv': { en: 'JEE Advanced', hi: 'JEE Advanced' },
   'onboarding.exam.neet': { en: 'NEET', hi: 'NEET' },
-  
+
   // Onboarding - Subjects Step
   'onboarding.subjects.title': { en: 'Pick Your Subjects', hi: 'अपने सब्जेक्ट्स चुनें' },
   'onboarding.subjects.subtitle': { en: 'Select subjects you want to learn (at least 1)', hi: 'जो सब्जेक्ट्स पढ़ना चाहते हो वो चुनें (कम से कम 1)' },
@@ -258,7 +259,7 @@ const translations: Translations = {
   'onboarding.subjects.maths': { en: 'Mathematics', hi: 'मैथ्स' },
   'onboarding.subjects.biology': { en: 'Biology', hi: 'बायोलॉजी' },
   'onboarding.subjects.minRequired': { en: 'Please select at least one subject', hi: 'कम से कम एक सब्जेक्ट चुनें' },
-  
+
   // Onboarding - Mentor Step
   'onboarding.mentor.title': { en: 'Meet Your AI Mentor', hi: 'अपने AI मेंटर से मिलें' },
   'onboarding.mentor.subtitle': { en: 'Your personal tutor, available 24/7', hi: 'आपका पर्सनल ट्यूटर, 24/7 उपलब्ध' },
@@ -266,7 +267,7 @@ const translations: Translations = {
   'onboarding.mentor.garimaDesc': { en: 'Physics & Chemistry Expert', hi: 'फिजिक्स और केमिस्ट्री एक्सपर्ट' },
   'onboarding.mentor.arjun': { en: 'Arjun Sir', hi: 'अर्जुन सर' },
   'onboarding.mentor.arjunDesc': { en: 'Mathematics Expert', hi: 'मैथ्स एक्सपर्ट' },
-  
+
   // Onboarding - Navigation
   'onboarding.next': { en: 'Continue', hi: 'आगे बढ़ें' },
   'onboarding.back': { en: 'Back', hi: 'पीछे' },
@@ -305,7 +306,7 @@ const translations: Translations = {
   'aiMentor.loadingAvatar': { en: 'Loading Avatar...', hi: 'अवतार लोड हो रहा है...' },
   'aiMentor.avatarReady': { en: 'Avatar Ready - Start Session!', hi: 'अवतार तैयार - सेशन शुरू करें!' },
   'aiMentor.continueSession': { en: 'Continue Session', hi: 'सेशन जारी रखें' },
-  
+
   // AI Mentor - Choose Subject
   'aiMentor.chooseSubject': { en: 'Choose Your Subject', hi: 'अपना विषय चुनें' },
   'aiMentor.quickStart': { en: 'Quick Start', hi: 'जल्दी शुरू करें' },

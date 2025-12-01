@@ -7,7 +7,7 @@ import { useEffect, useRef, useCallback, useState } from 'react';
 
 export interface UnityBridgeHandle {
   sendAudioToAvatar: (audioBlob: Blob, emotion?: string) => Promise<void>;
-  sendAudioWithPhonemesToAvatar: (audioBase64: string, phonemes: Array<{time: number; blendshape: string; weight: number}>, messageId?: string) => void;
+  sendAudioWithPhonemesToAvatar: (audioBase64: string, phonemes: Array<{ time: number; blendshape: string; weight: number }>, messageId?: string) => void;
   setEmotion: (emotion: string) => void;
   triggerGesture: (gesture: string) => void;
   changeAvatar: (avatarName: 'priya' | 'amit') => void;
@@ -47,7 +47,7 @@ export function useUnityBridge({
 
       // 🔒 SECURITY: Use trusted origin or fail
       const targetOrigin = trustedOriginRef.current || window.location.origin;
-      
+
       if (!trustedOriginRef.current && type !== 'UNITY_INIT') {
         console.warn('[Unity Bridge] No trusted origin established yet');
         return;
@@ -76,7 +76,7 @@ export function useUnityBridge({
         console.log('[Unity Bridge] Already initialized, skipping handshake');
         return; // Prevent duplicate handshakes
       }
-      
+
       console.log('[Unity Bridge] Starting handshake...');
       sendMessageToUnity('UNITY_INIT', { timestamp: Date.now() });
 
@@ -178,30 +178,40 @@ export function useUnityBridge({
           console.log('[Unity Bridge] Message from Unity:', payload);
           onMessage?.(payload);
           break;
-        
+
         case 'UNITY_LOG':
           // Forward Unity iframe console logs to parent console
-          if (payload?.level === 'log') console.log('[Unity]', ...payload.args);
+          if (payload?.level === 'log') {
+            console.log('[Unity]', ...payload.args);
+
+            // 🐛 WORKAROUND: Unity HTML5 fallback doesn't send AUDIO_ENDED message,
+            // but it does log "HTML5 Audio ended". We intercept this to fix the timeout.
+            const logMsg = payload.args?.join(' ') || '';
+            if (logMsg.includes('HTML5 Audio ended')) {
+              console.log('[Unity Bridge] 🐛 Intercepted HTML5 Audio end log - synthesizing AUDIO_ENDED event');
+              onMessage?.({ type: 'AUDIO_ENDED', id: 'html5-fallback' });
+            }
+          }
           else if (payload?.level === 'warn') console.warn('[Unity]', ...payload.args);
           else if (payload?.level === 'error') console.error('[Unity]', ...payload.args);
           break;
-        
+
         case 'AUDIO_UNLOCK_REQUEST':
           // Unity requests audio unlock
           console.log('[Unity Bridge] ⚠️ Audio unlock requested by Unity');
           break;
-        
+
         case 'AUDIO_STARTED':
           // Audio playback started in Unity
           console.log('[Unity Bridge] ✅ Audio playback started:', payload?.id);
           break;
-        
+
         case 'AUDIO_ENDED':
           // Audio playback completed in Unity
           console.log('[Unity Bridge] ✅ Audio playback ended:', payload?.id);
           onMessage?.({ type: 'AUDIO_ENDED', id: payload?.id });
           break;
-        
+
         case 'AUDIO_FAILED':
           // Audio playback failed in Unity
           console.error('[Unity Bridge] ❌ Audio playback failed:', payload?.error);
@@ -250,12 +260,12 @@ export function useUnityBridge({
         const base64Audio = await base64Promise;
 
         console.log('[Unity Bridge] 🎵 Converted audio to base64 - Length:', base64Audio?.length || 0, 'Blob size:', audioBlob.size);
-        
+
         // Send to Unity
         sendMessageToUnity('PLAY_TTS_AUDIO', {
           audioData: base64Audio,
         });
-        
+
         console.log('[Unity Bridge] ✅ Audio sent to Unity iframe');
 
         // Set emotion if provided
@@ -305,21 +315,21 @@ export function useUnityBridge({
 
   // 🎯 NEW: Send audio with phoneme sequence for Unity lip-sync
   const sendAudioWithPhonemesToAvatar = useCallback(
-    (audioBase64: string, phonemes: Array<{time: number; blendshape: string; weight: number}>, messageId?: string) => {
+    (audioBase64: string, phonemes: Array<{ time: number; blendshape: string; weight: number }>, messageId?: string) => {
       if (!isReady) {
         console.warn('[Unity Bridge] Unity not ready for phoneme playback');
         return;
       }
 
       console.log('[Unity Bridge] 🎵 Sending audio + phonemes to Unity - Phonemes:', phonemes.length);
-      
+
       // Send PLAY_TTS_WITH_PHONEMES message
       sendMessageToUnity('PLAY_TTS_WITH_PHONEMES', {
         audioData: audioBase64,
         phonemes,
         id: messageId || `tts-phoneme-${Date.now()}`,
       });
-      
+
       console.log('[Unity Bridge] ✅ Audio + phonemes sent to Unity iframe');
     },
     [isReady, sendMessageToUnity]

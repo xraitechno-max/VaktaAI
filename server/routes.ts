@@ -47,7 +47,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const { fileType } = req.body;
       const objectStorageService = new ObjectStorageService();
       const uploadURL = await objectStorageService.getObjectEntityUploadURL(fileType);
-      
+
       res.json({ uploadURL });
     } catch (error) {
       console.error('Error generating upload URL:', error);
@@ -68,30 +68,30 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Extract file extension to determine source type
       const fileExtension = fileName.split('.').pop()?.toLowerCase();
-      
+
       const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'];
-      
-      const sourceType = fileExtension === 'pdf' ? 'pdf' : 
-                        fileExtension === 'docx' ? 'docx' : 
-                        fileExtension === 'txt' ? 'text' : 
-                        fileExtension === 'pptx' ? 'pptx' : 
-                        imageExtensions.includes(fileExtension || '') ? 'image' : 'text';
+
+      const sourceType = fileExtension === 'pdf' ? 'pdf' :
+        fileExtension === 'docx' ? 'docx' :
+          fileExtension === 'txt' ? 'text' :
+            fileExtension === 'pptx' ? 'pptx' :
+              imageExtensions.includes(fileExtension || '') ? 'image' : 'text';
 
       // Initialize object storage service
       const objectStorageService = new ObjectStorageService();
-      
+
       // Normalize the upload URL to get the object path
       const normalizedPath = objectStorageService.normalizeObjectEntityPath(uploadURL);
-      
+
       // Get the file from object storage using S3 client
       const objectFile = await objectStorageService.getObjectEntityFile(normalizedPath);
       const fileBuffer = await objectStorageService.downloadBuffer(objectFile);
 
       console.log(`Processing document for user ${userId}: ${fileName} (${fileBuffer.length} bytes)`);
-      
+
       // Convert buffer to string for text files
       const content = sourceType === 'text' ? fileBuffer.toString('utf-8') : fileBuffer;
-      
+
       // Process document
       const docId = await documentService.ingestDocument(
         userId,
@@ -130,7 +130,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const objectStorageService = new ObjectStorageService();
       const uploadURL = await objectStorageService.getObjectEntityUploadURL();
-      
+
       // Upload file to object storage
       const uploadResponse = await fetch(uploadURL, {
         method: 'PUT',
@@ -146,14 +146,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Extract file extension to determine source type
       const fileExtension = file.originalname.split('.').pop()?.toLowerCase();
-      
+
       const imageExtensions = ['png', 'jpg', 'jpeg', 'gif', 'bmp', 'webp'];
-      
-      const sourceType = fileExtension === 'pdf' ? 'pdf' : 
-                        fileExtension === 'docx' ? 'docx' : 
-                        fileExtension === 'txt' ? 'text' : 
-                        fileExtension === 'pptx' ? 'pptx' : 
-                        imageExtensions.includes(fileExtension || '') ? 'image' : 'text';
+
+      const sourceType = fileExtension === 'pdf' ? 'pdf' :
+        fileExtension === 'docx' ? 'docx' :
+          fileExtension === 'txt' ? 'text' :
+            fileExtension === 'pptx' ? 'pptx' :
+              imageExtensions.includes(fileExtension || '') ? 'image' : 'text';
 
       // Convert buffer to string for text files
       const content = sourceType === 'text' ? file.buffer.toString('utf-8') : file.buffer;
@@ -208,15 +208,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.json({ documentId: docId, status: 'processing' });
     } catch (error) {
       console.error("Document URL processing error:", error);
-      
+
       // Return 400 for user-facing errors (missing captions, invalid URLs, etc.)
       const errorMsg = error instanceof Error ? error.message : String(error);
-      if (errorMsg.includes('captions') || errorMsg.includes('transcript') || 
-          errorMsg.includes('private') || errorMsg.includes('restricted') ||
-          errorMsg.includes('Invalid') || errorMsg.includes('disabled')) {
+      if (errorMsg.includes('captions') || errorMsg.includes('transcript') ||
+        errorMsg.includes('private') || errorMsg.includes('restricted') ||
+        errorMsg.includes('Invalid') || errorMsg.includes('disabled')) {
         return res.status(400).json({ message: errorMsg });
       }
-      
+
       // Return 500 for server errors
       res.status(500).json({ message: "Failed to process document from URL" });
     }
@@ -401,7 +401,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       // Update chat language using storage method
       await storage.updateChatLanguage(id, language);
-      
+
       res.json({ success: true, language });
     } catch (error) {
       console.error("Error updating chat language:", error);
@@ -486,10 +486,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Optimized Tutor routes (with intelligent routing & caching)
   app.use('/api/tutor/optimized', isAuthenticated, aiLimiter, optimizedTutorRouter);
-  
+
   // Voice routes (Sarvam AI primary, AssemblyAI/Polly fallback)
   app.use('/api/voice', isAuthenticated, voiceRouter);
-  
+
   // Test Validation routes (JEE/NEET accuracy testing)
   app.use('/api/test', isAuthenticated, testValidationRouter);
 
@@ -770,7 +770,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const result = await response.json();
       console.log('Transcription successful:', result.text);
 
-      res.json({ 
+      res.json({
         transcript: result.text,
         language: result.language || req.body.language || 'en'
       });
@@ -799,15 +799,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
       const startTime = Date.now();
       const lang = language === 'hi' ? 'hi' : 'en';
-      
+
       // 🚀 PHASE 2.1: Check cache first
       const { ttsCacheService } = await import('./services/ttsCacheService');
       const { audioCompression } = await import('./services/audioCompression');
       const { ttsMetrics } = await import('./services/ttsMetrics');
-      
+
       let audioBuffer = await ttsCacheService.get(text, lang, emotion, personaId);
       let cached = false;
-      
+
       if (audioBuffer) {
         cached = true;
         console.log(`[TTS] 💾 Cache hit! (${Date.now() - startTime}ms)`);
@@ -823,19 +823,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
           enablePauses: true,
           enableEmphasis: true
         });
-        
+
         // Store in cache
         await ttsCacheService.set(text, lang, audioBuffer, emotion, personaId);
         console.log(`[TTS] 🔨 Generated and cached (${Date.now() - startTime}ms)`);
       }
 
       const genTime = Date.now() - startTime;
-      
+
       // 🚀 PHASE 2.2: Compress if beneficial
       let finalBuffer = audioBuffer;
       let compressed = false;
       let compressedSize = audioBuffer.length;
-      
+
       if (audioCompression.shouldCompress(audioBuffer.length)) {
         const compressionResult = await audioCompression.compress(audioBuffer);
         finalBuffer = compressionResult.compressed;
@@ -843,7 +843,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
         compressedSize = compressionResult.compressedSize;
         console.log(`[TTS] 📦 Compressed ${audioBuffer.length} → ${compressedSize} bytes (${compressionResult.compressionRatio.toFixed(1)}% saved)`);
       }
-      
+
       // 🚀 PHASE 2.4: Record metrics
       ttsMetrics.record({
         sentence: text,
@@ -981,10 +981,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       const userId = req.user?.id;
       const { eventType, eventData } = req.body;
-      
+
       // Log analytics event (in production, send to analytics service)
       console.log(`[ANALYTICS] User: ${userId}, Event: ${eventType}`, eventData);
-      
+
       res.json({ success: true });
     } catch (error) {
       console.error("Analytics error:", error);
@@ -1184,7 +1184,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           if (url.includes('youtube.com') || url.includes('youtu.be')) {
             sourceType = 'youtube';
           }
-          
+
           const docId = await documentService.ingestDocument(
             userId,
             title || url,
@@ -1279,7 +1279,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get the full request path which includes /objects/
       const fullPath = req.path;
       console.log('Accessing object path:', fullPath, 'for user:', userId);
-      
+
       const objectFile = await objectStorageService.getObjectEntityFile(fullPath);
       const canAccess = await objectStorageService.canAccessObjectEntity({
         objectFile,
@@ -1329,7 +1329,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const quizzes = await storage.getQuizzesByUser(userId);
       let totalScore = 0;
       let totalPossibleScore = 0;
-      
+
       for (const quiz of quizzes) {
         const attempts = await storage.getQuizAttempts(quiz.id, userId);
         for (const attempt of attempts) {
@@ -1339,7 +1339,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           }
         }
       }
-      
+
       const quizAccuracy = totalPossibleScore > 0 ? Math.round((totalScore / totalPossibleScore) * 100) : 0;
 
       // Estimate study time from chat count (each chat ~30 min average)
@@ -1384,8 +1384,8 @@ export async function registerRoutes(app: Express): Promise<Server> {
         activities.push({
           id: `chat-${chat.id}`,
           type: chat.mode === 'tutor' ? 'tutor' : 'docchat',
-          title: chat.mode === 'tutor' 
-            ? `${chat.subject || 'General'} tutoring on ${chat.topic}` 
+          title: chat.mode === 'tutor'
+            ? `${chat.subject || 'General'} tutoring on ${chat.topic}`
             : `DocChat session on ${chat.topic || 'Document'}`,
           time: timeAgo,
           icon: 'MessageCircle',
@@ -1395,7 +1395,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Get recent quiz attempts
       const quizzes = await storage.getQuizzesByUser(userId);
       const allAttempts: any[] = [];
-      
+
       for (const quiz of quizzes) {
         const attempts = await storage.getQuizAttempts(quiz.id, userId);
         for (const attempt of attempts) {
@@ -1485,14 +1485,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             title: task.title,
             subject: plan.subject || 'General',
             duration: `${task.durationMin || 30} min`,
-            type: task.type === 'tutor' ? 'AI Tutor' : 
-                  task.type === 'quiz' ? 'Quiz' : 
-                  task.type === 'read' ? 'Reading' : 
+            type: task.type === 'tutor' ? 'AI Tutor' :
+              task.type === 'quiz' ? 'Quiz' :
+                task.type === 'read' ? 'Reading' :
                   task.type === 'flashcards' ? 'Flashcards' : 'Task',
             status,
-            icon: task.type === 'tutor' ? 'BookOpen' : 
-                  task.type === 'quiz' ? 'ClipboardList' : 
-                  task.type === 'read' ? 'BookOpen' : 'Brain',
+            icon: task.type === 'tutor' ? 'BookOpen' :
+              task.type === 'quiz' ? 'ClipboardList' :
+                task.type === 'read' ? 'BookOpen' : 'Brain',
             dueAt: task.dueAt,
           });
         }
@@ -1526,7 +1526,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.get('/api/tts/circuit-breaker/status', isAuthenticated, async (req: any, res) => {
     try {
       const { sarvamCircuitBreaker, pollyCircuitBreaker, enhancedVoiceCircuitBreaker } = await import('./services/circuitBreaker');
-      
+
       res.json({
         providers: {
           sarvam: sarvamCircuitBreaker.getStatus(),
@@ -1552,12 +1552,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   app.post('/api/admin/reembed-all', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user?.id;
-      
+
       // Get all documents for the user
       const documents = await storage.getDocumentsByUser(userId);
-      
+
       if (documents.length === 0) {
-        return res.json({ 
+        return res.json({
           message: 'No documents found to re-embed',
           processedCount: 0,
           totalCount: 0
@@ -1565,7 +1565,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
       }
 
       console.log(`[Re-embedding] Starting re-embedding for ${documents.length} documents`);
-      
+
       let processedCount = 0;
       let errorCount = 0;
       const errors: { docId: string; title: string; error: string }[] = [];
@@ -1574,10 +1574,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
       for (const doc of documents) {
         try {
           console.log(`[Re-embedding] Processing document ${doc.id}: ${doc.title}`);
-          
+
           // Get all chunks for this document
           const existingChunks = await storage.getChunksByDocument(doc.id);
-          
+
           if (existingChunks.length === 0) {
             console.log(`[Re-embedding] No chunks found for ${doc.id}, skipping`);
             continue;
@@ -1587,7 +1587,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
           const chunkTexts = existingChunks.map(c => c.text);
           const batchSize = 100;
           let allEmbeddings: number[][] = [];
-          
+
           for (let i = 0; i < chunkTexts.length; i += batchSize) {
             const batch = chunkTexts.slice(i, i + batchSize);
             const embeddings = await aiService.generateEmbeddings(batch);
@@ -1623,7 +1623,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
     } catch (error) {
       console.error('[Re-embedding] Fatal error:', error);
-      res.status(500).json({ 
+      res.status(500).json({
         message: 'Failed to re-embed documents',
         error: error instanceof Error ? error.message : 'Unknown error'
       });
@@ -1643,7 +1643,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // ✅ CRITICAL: Manually handle upgrade event to route WebSocket connections
   httpServer.on('upgrade', (request, socket, head) => {
     const pathname = parseUrl(request.url || '').pathname;
-    
+
     // Route /tutor/voice to our voice WebSocket server
     if (pathname === '/tutor/voice') {
       wss.handleUpgrade(request, socket, head, (ws) => {
@@ -1674,12 +1674,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   const heartbeatInterval = setInterval(() => {
     wss.clients.forEach((ws) => {
       const client = ws as VoiceWebSocketClient;
-      
+
       if (client.isAlive === false) {
         console.log(`[WebSocket] Terminating inactive connection for user ${client.userId}`);
         return client.terminate();
       }
-      
+
       client.isAlive = false;
       client.ping();
     });
@@ -1695,14 +1695,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Extract session ID from cookie
       const cookies = req.headers.cookie || '';
       const sessionMatch = cookies.match(/connect\.sid=s%3A([^;.]+)/);
-      
+
       if (!sessionMatch) {
         console.log('[WebSocket] No session cookie found');
         return null;
       }
 
       const sessionId = sessionMatch[1];
-      
+
       // Get session store instance
       const sessionStore = getSessionStore();
 
@@ -1719,14 +1719,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
             resolve(null);
             return;
           }
-          
+
           const userId = session.userId;
           if (!userId) {
             console.log('[WebSocket] No userId in session');
             resolve(null);
             return;
           }
-          
+
           console.log(`[WebSocket] Authenticated user ${userId} from session`);
           resolve(userId);
         });
@@ -1740,12 +1740,12 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // WebSocket connection handler
   wss.on('connection', async (ws: VoiceWebSocketClient, req) => {
     console.log('[WebSocket] New voice connection attempt');
-    
+
     // Add client error handler immediately
     ws.on('error', (error) => {
       console.error('[WebSocket] Client error:', error);
     });
-    
+
     // Parse query parameters
     const { query } = parseUrl(req.url || '', true);
     const chatId = query.chatId as string;
@@ -1758,7 +1758,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
     try {
       // Authenticate the WebSocket connection
       const authenticatedUserId = await authenticateWebSocket(req);
-      
+
       if (!authenticatedUserId) {
         console.log('[WebSocket] Authentication failed');
         ws.close(4401, 'Unauthorized - Authentication required');
@@ -1792,6 +1792,14 @@ export async function registerRoutes(app: Express): Promise<Server> {
       // Store in active sessions
       voiceSessions.set(ws.sessionId, ws);
 
+      // 🔥 FIX: Auto-register session in AvatarStateService to ensure TTS works
+      // even if client hasn't sent AVATAR_STATE yet
+      avatarStateService.updateSession(ws, {
+        state: 'READY',
+        canAcceptTTS: true,
+        timestamp: Date.now()
+      });
+
       console.log(`[WebSocket] ✅ Voice session established: ${ws.sessionId} for authenticated user ${ws.userId}`);
 
       // Send initial session state
@@ -1821,13 +1829,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
             try {
               // Try parsing as JSON first
               const message: VoiceMessage = JSON.parse(data.toString());
-              
+
               // If parsing succeeds, handle as JSON message
               switch (message.type) {
                 case 'AUDIO_CHUNK': {
                   const audioMsg = message as AudioChunkMessage;
                   console.log(`[WebSocket] Received JSON audio chunk for ${ws.sessionId} (isLast: ${audioMsg.isLast})`);
-                  
+
                   const language = ws.language || 'en';
                   await voiceStreamService.processAudioChunk(
                     ws,
@@ -1838,11 +1846,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   );
                   break;
                 }
-                
+
                 case 'AVATAR_STATE': {
                   const avatarMsg = message as AvatarStateMessage;
                   console.log(`[WebSocket] Avatar state update for ${ws.sessionId}: ${avatarMsg.state}`);
-                  
+
                   avatarStateService.updateSession(ws, {
                     state: avatarMsg.state,
                     canAcceptTTS: avatarMsg.canAcceptTTS,
@@ -1850,11 +1858,11 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   });
                   break;
                 }
-                
+
                 case 'TEXT_QUERY': {
                   const textMsg = message as TextQueryMessage;
                   console.log(`[WebSocket] Text query for ${ws.sessionId}: "${textMsg.text.substring(0, 50)}..."`);
-                  
+
                   await voiceStreamService.processTextQuery(
                     ws,
                     textMsg.text,
@@ -1863,19 +1871,19 @@ export async function registerRoutes(app: Express): Promise<Server> {
                   );
                   break;
                 }
-                  
+
                 case 'INTERRUPT':
                   console.log(`[WebSocket] TTS interruption requested for ${ws.sessionId}`);
                   voiceStreamService.stopTTSStream(ws);
                   break;
-                  
+
                 case 'PING':
-                  ws.send(JSON.stringify({ 
-                    type: 'PONG', 
-                    timestamp: new Date().toISOString() 
+                  ws.send(JSON.stringify({
+                    type: 'PONG',
+                    timestamp: new Date().toISOString()
                   }));
                   break;
-                  
+
                 default:
                   console.log(`[WebSocket] Unknown message type: ${message.type}`);
               }
@@ -1883,10 +1891,10 @@ export async function registerRoutes(app: Express): Promise<Server> {
             } catch {
               // Not JSON - treat as binary audio
               console.log(`[WebSocket] Received binary audio chunk for ${ws.sessionId}: ${data.length} bytes`);
-              
+
               const base64Audio = data.toString('base64');
               const language = ws.language || 'en';
-              
+
               await voiceStreamService.processAudioChunk(
                 ws,
                 base64Audio,
@@ -1897,15 +1905,15 @@ export async function registerRoutes(app: Express): Promise<Server> {
               return;
             }
           }
-          
+
           if (data instanceof ArrayBuffer) {
             // ArrayBuffer from browser
             console.log(`[WebSocket] Received ArrayBuffer audio for ${ws.sessionId}: ${data.byteLength} bytes`);
-            
+
             const buffer = Buffer.from(data);
             const base64Audio = buffer.toString('base64');
             const language = ws.language || 'en';
-            
+
             await voiceStreamService.processAudioChunk(
               ws,
               base64Audio,
@@ -1952,7 +1960,7 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Start server listening AFTER all setup is complete
   const port = parseInt(process.env.PORT || '5000', 10);
-  
+
   httpServer.listen(port, '0.0.0.0', () => {
     console.log(`✅ Server listening on port ${port}`);
   });

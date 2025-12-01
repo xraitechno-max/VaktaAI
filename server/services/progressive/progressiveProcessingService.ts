@@ -21,7 +21,7 @@ export class ProgressiveProcessingService {
     // Update document status
     await db.update(documents)
       .set({
-        processingStatus: 'partially_ready',
+        status: 'partially_ready',
         processingProgress: 20
       })
       .where(eq(documents.id, documentId));
@@ -65,7 +65,7 @@ export class ProgressiveProcessingService {
       if (document) {
         ws.send(JSON.stringify({
           type: 'initial_status',
-          status: document.processingStatus,
+          status: document.status,
           progress: document.processingProgress
         }));
       }
@@ -109,7 +109,7 @@ export class ProgressiveProcessingService {
     await db.update(documents)
       .set({
         processingProgress: progress,
-        processingStatus: status
+        status: status
       })
       .where(eq(documents.id, documentId));
 
@@ -172,10 +172,10 @@ export class ProgressiveProcessingService {
       const chunkCount = await db
         .select({ count: sql<number>`count(*)` })
         .from(chunks)
-        .where(eq(chunks.documentId, documentId));
+        .where(eq(chunks.docId, documentId));
 
       return {
-        status: document?.processingStatus || 'pending',
+        status: document?.status || 'pending',
         progress: document?.processingProgress || 0,
         availableChunks: chunkCount[0]?.count || 0,
         totalChunks: document?.totalChunks || 0
@@ -212,7 +212,7 @@ export class ProgressiveProcessingService {
    */
   getActiveConnections(): Map<string, number> {
     const active = new Map<string, number>();
-    
+
     for (const [documentId, connections] of this.wsConnections) {
       const activeCount = connections.filter(ws => ws.readyState === WebSocket.OPEN).length;
       if (activeCount > 0) {
@@ -258,23 +258,23 @@ export class ProgressiveProcessingService {
       const processing = await db
         .select({ count: sql<number>`count(*)` })
         .from(documents)
-        .where(sql`processing_status IN ('pending', 'processing', 'partially_ready')`);
+        .where(sql`status IN ('pending', 'processing', 'partially_ready')`);
 
       const completed = await db
         .select({ count: sql<number>`count(*)` })
         .from(documents)
-        .where(eq(documents.processingStatus, 'completed'));
+        .where(eq(documents.status, 'completed'));
 
       const failed = await db
         .select({ count: sql<number>`count(*)` })
         .from(documents)
-        .where(eq(documents.processingStatus, 'failed'));
+        .where(eq(documents.status, 'failed'));
 
       // Calculate average processing time (simplified)
       const avgTime = await db
         .select({ avg: sql<number>`avg(extract(epoch from (updated_at - created_at)))` })
         .from(documents)
-        .where(eq(documents.processingStatus, 'completed'));
+        .where(eq(documents.status, 'completed'));
 
       return {
         totalDocuments: total[0]?.count || 0,

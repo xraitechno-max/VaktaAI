@@ -11,6 +11,8 @@ interface CacheEntry {
   expiresAt: number;
 }
 const memoryCache = new Map<string, CacheEntry>();
+let cacheHits = 0;
+let cacheMisses = 0;
 
 // Configuration
 const CACHE_TTL = 60 * 60 * 24 * 7; // 7 days in seconds
@@ -45,6 +47,7 @@ export async function getCachedEmbedding(
   if (memEntry) {
     if (memEntry.expiresAt > Date.now()) {
       console.log(`[Embedding Cache] Memory HIT for text (${text.substring(0, 50)}...)`);
+      cacheHits++;
       return memEntry.embedding;
     } else {
       // Expired - remove it
@@ -52,6 +55,7 @@ export async function getCachedEmbedding(
     }
   }
 
+  cacheMisses++;
   return null;
 }
 
@@ -73,7 +77,7 @@ export async function cacheEmbedding(
   const expiresAt = Date.now() + (ttl * 1000);
   memoryCache.set(key, { embedding, expiresAt });
   console.log(`[Embedding Cache] Memory cached for text (${text.substring(0, 50)}...)`);
-  
+
   // Cleanup expired entries periodically (every 100 writes)
   if (memoryCache.size % 100 === 0) {
     cleanupExpiredMemoryCache();
@@ -86,14 +90,14 @@ export async function cacheEmbedding(
 function cleanupExpiredMemoryCache(): void {
   const now = Date.now();
   let cleaned = 0;
-  
+
   for (const [key, entry] of memoryCache.entries()) {
     if (entry.expiresAt <= now) {
       memoryCache.delete(key);
       cleaned++;
     }
   }
-  
+
   if (cleaned > 0) {
     console.log(`[Embedding Cache] Cleaned ${cleaned} expired entries from memory`);
   }
@@ -165,12 +169,16 @@ export async function getCacheStats(): Promise<{
   totalKeys: number;
   memoryUsed: string;
   memoryKeys?: number;
+  hits?: number;
+  misses?: number;
 }> {
   return {
     connected: true,
     totalKeys: memoryCache.size,
     memoryKeys: memoryCache.size,
     memoryUsed: `~${(memoryCache.size * 384 * 4 / 1024 / 1024).toFixed(2)}MB`, // Rough estimate: 384 dims * 4 bytes per float
+    hits: cacheHits,
+    misses: cacheMisses,
   };
 }
 

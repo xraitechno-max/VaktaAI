@@ -17,6 +17,7 @@ interface ImagePreprocessingOptions {
   denoise: boolean;
   contrast: number;
   brightness: number;
+  saturation?: number;
 }
 
 export class HindiOCRService {
@@ -101,6 +102,7 @@ export class HindiOCRService {
    * Extract text using GPT-4V (best for Hindi)
    */
   private async extractWithGPT4V(imagePath: string, language: string): Promise<OCRResult> {
+    const startTime = Date.now();
     try {
       const imageBuffer = fs.readFileSync(imagePath);
       const base64Image = imageBuffer.toString('base64');
@@ -155,6 +157,7 @@ export class HindiOCRService {
    * Extract text using Tesseract.js (fallback)
    */
   private async extractWithTesseract(imagePath: string, language: string): Promise<OCRResult> {
+    const startTime = Date.now();
     try {
       // Configure language for Tesseract
       const lang = language === 'hi' ? 'hin+eng' : 

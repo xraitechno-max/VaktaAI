@@ -24,7 +24,7 @@ interface AzureTTSResult {
 export class AzureTTSService {
   private subscriptionKey: string;
   private region: string;
-  
+
   constructor() {
     this.subscriptionKey = process.env.AZURE_SPEECH_KEY || '';
     this.region = process.env.AZURE_SPEECH_REGION || 'eastus';
@@ -32,6 +32,22 @@ export class AzureTTSService {
 
   isAvailable(): boolean {
     return !!this.subscriptionKey && !!this.region;
+  }
+
+  /**
+   * Execute a function with retry logic for transient errors
+   */
+  private async executeWithRetry<T>(fn: () => Promise<T>, retries = 3, delay = 1000): Promise<T> {
+    try {
+      return await fn();
+    } catch (error: any) {
+      if (retries > 0 && (error.message?.includes('429') || error.message?.includes('Too Many Requests') || error.message?.includes('timeout'))) {
+        console.warn(`[Azure TTS] ⚠️ Transient error, retrying in ${delay}ms... (${retries} attempts left)`, error.message);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.executeWithRetry(fn, retries - 1, delay * 2);
+      }
+      throw error;
+    }
   }
 
   /**
@@ -45,66 +61,68 @@ export class AzureTTSService {
     config: Partial<AzureTTSConfig> = {},
     includeVisemes: boolean = false
   ): Promise<AzureTTSResult> {
-    if (!this.isAvailable()) {
-      throw new Error('Azure TTS not configured. Set AZURE_SPEECH_KEY and AZURE_SPEECH_REGION.');
-    }
-
-    // Default to Indian female voice
-    const voiceName = config.voice || 'en-IN-NeerjaNeural';
-    const style = config.style || 'default';
-    const styleDegree = config.styleDegree || 1;
-    const rate = config.rate || '1.0';
-    const pitch = config.pitch || 'default';
-
-    // Configure speech SDK
-    const speechConfig = sdk.SpeechConfig.fromSubscription(this.subscriptionKey, this.region);
-    speechConfig.speechSynthesisOutputFormat = sdk.SpeechSynthesisOutputFormat.Audio48Khz192KBitRateMonoMp3;
-
-    // Create synthesizer
-    const synthesizer = new sdk.SpeechSynthesizer(speechConfig, null as any);
-
-    // Build SSML
-    const ssml = this.buildSSML(text, voiceName, style, styleDegree, rate, pitch, includeVisemes);
-
-    console.log(`[AZURE TTS] Synthesizing with voice: ${voiceName}, style: ${style}`);
-
-    return new Promise<AzureTTSResult>((resolve, reject) => {
-      const visemes: VisemeData[] = [];
-
-      // Subscribe to viseme events if requested (only works for en-US voices)
-      if (includeVisemes) {
-        synthesizer.visemeReceived = (s, e) => {
-          visemes.push({
-            audioOffset: e.audioOffset,
-            visemeId: e.visemeId
-          });
-        };
+    return this.executeWithRetry(async () => {
+      if (!this.isAvailable()) {
+        throw new Error('Azure TTS not configured. Set AZURE_SPEECH_KEY and AZURE_SPEECH_REGION.');
       }
 
-      synthesizer.speakSsmlAsync(
-        ssml,
-        (result) => {
-          if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
-            const audioData = Buffer.from(result.audioData);
-            
-            console.log(`[AZURE TTS] ✅ Synthesis complete: ${audioData.length} bytes${includeVisemes ? `, ${visemes.length} visemes` : ''}`);
-            
-            synthesizer.close();
-            resolve({
-              audio: audioData,
-              visemes: includeVisemes ? visemes : undefined,
-              duration: result.audioDuration ? result.audioDuration / 10000 : undefined // Convert to milliseconds
+      // Default to Indian female voice
+      const voiceName = config.voice || 'en-IN-NeerjaNeural';
+      const style = config.style || 'default';
+      const styleDegree = config.styleDegree || 1;
+      const rate = config.rate || '1.0';
+      const pitch = config.pitch || 'default';
+
+      // Configure speech SDK
+      const speechConfig = sdk.SpeechConfig.fromSubscription(this.subscriptionKey, this.region);
+      speechConfig.speechSynthesisOutputFormat = sdk.SpeechSynthesisOutputFormat.Audio48Khz192KBitRateMonoMp3;
+
+      // Create synthesizer
+      const synthesizer = new sdk.SpeechSynthesizer(speechConfig, null as any);
+
+      // Build SSML
+      const ssml = this.buildSSML(text, voiceName, style, styleDegree, rate, pitch, includeVisemes);
+
+      console.log(`[AZURE TTS] Synthesizing with voice: ${voiceName}, style: ${style}`);
+
+      return new Promise<AzureTTSResult>((resolve, reject) => {
+        const visemes: VisemeData[] = [];
+
+        // Subscribe to viseme events if requested (only works for en-US voices)
+        if (includeVisemes) {
+          synthesizer.visemeReceived = (s, e) => {
+            visemes.push({
+              audioOffset: e.audioOffset,
+              visemeId: e.visemeId
             });
-          } else {
-            synthesizer.close();
-            reject(new Error(`Azure TTS synthesis failed: ${result.errorDetails}`));
-          }
-        },
-        (error) => {
-          synthesizer.close();
-          reject(new Error(`Azure TTS error: ${error}`));
+          };
         }
-      );
+
+        synthesizer.speakSsmlAsync(
+          ssml,
+          (result) => {
+            if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
+              const audioData = Buffer.from(result.audioData);
+
+              console.log(`[AZURE TTS] ✅ Synthesis complete: ${audioData.length} bytes${includeVisemes ? `, ${visemes.length} visemes` : ''}`);
+
+              synthesizer.close();
+              resolve({
+                audio: audioData,
+                visemes: includeVisemes ? visemes : undefined,
+                duration: result.audioDuration ? result.audioDuration / 10000 : undefined // Convert to milliseconds
+              });
+            } else {
+              synthesizer.close();
+              reject(new Error(`Azure TTS synthesis failed: ${result.errorDetails}`));
+            }
+          },
+          (error) => {
+            synthesizer.close();
+            reject(new Error(`Azure TTS error: ${error}`));
+          }
+        );
+      });
     });
   }
 
@@ -115,56 +133,58 @@ export class AzureTTSService {
    * @param includeVisemes - Whether to include viseme data for lip-sync (default: true for Unity)
    */
   async synthesizeSpeechFromSSML(ssml: string, includeVisemes: boolean = true): Promise<AzureTTSResult> {
-    if (!this.isAvailable()) {
-      throw new Error('Azure TTS not configured. Set AZURE_SPEECH_KEY and AZURE_SPEECH_REGION.');
-    }
-
-    // Configure speech SDK
-    const speechConfig = sdk.SpeechConfig.fromSubscription(this.subscriptionKey, this.region);
-    speechConfig.speechSynthesisOutputFormat = sdk.SpeechSynthesisOutputFormat.Audio48Khz192KBitRateMonoMp3;
-
-    // Create synthesizer
-    const synthesizer = new sdk.SpeechSynthesizer(speechConfig, null as any);
-
-    console.log(`[AZURE TTS] Synthesizing from raw SSML (${ssml.length} chars)${includeVisemes ? ' + visemes' : ''}...`);
-
-    return new Promise<AzureTTSResult>((resolve, reject) => {
-      const visemes: VisemeData[] = [];
-
-      // 🎯 Subscribe to viseme events for Unity lip-sync
-      if (includeVisemes) {
-        synthesizer.visemeReceived = (s, e) => {
-          visemes.push({
-            audioOffset: e.audioOffset,
-            visemeId: e.visemeId
-          });
-        };
+    return this.executeWithRetry(async () => {
+      if (!this.isAvailable()) {
+        throw new Error('Azure TTS not configured. Set AZURE_SPEECH_KEY and AZURE_SPEECH_REGION.');
       }
 
-      synthesizer.speakSsmlAsync(
-        ssml,
-        (result) => {
-          if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
-            const audioData = Buffer.from(result.audioData);
-            
-            console.log(`[AZURE TTS] ✅ SSML synthesis complete: ${audioData.length} bytes${includeVisemes ? `, ${visemes.length} visemes` : ''}`);
-            
-            synthesizer.close();
-            resolve({
-              audio: audioData,
-              visemes: includeVisemes ? visemes : undefined,
-              duration: result.audioDuration ? result.audioDuration / 10000 : undefined
+      // Configure speech SDK
+      const speechConfig = sdk.SpeechConfig.fromSubscription(this.subscriptionKey, this.region);
+      speechConfig.speechSynthesisOutputFormat = sdk.SpeechSynthesisOutputFormat.Audio48Khz192KBitRateMonoMp3;
+
+      // Create synthesizer
+      const synthesizer = new sdk.SpeechSynthesizer(speechConfig, null as any);
+
+      console.log(`[AZURE TTS] Synthesizing from raw SSML (${ssml.length} chars)${includeVisemes ? ' + visemes' : ''}...`);
+
+      return new Promise<AzureTTSResult>((resolve, reject) => {
+        const visemes: VisemeData[] = [];
+
+        // 🎯 Subscribe to viseme events for Unity lip-sync
+        if (includeVisemes) {
+          synthesizer.visemeReceived = (s, e) => {
+            visemes.push({
+              audioOffset: e.audioOffset,
+              visemeId: e.visemeId
             });
-          } else {
-            synthesizer.close();
-            reject(new Error(`Azure TTS SSML synthesis failed: ${result.errorDetails}`));
-          }
-        },
-        (error) => {
-          synthesizer.close();
-          reject(new Error(`Azure TTS SSML error: ${error}`));
+          };
         }
-      );
+
+        synthesizer.speakSsmlAsync(
+          ssml,
+          (result) => {
+            if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
+              const audioData = Buffer.from(result.audioData);
+
+              console.log(`[AZURE TTS] ✅ SSML synthesis complete: ${audioData.length} bytes${includeVisemes ? `, ${visemes.length} visemes` : ''}`);
+
+              synthesizer.close();
+              resolve({
+                audio: audioData,
+                visemes: includeVisemes ? visemes : undefined,
+                duration: result.audioDuration ? result.audioDuration / 10000 : undefined
+              });
+            } else {
+              synthesizer.close();
+              reject(new Error(`Azure TTS SSML synthesis failed: ${result.errorDetails}`));
+            }
+          },
+          (error) => {
+            synthesizer.close();
+            reject(new Error(`Azure TTS SSML error: ${error}`));
+          }
+        );
+      });
     });
   }
 
@@ -218,17 +238,19 @@ export class AzureTTSService {
         async (result) => {
           if (result.reason === sdk.ResultReason.SynthesizingAudioCompleted) {
             // Read audio data from pull stream
-            const buffer = Buffer.alloc(16000);
-            let bytesRead = await pullStream.read(buffer);
-            
+            const arrayBuffer = new ArrayBuffer(16000);
+            let bytesRead = await pullStream.read(arrayBuffer);
+
             while (bytesRead > 0) {
-              onAudioChunk(buffer.slice(0, bytesRead));
-              bytesRead = await pullStream.read(buffer);
+              // Convert ArrayBuffer to Node Buffer for the callback
+              const chunk = Buffer.from(arrayBuffer.slice(0, bytesRead));
+              onAudioChunk(chunk);
+              bytesRead = await pullStream.read(arrayBuffer);
             }
 
             synthesizer.close();
             pullStream.close();
-            
+
             console.log(`[AZURE TTS] ✅ Streaming complete${includeVisemes ? `, ${visemes.length} visemes` : ''}`);
             resolve({ visemes: includeVisemes ? visemes : undefined });
           } else {

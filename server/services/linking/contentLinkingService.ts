@@ -1,7 +1,7 @@
 import { db } from '../../db';
 import { chunks, pyqs, referenceMaterials, documentPYQLinks, documentReferenceLinks } from '@shared/schema';
 import { eq, sql, desc } from 'drizzle-orm';
-import { embeddingService } from '../embedding/embeddingService';
+import { generateEmbedding } from '../embedding/embeddingService';
 
 export class ContentLinkingService {
   /**
@@ -12,7 +12,7 @@ export class ContentLinkingService {
 
     // Get all chunks for this document
     const documentChunks = await db.query.chunks.findMany({
-      where: eq(chunks.documentId, documentId),
+      where: eq(chunks.docId, documentId),
       limit: 50 // Process first 50 chunks
     });
 
@@ -160,10 +160,9 @@ export class ContentLinkingService {
     const pyqId = crypto.randomUUID();
 
     // Generate embedding for the question
-    const embedding = await embeddingService.generateEmbedding(params.question);
+    const { embedding } = await generateEmbedding(params.question);
 
-    await db.insert(pyqs).values({
-      id: pyqId,
+    const [pyq] = await db.insert(pyqs).values({
       exam: params.exam,
       year: params.year,
       subject: params.subject,
@@ -177,13 +176,13 @@ export class ContentLinkingService {
       difficulty: params.difficulty || 3,
       marks: params.marks,
       timeAllocation: params.timeAllocation,
-      embedding: JSON.stringify(embedding),
+      embedding: embedding,
       verified: false,
       createdAt: new Date()
-    });
+    }).returning({ id: pyqs.id });
 
     console.log(`[ContentLinking] Added PYQ: ${params.exam} ${params.year} ${params.subject}`);
-    return pyqId;
+    return pyq.id;
   }
 
   /**
@@ -205,10 +204,9 @@ export class ContentLinkingService {
 
     // Generate embedding for title + description
     const textToEmbed = `${params.title} ${params.description || ''}`;
-    const embedding = await embeddingService.generateEmbedding(textToEmbed);
+    const { embedding } = await generateEmbedding(textToEmbed);
 
-    await db.insert(referenceMaterials).values({
-      id: refId,
+    const [ref] = await db.insert(referenceMaterials).values({
       title: params.title,
       type: params.type,
       source: params.source,
@@ -218,14 +216,14 @@ export class ContentLinkingService {
       class: params.class,
       language: params.language || 'en',
       description: params.description,
-      embedding: JSON.stringify(embedding),
+      embedding: embedding,
       quality: params.quality || 3,
       views: 0,
       createdAt: new Date()
-    });
+    }).returning({ id: referenceMaterials.id });
 
     console.log(`[ContentLinking] Added reference: ${params.title}`);
-    return refId;
+    return ref.id;
   }
 
   /**
@@ -241,7 +239,7 @@ export class ContentLinkingService {
     const { query, exam, subject, year, limit = 10 } = params;
 
     // Generate embedding for query
-    const queryEmbedding = await embeddingService.generateEmbedding(query);
+    const { embedding: queryEmbedding } = await generateEmbedding(query);
 
     let sqlQuery = sql`
       SELECT 
@@ -287,7 +285,7 @@ export class ContentLinkingService {
     const { query, type, subject, class: classNum, limit = 10 } = params;
 
     // Generate embedding for query
-    const queryEmbedding = await embeddingService.generateEmbedding(query);
+    const { embedding: queryEmbedding } = await generateEmbedding(query);
 
     let sqlQuery = sql`
       SELECT 

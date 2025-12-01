@@ -3,6 +3,7 @@ import session from 'express-session';
 import connectPg from 'connect-pg-simple';
 import type { Express, RequestHandler } from 'express';
 import { storage } from './storage';
+import { pool } from './db';
 import type { AuthUser, User } from '@shared/schema';
 import { authLimiter, signupLimiter, validatePasswordStrength } from './middleware/security';
 
@@ -31,12 +32,12 @@ export function getSession() {
   const sessionTtl = 7 * 24 * 60 * 60 * 1000; // 1 week
   const pgStore = connectPg(session);
   sessionStoreInstance = new pgStore({
-    conString: process.env.DATABASE_URL,
+    pool,
     createTableIfMissing: false,
     ttl: sessionTtl,
     tableName: 'sessions',
   });
-  
+
   return session({
     secret: process.env.SESSION_SECRET!,
     store: sessionStoreInstance,
@@ -73,9 +74,9 @@ export function setupAuth(app: Express) {
       // Strong password validation
       const passwordValidation = validatePasswordStrength(password);
       if (!passwordValidation.isValid) {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: 'Password does not meet security requirements',
-          errors: passwordValidation.errors 
+          errors: passwordValidation.errors
         });
       }
 
@@ -176,17 +177,17 @@ export function setupAuth(app: Express) {
   app.patch('/api/auth/profile', isAuthenticated, async (req: any, res) => {
     try {
       const userId = req.user.id;
-      const { 
-        firstName, 
-        lastName, 
-        locale, 
+      const {
+        firstName,
+        lastName,
+        locale,
         aiProvider,
         educationBoard,
         examTarget,
         currentClass,
         subjects,
         languagePreference,
-        onboardingCompleted 
+        onboardingCompleted
       } = req.body;
 
       // Update user profile

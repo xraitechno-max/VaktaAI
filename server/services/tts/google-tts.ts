@@ -1,11 +1,11 @@
-import textToSpeech from '@google-cloud/text-to-speech';
+import { TextToSpeechClient } from '@google-cloud/text-to-speech';
 import { TTSProvider, TTSOptions } from './types';
 import * as fs from 'fs';
 import * as path from 'path';
 
 export class GoogleTTS implements TTSProvider {
   public name = 'google';
-  private client: textToSpeech.TextToSpeechClient | null = null;
+  private client: TextToSpeechClient | null = null;
   private isInitialized = false;
 
   constructor() {
@@ -28,7 +28,7 @@ export class GoogleTTS implements TTSProvider {
         return;
       }
 
-      this.client = new textToSpeech.TextToSpeechClient({
+      this.client = new TextToSpeechClient({
         keyFilename: fullPath
       });
 

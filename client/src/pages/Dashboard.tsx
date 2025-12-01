@@ -8,7 +8,7 @@ import {
 import { AvatarTutorCard } from "@/components/dashboard/AvatarTutorCard";
 import { DocChatCard } from "@/components/dashboard/DocChatCard";
 import { StatsBar } from "@/components/dashboard/StatsBar";
-import { RecentActivityFeed } from "@/components/dashboard/RecentActivityFeed";
+import { RecentActivityFeed, type ActivityItem } from "@/components/dashboard/RecentActivityFeed";
 
 interface DashboardStats {
   activeSessions: number;
@@ -18,13 +18,7 @@ interface DashboardStats {
   totalGoals: number;
 }
 
-interface ActivityItem {
-  id: string;
-  icon: string;
-  title: string;
-  time: string;
-  subject?: string;
-}
+
 
 interface TaskItem {
   id: string;

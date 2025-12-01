@@ -34,7 +34,7 @@ export class CircuitBreaker {
     totalSuccesses: 0,
   };
   private nextAttempt: number = 0;
-  
+
   constructor(
     private name: string,
     private config: CircuitBreakerConfig = {
@@ -43,7 +43,7 @@ export class CircuitBreaker {
       timeout: 30000, // 30 seconds
       monitoringPeriod: 60000, // 1 minute
     }
-  ) {}
+  ) { }
 
   /**
    * Execute function with circuit breaker protection
@@ -192,9 +192,9 @@ export const pollyCircuitBreaker = new CircuitBreaker('AWS Polly', {
 });
 
 export const azureCircuitBreaker = new CircuitBreaker('Azure TTS', {
-  failureThreshold: 3,
-  successThreshold: 2,
-  timeout: 20000, // 20 seconds
+  failureThreshold: 10, // Increased from 3 to handle parallel bursts
+  successThreshold: 1,  // Recover faster
+  timeout: 10000, // Reduced to 10 seconds
   monitoringPeriod: 60000, // 1 minute
 });
 

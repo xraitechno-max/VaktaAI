@@ -8,6 +8,7 @@ import TutorSession from "@/components/tutor/TutorSession";
 import UnityAvatar, { UnityAvatarHandle } from "@/components/tutor/UnityAvatar";
 import OnboardingWizard, { type OnboardingData } from "@/components/onboarding/OnboardingWizard";
 import { motion } from "framer-motion";
+import { type User } from "@shared/schema";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,37 +22,37 @@ import {
 import mentorAvatar from "@assets/generated_images/female_teacher_gradient_background.png";
 
 const subjects = [
-  { 
-    id: 'physics', 
+  {
+    id: 'physics',
     nameKey: 'subject.physics',
-    icon: Atom, 
+    icon: Atom,
     color: 'from-blue-500 to-cyan-500',
     bgColor: 'bg-blue-500/10',
     borderColor: 'border-blue-500/30',
     topicKeys: ['topic.physics.mechanics', 'topic.physics.optics', 'topic.physics.thermodynamics', 'topic.physics.electromagnetism']
   },
-  { 
-    id: 'chemistry', 
+  {
+    id: 'chemistry',
     nameKey: 'subject.chemistry',
-    icon: Beaker, 
+    icon: Beaker,
     color: 'from-green-500 to-emerald-500',
     bgColor: 'bg-green-500/10',
     borderColor: 'border-green-500/30',
     topicKeys: ['topic.chemistry.organic', 'topic.chemistry.inorganic', 'topic.chemistry.physical', 'topic.chemistry.equilibrium']
   },
-  { 
-    id: 'maths', 
+  {
+    id: 'maths',
     nameKey: 'subject.maths',
-    icon: Calculator, 
+    icon: Calculator,
     color: 'from-amber-500 to-orange-500',
     bgColor: 'bg-amber-500/10',
     borderColor: 'border-amber-500/30',
     topicKeys: ['topic.maths.calculus', 'topic.maths.algebra', 'topic.maths.trigonometry', 'topic.maths.coordinate']
   },
-  { 
-    id: 'biology', 
+  {
+    id: 'biology',
     nameKey: 'subject.biology',
-    icon: Dna, 
+    icon: Dna,
     color: 'from-pink-500 to-rose-500',
     bgColor: 'bg-pink-500/10',
     borderColor: 'border-pink-500/30',
@@ -83,7 +84,7 @@ export default function Tutor() {
   const queryClient = useQueryClient();
 
   // Fetch current user to check onboarding status
-  const { data: user, isLoading: userLoading } = useQuery({
+  const { data: user, isLoading: userLoading } = useQuery<User>({
     queryKey: ["/api/auth/user"],
   });
 
@@ -125,7 +126,7 @@ export default function Tutor() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const isQuickStart = params.get('quick') === 'true';
-    
+
     if (isQuickStart && !quickStartTriggered && !currentSessionId) {
       setQuickStartTriggered(true);
       window.history.replaceState({}, '', '/tutor');
@@ -151,10 +152,10 @@ export default function Tutor() {
     onSuccess: async () => {
       // Wait for cache to fully update with confirmed data
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      const refetchedData = await queryClient.ensureQueryData({ 
+      const refetchedData = await queryClient.ensureQueryData({
         queryKey: ["/api/auth/user"],
       });
-      
+
       // Only hide wizard after confirmed cache update
       if (refetchedData) {
         setShowOnboarding(false);
@@ -181,22 +182,22 @@ export default function Tutor() {
   const handleOnboardingSkip = async () => {
     try {
       // Provide safe defaults: Class 10 board-only with all board subjects
-      const response = await apiRequest("PATCH", "/api/auth/profile", { 
+      const response = await apiRequest("PATCH", "/api/auth/profile", {
         currentClass: '10',
         examTarget: 'board-only',
         educationBoard: 'CBSE',
         subjects: ['physics', 'chemistry', 'biology', 'maths', 'english', 'hindi'], // Board subjects for Class 10
         languagePreference: 'hinglish',
-        onboardingCompleted: true 
+        onboardingCompleted: true
       });
       const updatedUser = await response.json();
-      
+
       // Wait for cache to fully update with confirmed data
       await queryClient.invalidateQueries({ queryKey: ["/api/auth/user"] });
-      const refetchedData = await queryClient.ensureQueryData({ 
+      const refetchedData = await queryClient.ensureQueryData({
         queryKey: ["/api/auth/user"],
       });
-      
+
       // Only hide wizard after confirmed cache update
       if (refetchedData) {
         setOnboardingSkipped(true);
@@ -370,13 +371,13 @@ export default function Tutor() {
               <Sparkles className="w-3.5 h-3.5 mr-1.5" />
               {t('aiMentor.subtitle')}
             </Badge>
-            
+
             <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold">
               <span className="bg-gradient-to-r from-purple-600 via-pink-600 to-orange-500 bg-clip-text text-transparent">
                 {t('aiMentor.title')}
               </span>
             </h1>
-            
+
             <p className="text-base sm:text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto leading-relaxed">
               {t('aiMentor.description')}
             </p>
@@ -406,11 +407,10 @@ export default function Tutor() {
                     <button
                       key={subject.id}
                       onClick={() => setQuickStartSubject(subject.id)}
-                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 ${
-                        isSelected
+                      className={`flex items-center gap-2 px-4 py-2.5 rounded-xl font-medium transition-all duration-200 ${isSelected
                           ? `bg-gradient-to-r ${subject.color} text-white shadow-lg scale-105`
                           : `${subject.bgColor} ${subject.borderColor} border-2 text-gray-700 dark:text-gray-300 hover:scale-102`
-                      }`}
+                        }`}
                       data-testid={`quick-subject-${subject.id}`}
                     >
                       <Icon className="w-4 h-4" />
@@ -611,7 +611,7 @@ export default function Tutor() {
               <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                 {t('avatar.greeting')}
               </p>
-              <Button 
+              <Button
                 onClick={() => handleOpenSetupWizard()}
                 className="w-full bg-gradient-to-r from-purple-500 to-pink-500"
                 data-testid="button-start-with-mentor"

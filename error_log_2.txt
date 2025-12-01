@@ -1,0 +1,65 @@
+
+> rest-express@1.0.0 check
+> tsc
+
+client/src/components/docchat/EnhancedDocChat.tsx(393,14): error TS2322: Type '{ children: string; jsx: true; }' is not assignable to type 'DetailedHTMLProps<StyleHTMLAttributes<HTMLStyleElement>, HTMLStyleElement>'.
+  Property 'jsx' does not exist on type 'DetailedHTMLProps<StyleHTMLAttributes<HTMLStyleElement>, HTMLStyleElement>'.
+client/src/pages/AdminAPIManagement.tsx(74,36): error TS2339: Property 'value' does not exist on type '{}'.
+client/src/pages/AdminAPIManagement.tsx(75,30): error TS2339: Property 'value' does not exist on type '{}'.
+client/src/pages/AdminVoiceSettings.tsx(78,28): error TS2339: Property 'value' does not exist on type '{}'.
+client/src/pages/AdminVoiceSettings.tsx(79,28): error TS2339: Property 'value' does not exist on type '{}'.
+client/src/pages/AdminVoiceSettings.tsx(85,28): error TS2339: Property 'value' does not exist on type '{}'.
+client/src/pages/AdminVoiceSettings.tsx(86,28): error TS2339: Property 'value' does not exist on type '{}'.
+client/src/pages/Dashboard.tsx(115,33): error TS2719: Type 'ActivityItem[] | undefined' is not assignable to type 'ActivityItem[] | undefined'. Two different types with this name exist, but they are unrelated.
+  Type 'ActivityItem[]' is not assignable to type 'ActivityItem[]'. Two different types with this name exist, but they are unrelated.
+    Property 'type' is missing in type 'ActivityItem' but required in type 'ActivityItem'.
+client/src/pages/Tutor.tsx(93,43): error TS2339: Property 'onboardingCompleted' does not exist on type '{}'.
+client/src/pages/Tutor.tsx(94,33): error TS2339: Property 'currentClass' does not exist on type '{}'.
+client/src/pages/Tutor.tsx(94,54): error TS2339: Property 'examTarget' does not exist on type '{}'.
+client/src/pages/Tutor.tsx(94,73): error TS2339: Property 'subjects' does not exist on type '{}'.
+client/src/pages/Tutor.tsx(94,90): error TS2339: Property 'subjects' does not exist on type '{}'.
+client/src/pages/Tutor.tsx(94,118): error TS2339: Property 'languagePreference' does not exist on type '{}'.
+client/src/pages/Tutor.tsx(100,28): error TS2339: Property 'currentClass' does not exist on type '{}'.
+client/src/pages/Tutor.tsx(101,26): error TS2339: Property 'examTarget' does not exist on type '{}'.
+client/src/pages/Tutor.tsx(102,24): error TS2339: Property 'subjects' does not exist on type '{}'.
+client/src/pages/Tutor.tsx(103,34): error TS2339: Property 'languagePreference' does not exist on type '{}'.
+client/src/pages/Tutor.tsx(104,35): error TS2339: Property 'onboardingCompleted' does not exist on type '{}'.
+server/routes/analytics.ts(61,29): error TS2339: Property 'hits' does not exist on type '{ connected: boolean; totalKeys: number; memoryUsed: string; memoryKeys?: number | undefined; }'.
+server/routes/analytics.ts(61,48): error TS2339: Property 'misses' does not exist on type '{ connected: boolean; totalKeys: number; memoryUsed: string; memoryKeys?: number | undefined; }'.
+server/routes/analytics.ts(62,25): error TS2339: Property 'hits' does not exist on type '{ connected: boolean; totalKeys: number; memoryUsed: string; memoryKeys?: number | undefined; }'.
+server/routes/analytics.ts(62,44): error TS2339: Property 'hits' does not exist on type '{ connected: boolean; totalKeys: number; memoryUsed: string; memoryKeys?: number | undefined; }'.
+server/routes/analytics.ts(62,62): error TS2339: Property 'misses' does not exist on type '{ connected: boolean; totalKeys: number; memoryUsed: string; memoryKeys?: number | undefined; }'.
+server/routes/analytics.ts(324,29): error TS2339: Property 'hits' does not exist on type '{ connected: boolean; totalKeys: number; memoryUsed: string; memoryKeys?: number | undefined; }'.
+server/routes/analytics.ts(324,48): error TS2339: Property 'misses' does not exist on type '{ connected: boolean; totalKeys: number; memoryUsed: string; memoryKeys?: number | undefined; }'.
+server/routes/analytics.ts(325,28): error TS2339: Property 'hits' does not exist on type '{ connected: boolean; totalKeys: number; memoryUsed: string; memoryKeys?: number | undefined; }'.
+server/routes/analytics.ts(325,47): error TS2339: Property 'hits' does not exist on type '{ connected: boolean; totalKeys: number; memoryUsed: string; memoryKeys?: number | undefined; }'.
+server/routes/analytics.ts(325,65): error TS2339: Property 'misses' does not exist on type '{ connected: boolean; totalKeys: number; memoryUsed: string; memoryKeys?: number | undefined; }'.
+server/routes/tutor-chat.ts(47,9): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(values: { role: string | SQL<unknown> | Placeholder<string, any>; chatId: string | SQL<unknown> | Placeholder<string, any>; content: string | SQL<unknown> | Placeholder<...>; id?: string | ... 2 more ... | undefined; createdAt?: SQL<...> | ... 3 more ... | undefined; metadata?: SQL<...> | ... 3 more ... | undefined; tool?: string | ... 3 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'id' does not exist in type '{ role: string | SQL<unknown> | Placeholder<string, any>; chatId: string | SQL<unknown> | Placeholder<string, any>; content: string | SQL<unknown> | Placeholder<string, any>; id?: string | ... 2 more ... | undefined; createdAt?: SQL<...> | ... 3 more ... | undefined; metadata?: SQL<...> | ... 3 more ... | undefined;...'.
+server/routes/tutor-chat.ts(144,9): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(values: { role: string | SQL<unknown> | Placeholder<string, any>; chatId: string | SQL<unknown> | Placeholder<string, any>; content: string | SQL<unknown> | Placeholder<...>; id?: string | ... 2 more ... | undefined; createdAt?: SQL<...> | ... 3 more ... | undefined; metadata?: SQL<...> | ... 3 more ... | undefined; tool?: string | ... 3 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'id' does not exist in type '{ role: string | SQL<unknown> | Placeholder<string, any>; chatId: string | SQL<unknown> | Placeholder<string, any>; content: string | SQL<unknown> | Placeholder<string, any>; id?: string | ... 2 more ... | undefined; createdAt?: SQL<...> | ... 3 more ... | undefined; metadata?: SQL<...> | ... 3 more ... | undefined;...'.
+server/services/chunking/semanticChunkingService.ts(292,21): error TS2345: Argument of type 'Chunk[]' is not assignable to parameter of type 'PgTable<TableConfig>'.
+  Type 'Chunk[]' is missing the following properties from type 'PgTable<TableConfig>': _, $inferSelect, $inferInsert, getSQL
+server/services/deduplication/deduplicationService.ts(55,52): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { userId: string | SQL<unknown> | Placeholder<string, any>; title: string | SQL<unknown> | Placeholder<string, any>; sourceType: string | SQL<unknown> | Placeholder<...>; ... 17 more ...; totalChunks?: number | ... 3 more ... | undefined; }): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'fileType' does not exist in type '{ userId: string | SQL<unknown> | Placeholder<string, any>; title: string | SQL<unknown> | Placeholder<string, any>; sourceType: string | SQL<unknown> | Placeholder<...>; ... 17 more ...; totalChunks?: number | ... 3 more ... | undefined; }'.
+  Overload 2 of 2, '(values: { userId: string | SQL<unknown> | Placeholder<string, any>; title: string | SQL<unknown> | Placeholder<string, any>; sourceType: string | SQL<unknown> | Placeholder<...>; ... 17 more ...; totalChunks?: number | ... 3 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'userId' does not exist in type '{ userId: string | SQL<unknown> | Placeholder<string, any>; title: string | SQL<unknown> | Placeholder<string, any>; sourceType: string | SQL<unknown> | Placeholder<...>; ... 17 more ...; totalChunks?: number | ... 3 more ... | undefined; }[]'.
+server/services/deduplication/deduplicationService.ts(58,31): error TS2339: Property 'fileType' does not exist on type '{ id: string; createdAt: Date | null; updatedAt: Date | null; userId: string; title: string; language: string | null; metadata: { [key: string]: any; videoId?: string | undefined; url?: string | undefined; duration?: string | undefined; segments?: number | undefined; extractedAt?: string | undefined; } | null; ... 1...'.
+server/services/deduplication/deduplicationService.ts(59,30): error TS2339: Property 'fileUrl' does not exist on type '{ id: string; createdAt: Date | null; updatedAt: Date | null; userId: string; title: string; language: string | null; metadata: { [key: string]: any; videoId?: string | undefined; url?: string | undefined; duration?: string | undefined; segments?: number | undefined; extractedAt?: string | undefined; } | null; ... 1...'.
+server/services/deduplication/deduplicationService.ts(169,42): error TS2339: Property 'fileType' does not exist on type '{ id: string; createdAt: Date | null; updatedAt: Date | null; userId: string; title: string; language: string | null; metadata: { [key: string]: any; videoId?: string | undefined; url?: string | undefined; duration?: string | undefined; segments?: number | undefined; extractedAt?: string | undefined; } | null; ... 1...'.
+server/services/deduplication/deduplicationService.ts(236,16): error TS18046: 'error' is of type 'unknown'.
+server/services/linking/contentLinkingService.ts(4,10): error TS2305: Module '"../embedding/embeddingService"' has no exported member 'embeddingService'.
+server/services/linking/contentLinkingService.ts(15,24): error TS2339: Property 'documentId' does not exist on type 'PgTableWithColumns<{ name: "chunks"; schema: undefined; columns: { id: PgColumn<{ name: "id"; tableName: "chunks"; dataType: "string"; columnType: "PgVarchar"; data: string; driverParam: string; notNull: true; hasDefault: true; ... 6 more ...; generated: undefined; }, {}, { ...; }>; ... 11 more ...; createdAt: PgCol...'.
+server/services/linking/contentLinkingService.ts(165,27): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { subject: string | SQL<unknown> | Placeholder<string, any>; exam: string | SQL<unknown> | Placeholder<string, any>; question: string | SQL<unknown> | Placeholder<...>; ... 13 more ...; verified?: boolean | ... 3 more ... | undefined; }): PgInsertBase<...>', gave the following error.
+    Type 'string' is not assignable to type 'SQL<unknown> | number[] | Placeholder<string, any> | null | undefined'.
+  Overload 2 of 2, '(values: { subject: string | SQL<unknown> | Placeholder<string, any>; exam: string | SQL<unknown> | Placeholder<string, any>; question: string | SQL<unknown> | Placeholder<...>; ... 13 more ...; verified?: boolean | ... 3 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'id' does not exist in type '{ subject: string | SQL<unknown> | Placeholder<string, any>; exam: string | SQL<unknown> | Placeholder<string, any>; question: string | SQL<unknown> | Placeholder<...>; ... 13 more ...; verified?: boolean | ... 3 more ... | undefined; }[]'.
+server/services/linking/contentLinkingService.ts(210,41): error TS2769: No overload matches this call.
+  Overload 1 of 2, '(value: { title: string | SQL<unknown> | Placeholder<string, any>; type: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 10 more ...; views?: number | ... 3 more ... | undefined; }): PgInsertBase<...>', gave the following error.
+    Type 'string' is not assignable to type 'SQL<unknown> | number[] | Placeholder<string, any> | null | undefined'.
+  Overload 2 of 2, '(values: { title: string | SQL<unknown> | Placeholder<string, any>; type: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 10 more ...; views?: number | ... 3 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'id' does not exist in type '{ title: string | SQL<unknown> | Placeholder<string, any>; type: string | SQL<unknown> | Placeholder<string, any>; id?: string | SQL<unknown> | Placeholder<string, any> | undefined; ... 10 more ...; views?: number | ... 3 more ... | undefined; }[]'.

@@ -1,4 +1,4 @@
-import { PollyClient, SynthesizeSpeechCommand } from '@aws-sdk/client-polly';
+import { PollyClient, SynthesizeSpeechCommand, VoiceId, LanguageCode } from '@aws-sdk/client-polly';
 import { TTSProvider, TTSOptions } from './types';
 import { Readable } from 'stream';
 
@@ -71,9 +71,9 @@ export class PollyTTS implements TTSProvider {
           Text: text,
           TextType: isSSML ? 'ssml' : 'text',
           OutputFormat: 'mp3',
-          VoiceId: voiceId,
+          VoiceId: voiceId as VoiceId,
           Engine: 'neural', // Neural for better quality
-          LanguageCode: languageCode,
+          LanguageCode: languageCode as LanguageCode,
           SampleRate: '24000', // Higher quality
         });
 
@@ -81,16 +81,16 @@ export class PollyTTS implements TTSProvider {
       } catch (neuralError: any) {
         // Fallback to standard engine if neural not supported
         if (neuralError.name === 'InvalidParameterException' ||
-            neuralError.message?.includes('neural')) {
+          neuralError.message?.includes('neural')) {
           console.warn('[Polly TTS] Neural engine not supported, using standard');
 
           const fallbackCommand = new SynthesizeSpeechCommand({
             Text: text,
             TextType: isSSML ? 'ssml' : 'text',
             OutputFormat: 'mp3',
-            VoiceId: voiceId,
+            VoiceId: voiceId as VoiceId,
             Engine: 'standard', // Fallback
-            LanguageCode: languageCode,
+            LanguageCode: languageCode as LanguageCode,
             SampleRate: '24000',
           });
 
@@ -125,8 +125,8 @@ export class PollyTTS implements TTSProvider {
     options: TTSOptions = {}
   ): Promise<{
     audio: Buffer;
-    visemes: Array<{time: number; type: string; value: string}>;
-    words: Array<{time: number; type: string; value: string; start: number; end: number}>;
+    visemes: Array<{ time: number; type: string; value: string }>;
+    words: Array<{ time: number; type: string; value: string; start: number; end: number }>;
   }> {
     if (!this.isConfigured) {
       throw new Error('AWS Polly not configured');
@@ -148,9 +148,9 @@ export class PollyTTS implements TTSProvider {
         Text: text,
         TextType: isSSML ? 'ssml' : 'text',
         OutputFormat: 'mp3',
-        VoiceId: voiceId,
+        VoiceId: voiceId as VoiceId,
         Engine: 'standard', // Visemes only work with standard engine
-        LanguageCode: languageCode,
+        LanguageCode: languageCode as LanguageCode,
         SampleRate: '24000',
       });
 
@@ -162,9 +162,9 @@ export class PollyTTS implements TTSProvider {
         Text: text,
         TextType: isSSML ? 'ssml' : 'text',
         OutputFormat: 'json',
-        VoiceId: voiceId,
+        VoiceId: voiceId as VoiceId,
         Engine: 'standard', // Must match audio engine
-        LanguageCode: languageCode,
+        LanguageCode: languageCode as LanguageCode,
         SpeechMarkTypes: ['viseme', 'word'], // 🎯 ADD WORD BOUNDARIES for word-level sync
       });
 
@@ -172,8 +172,8 @@ export class PollyTTS implements TTSProvider {
       const speechMarksText = await this.streamToString(visemeResponse.AudioStream as any);
 
       // Parse visemes + word boundaries (each line is a JSON object)
-      const visemes: Array<{time: number; type: string; value: string}> = [];
-      const words: Array<{time: number; type: string; value: string; start: number; end: number}> = [];
+      const visemes: Array<{ time: number; type: string; value: string }> = [];
+      const words: Array<{ time: number; type: string; value: string; start: number; end: number }> = [];
       const lines = speechMarksText.trim().split('\n');
 
       for (const line of lines) {

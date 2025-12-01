@@ -256,8 +256,8 @@ export function EnhancedDocChat({ chatId, selectedDocuments, onError }: Enhanced
                 message.role === 'user'
                   ? "bg-gradient-to-br from-purple-600 to-indigo-600 text-white"
                   : message.error
-                  ? "bg-red-50 dark:bg-red-950/20 border-2 border-red-200 dark:border-red-800 text-red-900 dark:text-red-100"
-                  : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
+                    ? "bg-red-50 dark:bg-red-950/20 border-2 border-red-200 dark:border-red-800 text-red-900 dark:text-red-100"
+                    : "bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-900 dark:text-slate-100"
               )}
             >
               {message.error && (
@@ -390,7 +390,7 @@ export function EnhancedDocChat({ chatId, selectedDocuments, onError }: Enhanced
         )}
       </div>
 
-      <style jsx>{`
+      <style>{`
         @keyframes fadeIn {
           from {
             opacity: 0;

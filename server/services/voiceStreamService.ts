@@ -19,7 +19,7 @@ import { ttsCacheService } from './ttsCacheService';
 import { audioCompression } from './audioCompression';
 import { ttsMetrics } from './ttsMetrics';
 import { voiceService } from './voiceService';
-import { mapPollyVisemesToUnityPhonemes } from '../utils/visemeMapping';
+import { mapPollyVisemesToUnityPhonemes, mapAzureVisemesToUnityPhonemes } from '../utils/visemeMapping';
 import { avatarStateService } from './avatarStateService';
 import { TTSTextProcessor } from '../utils/tts-text-processor';
 import { ttsRouter } from './tts';
@@ -115,7 +115,7 @@ export class VoiceStreamService {
       }
     } catch (error) {
       console.error('[VOICE STREAM] Audio processing error:', error);
-      
+
       const errorMsg: VoiceMessage = {
         type: 'ERROR',
         timestamp: new Date().toISOString(),
@@ -147,11 +147,11 @@ export class VoiceStreamService {
     // Fallback to AssemblyAI
     try {
       console.log('[VOICE STREAM] Using AssemblyAI for STT...');
-      
+
       // AssemblyAI supports direct file upload via their upload API
       // Upload the audio buffer directly (works with any format: WAV, WebM, Opus, etc.)
       const uploadUrl = await assemblyAI.files.upload(audioBuffer);
-      
+
       const transcript = await assemblyAI.transcripts.transcribe({
         audio: uploadUrl,
         language_code: language === 'hi' ? 'hi' : 'en',
@@ -186,10 +186,10 @@ export class VoiceStreamService {
   ): Promise<void> {
     try {
       console.log(`[STREAMING TTS] 🚀 Real-time sentence-by-sentence TTS starting...`);
-      
+
       // Sentence boundary regex (Hindi + English)
       const sentenceBoundary = /[।.!?]\s+|[।.!?]$/;
-      
+
       // Split text into sentences
       const parts = text.split(sentenceBoundary);
       const sentences: string[] = [];
@@ -199,9 +199,9 @@ export class VoiceStreamService {
           sentences.push(part);
         }
       }
-      
+
       console.log(`[STREAMING TTS] Split into ${sentences.length} sentences`);
-      
+
       // 🔥 FIX #2: Send TTS_START to reset client queue state
       const startMsg: TTSStartMessage = {
         type: 'TTS_START',
@@ -211,7 +211,7 @@ export class VoiceStreamService {
       };
       ws.send(JSON.stringify(startMsg));
       ws.isTTSActive = true;
-      
+
       // Voice options for all chunks
       const voiceOptions = {
         emotion,
@@ -222,42 +222,42 @@ export class VoiceStreamService {
         enablePauses: true,
         enableEmphasis: true
       };
-      
+
       // 🔥 Generate TTS for all sentences IN PARALLEL (don't await!)
       const ttsPromises = sentences.map(async (sentence, index) => {
         // 🔥 FIX #3: Assign deterministic sequence numbers BEFORE synthesis
         const sequenceNumber = index;
-        
+
         try {
           const startTime = Date.now();
-          
+
           // 🚀 PHASE 2.1: Check cache first
           const cachedAudio = await ttsCacheService.get(sentence, language, emotion, personaId);
-          
+
           let audioBuffer: Buffer;
           let cached = false;
-          
+
           if (cachedAudio) {
             audioBuffer = cachedAudio;
             cached = true;
           } else {
             // Generate TTS audio
             audioBuffer = await enhancedVoiceService.synthesize(sentence, voiceOptions);
-            
+
             // 🚀 PHASE 2.1: Store in cache for future use
             await ttsCacheService.set(sentence, language, audioBuffer, emotion, personaId);
           }
-          
+
           const genTime = Date.now() - startTime;
-          
+
           const cacheStatus = cached ? '💾 CACHED' : '🔨 GENERATED';
           console.log(`[STREAMING TTS] ✅ Chunk ${index + 1}/${sentences.length} ${cacheStatus} (${genTime}ms): "${sentence.substring(0, 40)}..."`);
-          
+
           // 🚀 PHASE 2.2: Compress audio before sending (if beneficial)
           let finalAudioData: string;
           let compressed = false;
           let compressedSize = 0;
-          
+
           if (audioCompression.shouldCompress(audioBuffer.length)) {
             const compressionResult = await audioCompression.compress(audioBuffer);
             finalAudioData = compressionResult.compressed.toString('base64');
@@ -266,7 +266,7 @@ export class VoiceStreamService {
           } else {
             finalAudioData = audioBuffer.toString('base64');
           }
-          
+
           // 🚀 PHASE 2.4: Record metrics
           ttsMetrics.record({
             sentence,
@@ -279,7 +279,7 @@ export class VoiceStreamService {
             sequence: sequenceNumber,
             sessionId: ws.sessionId,
           });
-          
+
           // ✅ CORRECT: Send TTS chunk with flat payload (matches TTSChunkMessage)
           const ttsMsg: TTSChunkMessage = {
             type: 'TTS_CHUNK',
@@ -289,12 +289,12 @@ export class VoiceStreamService {
             chunkIndex: sequenceNumber,
             totalChunks: index === sentences.length - 1 ? sentences.length : undefined
           };
-          
+
           ws.send(JSON.stringify(ttsMsg));
-          
+
         } catch (error) {
           console.error(`[STREAMING TTS] ❌ Failed chunk ${index + 1}: ${error}`);
-          
+
           // Send error message for failed chunk
           const errorMsg: VoiceMessage = {
             type: 'ERROR',
@@ -306,7 +306,7 @@ export class VoiceStreamService {
           ws.send(JSON.stringify(errorMsg));
         }
       });
-      
+
       // Don't await all - let them stream as they complete!
       // But track completion
       Promise.all(ttsPromises).then(() => {
@@ -318,13 +318,13 @@ export class VoiceStreamService {
           totalChunks: sentences.length
         };
         ws.send(JSON.stringify(endMsg));
-        
+
         ws.isTTSActive = false;
         console.log(`[STREAMING TTS] ✅ All ${sentences.length} chunks sent`);
       }).catch(error => {
         console.error('[STREAMING TTS] Error in parallel generation:', error);
       });
-      
+
     } catch (error) {
       console.error('[STREAMING TTS] Setup error:', error);
       // Fallback to old method
@@ -346,7 +346,7 @@ export class VoiceStreamService {
   ): Promise<void> {
     try {
       console.log(`[VOICE TTS] Converting with emotion: ${emotion}, intent: ${intent}, persona: ${personaId}`);
-      
+
       // Use EnhancedVoiceService to apply emotion, intent, and persona
       const voiceOptions = {
         emotion,
@@ -357,16 +357,16 @@ export class VoiceStreamService {
         enablePauses: true,
         enableEmphasis: true
       };
-      
+
       // Convert to speech with enhanced prosody
       const audioBuffer = await enhancedVoiceService.synthesize(text, voiceOptions);
-      
+
       // Stream the enhanced audio chunks
       await this.streamTTSAudioDirect(ws, audioBuffer, language);
-      
+
     } catch (error) {
       console.error('[VOICE TTS] Enhanced TTS error:', error);
-      
+
       // Fallback to basic TTS without emotion/prosody
       await this.streamTTSAudio(ws, text, language);
     }
@@ -382,7 +382,7 @@ export class VoiceStreamService {
   ): Promise<void> {
     try {
       console.log(`[VOICE STREAM] Starting direct audio streaming: ${audioBuffer.length} bytes`);
-      
+
       // Mark TTS as active
       ws.isTTSActive = true;
 
@@ -398,7 +398,7 @@ export class VoiceStreamService {
       // Split audio into chunks for streaming (10KB chunks)
       const CHUNK_SIZE = 10 * 1024; // 10KB
       const totalChunks = Math.ceil(audioBuffer.length / CHUNK_SIZE);
-      
+
       console.log(`[VOICE STREAM] Streaming ${totalChunks} audio chunks`);
 
       for (let i = 0; i < totalChunks; i++) {
@@ -436,7 +436,7 @@ export class VoiceStreamService {
           totalChunks
         };
         ws.send(JSON.stringify(endMsg));
-        
+
         console.log(`[VOICE STREAM] ✅ Direct streaming complete: ${totalChunks} chunks sent`);
       }
 
@@ -463,7 +463,7 @@ export class VoiceStreamService {
   ): Promise<void> {
     try {
       console.log(`[VOICE STREAM] Starting TTS streaming for: "${text.substring(0, 50)}..."`);
-      
+
       // Mark TTS as active
       ws.isTTSActive = true;
 
@@ -488,7 +488,7 @@ export class VoiceStreamService {
       // Split audio into chunks for streaming (10KB chunks)
       const CHUNK_SIZE = 10 * 1024; // 10KB
       const totalChunks = Math.ceil(audioBuffer.length / CHUNK_SIZE);
-      
+
       console.log(`[VOICE STREAM] Streaming ${totalChunks} audio chunks (${audioBuffer.length} bytes total)`);
 
       for (let i = 0; i < totalChunks; i++) {
@@ -512,7 +512,7 @@ export class VoiceStreamService {
         };
 
         ws.send(JSON.stringify(chunkMsg));
-        
+
         // Small delay between chunks for smoother streaming (adjust based on network)
         await new Promise(resolve => setTimeout(resolve, 50));
       }
@@ -526,7 +526,7 @@ export class VoiceStreamService {
           totalChunks
         };
         ws.send(JSON.stringify(endMsg));
-        
+
         console.log(`[VOICE STREAM] ✅ TTS streaming complete: ${totalChunks} chunks sent`);
       }
 
@@ -534,7 +534,7 @@ export class VoiceStreamService {
     } catch (error) {
       console.error('[VOICE STREAM] TTS streaming error:', error);
       ws.isTTSActive = false;
-      
+
       const errorMsg: VoiceMessage = {
         type: 'ERROR',
         timestamp: new Date().toISOString(),
@@ -560,7 +560,7 @@ export class VoiceStreamService {
     // Use TTS Router which handles Azure as primary provider with circuit breaker protection
     try {
       console.log('[VOICE STREAM] Using TTS Router for synthesis...');
-      
+
       const result = await ttsRouter.synthesize(
         text,
         {
@@ -570,7 +570,7 @@ export class VoiceStreamService {
         },
         'avatar' // Use 'avatar' context for best quality (Azure primary)
       );
-      
+
       console.log(`[VOICE STREAM] ✅ TTS Router generated: ${result.audioBuffer.length} bytes (provider: ${result.provider})`);
       return result.audioBuffer;
     } catch (error) {
@@ -716,7 +716,7 @@ export class VoiceStreamService {
       }
 
       let audioBuffer: Buffer;
-      let phonemes: Array<{time: number; blendshape: string; weight: number}> | undefined;
+      let phonemes: Array<{ time: number; blendshape: string; weight: number }> | undefined;
       let cached = false;
 
       // 🎤 PHASE 1: Generate audio with or without phonemes
@@ -733,7 +733,9 @@ export class VoiceStreamService {
         audioBuffer = result.audioBuffer;
 
         // Map visemes/phonemes to Unity phonemes (if available)
-        if (result.phonemes && result.phonemes.length > 0) {
+        if (result.provider === 'azure' && result.visemes) {
+          phonemes = mapAzureVisemesToUnityPhonemes(result.visemes);
+        } else if (result.phonemes && result.phonemes.length > 0) {
           phonemes = mapPollyVisemesToUnityPhonemes(result.phonemes);
         }
 
@@ -772,14 +774,14 @@ export class VoiceStreamService {
           console.log(`[TRUE STREAM] TTS generated by provider: ${result.provider}, cached: ${result.cached}`);
         }
       }
-      
+
       const genTime = Date.now() - startTime;
       const cacheStatus = voiceOptions.enablePhonemes ? '🎤 WITH PHONEMES' : (cached ? '💾 CACHED' : '🔨 GENERATED');
       console.log(`[TRUE STREAM] ✅ Sentence ${sequenceNumber} ${cacheStatus} (${genTime}ms): "${sentence.substring(0, 40)}..."`);
-      
+
       // 🚀 PHASE 2: Send appropriate TTS chunk message
       const finalAudioData = audioBuffer.toString('base64');
-      
+
       if (voiceOptions.enablePhonemes && phonemes) {
         // 🎤 Send PHONEME_TTS_CHUNK with audio + phoneme data
         const phonemeMsg: PhonemeTTSChunkMessage = {
@@ -792,7 +794,7 @@ export class VoiceStreamService {
           totalChunks: isLast ? sequenceNumber + 1 : undefined,
           text: sentence
         };
-        
+
         ws.send(JSON.stringify(phonemeMsg));
       } else {
         // 🔊 Send regular TTS_CHUNK without phonemes
@@ -804,10 +806,10 @@ export class VoiceStreamService {
           chunkIndex: sequenceNumber,
           totalChunks: isLast ? sequenceNumber + 1 : undefined
         };
-        
+
         ws.send(JSON.stringify(ttsMsg));
       }
-      
+
       // 🚀 PHASE 3: Record metrics
       ttsMetrics.record({
         sentence,
@@ -819,10 +821,10 @@ export class VoiceStreamService {
         sequence: sequenceNumber,
         sessionId: ws.sessionId,
       });
-      
+
     } catch (error) {
       console.error(`[TRUE STREAM] ❌ Failed sentence ${sequenceNumber}: ${error}`);
-      
+
       // Send error message (skip this chunk)
       const errorMsg: VoiceMessage = {
         type: 'ERROR',
@@ -872,7 +874,7 @@ export class VoiceStreamService {
       const startLangDetection = Date.now();
       const cachedLangResult = await performanceOptimizer.getCachedLanguageDetection(transcribedText);
       let langDetection = cachedLangResult;
-      
+
       if (!cachedLangResult) {
         langDetection = await languageDetector.detectLanguage(transcribedText, {
           conversationHistory: [],
@@ -881,11 +883,11 @@ export class VoiceStreamService {
         });
         await performanceOptimizer.cacheLanguageDetection(transcribedText, langDetection);
       }
-      
+
       const langDetectionTime = Date.now() - startLangDetection;
       const detectedLang = langDetection?.language || 'english';
       console.log(`[VOICE TUTOR] Language: ${detectedLang} (${langDetection?.confidence.toFixed(2)}) - ${langDetectionTime}ms`);
-      
+
       // 🔥 STEP 2: SESSION CONTEXT - Add language detection
       await sessionContextManager.addLanguageDetection(
         userId,
@@ -905,7 +907,7 @@ export class VoiceStreamService {
       ]);
 
       console.log(`[VOICE TUTOR] Intent: ${intentResult.intent} (${(intentResult.confidence * 100).toFixed(0)}%) | Emotion: ${emotionResult.emotion}`);
-      
+
       // Add emotion to session context
       await sessionContextManager.addEmotionDetection(
         userId,
@@ -913,21 +915,21 @@ export class VoiceStreamService {
         emotionResult.emotion,
         emotionResult.confidence
       );
-      
+
       const sessionCtx = await sessionContextManager.getContext(userId, chatId);
 
       // 🔥 STEP 4: HANDLE SPECIAL INTENTS (hints, phase advancement)
       if (intentResult.intent === 'request_hint') {
-        const hintState = hintService.getHintState(await storage.getChatMessages(chatId, 50)) || 
-                         hintService.initializeHintState();
+        const hintState = hintService.getHintState(await storage.getChatMessages(chatId, 50)) ||
+          hintService.initializeHintState();
         const advanceResult = hintService.advanceHintLevel(hintState);
-        
+
         if (!advanceResult.canAdvance) {
           // Send hint limit message as TTS
           await this.streamTTSChunks(ws, advanceResult.message || 'No more hints available', language, emotionResult.emotion, intentResult.intent);
           return;
         }
-        
+
         // Generate hint with AI (simplified for voice - no streaming)
         const hintPrompt = hintService.buildHintPrompt(
           advanceResult.nextLevel,
@@ -936,13 +938,13 @@ export class VoiceStreamService {
           transcribedText,
           hintState.previousHints
         );
-        
+
         // Generate hint response
         const hintResponse = await optimizedAI.generateResponse(transcribedText, hintPrompt, {
           language: detectedLang === 'hinglish' ? 'hindi' : 'english',
           useCache: true
         });
-        
+
         // Save hint message with metadata
         await storage.addMessage({
           chatId,
@@ -956,7 +958,7 @@ export class VoiceStreamService {
             cost: hintResponse.cost
           } as any
         });
-        
+
         // Stream hint as TTS
         await this.streamTTSChunks(ws, hintResponse.response, language, emotionResult.emotion, intentResult.intent);
         return;
@@ -976,7 +978,7 @@ export class VoiceStreamService {
         languageConfidence: langDetection?.confidence || 0.5,
         currentEmotion: emotionResult.emotion,
         emotionConfidence: emotionResult.confidence,
-        emotionalStability: sessionCtx?.emotionalHistory && sessionCtx.emotionalHistory.length > 0 ? 
+        emotionalStability: sessionCtx?.emotionalHistory && sessionCtx.emotionalHistory.length > 0 ?
           (sessionCtx.emotionalHistory.filter(e => e.emotion === emotionResult.emotion).length / sessionCtx.emotionalHistory.length) : 0.5,
         subject: session.subject,
         topic: session.topic,
@@ -986,7 +988,7 @@ export class VoiceStreamService {
         misconceptions: session.adaptiveMetrics?.misconceptions || [],
         strongConcepts: session.adaptiveMetrics?.strongConcepts || []
       });
-      
+
       const systemPrompt = promptResult.systemPrompt;
       console.log(`[VOICE TUTOR] Dynamic prompt: ${systemPrompt.length} chars | Phase: ${session.currentPhase}`);
 
@@ -1033,7 +1035,7 @@ export class VoiceStreamService {
         console.log(`[VOICE TUTOR] 🧹 Clearing ${ws.ttsInFlightMap.size} stale TTS promises from previous session`);
         ws.ttsInFlightMap.clear();
       }
-      
+
       // Voice options for TTS
       const voiceOptions = {
         emotion: emotionResult.emotion,
@@ -1045,7 +1047,7 @@ export class VoiceStreamService {
         enableEmphasis: true,
         enablePhonemes: true  // 🎤 Enable phoneme generation for Unity lip-sync via WebSocket!
       };
-      
+
       // 🚀 Stream AI response with REAL-TIME sentence-by-sentence TTS generation!
       const aiResult = await optimizedAI.generateStreamingResponse(
         transcribedText,
@@ -1055,12 +1057,12 @@ export class VoiceStreamService {
           // Handle completion event (save metadata)
           if (meta?.type === 'complete') {
             console.log(`[VOICE TUTOR] ✅ AI streaming complete - Model: ${meta.model}, Cost: $${meta.cost?.toFixed(6) || 0}`);
-            
+
             // Process final partial sentence if exists
             if (currentSentence.trim().length > 0) {
               // 🎭 Check avatar state before TTS generation
               const canGenerateTTS = avatarStateService.canGenerateTTS(ws.sessionId || '');
-              
+
               if (canGenerateTTS) {
                 // 🚀 OPTIMIZATION: Fire-and-forget for parallel TTS generation (dedup handled by ttsInFlightMap)
                 this.generateAndStreamSentenceTTS(
@@ -1084,7 +1086,7 @@ export class VoiceStreamService {
                 console.log(`[VOICE TUTOR] 📝 Avatar not ready - Sent final text-only: "${currentSentence.trim().substring(0, 40)}..."`);
               }
             }
-            
+
             // Send TTS_END
             const endMsg: TTSEndMessage = {
               type: 'TTS_END',
@@ -1094,27 +1096,27 @@ export class VoiceStreamService {
             };
             ws.send(JSON.stringify(endMsg));
             ws.isTTSActive = false;
-            
+
             return;
           }
-          
+
           // Accumulate text chunks
           currentSentence += chunk;
           fullResponse += chunk;
-          
+
           // Check for sentence boundary
           const match = currentSentence.match(sentenceBoundary);
           if (match) {
             // Extract complete sentence(s)
             const parts = currentSentence.split(sentenceBoundary);
-            
+
             // Process all complete sentences (all except last part which may be incomplete)
             for (let i = 0; i < parts.length - 1; i++) {
               const sentence = parts[i].trim();
               if (sentence) {
                 // 🎭 Check avatar state before TTS generation
                 const canGenerateTTS = avatarStateService.canGenerateTTS(ws.sessionId || '');
-                
+
                 if (canGenerateTTS) {
                   // 🚀 OPTIMIZATION: Fire-and-forget for parallel TTS generation (dedup handled by ttsInFlightMap)
                   this.generateAndStreamSentenceTTS(
@@ -1137,17 +1139,17 @@ export class VoiceStreamService {
                   ws.send(JSON.stringify(textMsg));
                   console.log(`[VOICE TUTOR] 📝 Avatar not ready - Sent text-only: "${sentence.substring(0, 40)}..."`);
                 }
-                
+
                 sentenceIndex++;
               }
             }
-            
+
             // Keep the incomplete part for next iteration
             currentSentence = parts[parts.length - 1] || '';
           }
         }
       );
-      
+
       const aiGenerationTime = Date.now() - startAIGeneration;
       console.log(`[VOICE TUTOR] ✅ TRUE STREAMING complete: ${fullResponse.length} chars - ${aiGenerationTime}ms total`);
 
@@ -1166,22 +1168,22 @@ export class VoiceStreamService {
 
       // 🎯 STEP 9.5: Generate proper SSML using dual output (for speaker button replay)
       console.log(`[VOICE TUTOR] 🔄 Generating proper SSML for voice response using dual output...`);
-      
+
       const { generateDualOutput } = await import('./aiDualOutput');
-      
+
       let chatMarkdown = fullResponse; // Default to streaming response
       let speakSSML = '';
       let speakMeta: any = {};
       let dualOutputSource = 'fallback';
-      
+
       try {
         // Get recent context for dual output
         const contextMessages = await storage.getChatMessages(chatId, 5);
-        
+
         // Map personaId to dual output persona (Garima → Priya for female voice)
-        const dualOutputPersona = session.personaId === 'garima' ? 'Priya' : 
-                                  session.personaId === 'amit' ? 'Amit' : 'Priya';
-        
+        const dualOutputPersona = session.personaId === 'garima' ? 'Priya' :
+          session.personaId === 'amit' ? 'Amit' : 'Priya';
+
         const dualOutput = await generateDualOutput({
           userQuery: transcribedText,
           contextMessages: contextMessages
@@ -1195,16 +1197,16 @@ export class VoiceStreamService {
           emotion: emotionResult.emotion,
           subject: session.subject || 'General'
         });
-        
+
         chatMarkdown = dualOutput.chat_md || fullResponse; // 📝 Use rich markdown for display
         speakSSML = dualOutput.speak_ssml;
         speakMeta = dualOutput.speak_meta;
         dualOutputSource = dualOutput.metadata?.source || 'ai';
-        
+
         console.log(`[VOICE TUTOR] ✅ Dual output generated - chat_md: ${chatMarkdown.substring(0, 50)}... | speak_ssml: ${speakSSML.substring(0, 50)}...`);
       } catch (error) {
         console.error('[VOICE TUTOR] ⚠️ Dual output failed, using fallback SSML:', error);
-        
+
         // Fallback: Basic SSML wrapping
         const { sanitizeSSML } = await import('../utils/ssmlUtils');
         const plainText = fullResponse
@@ -1258,7 +1260,7 @@ export class VoiceStreamService {
 
     } catch (error) {
       console.error('[VOICE TUTOR] Pipeline error:', error);
-      
+
       const errorMsg = {
         type: 'ERROR',
         timestamp: new Date().toISOString(),
@@ -1267,7 +1269,7 @@ export class VoiceStreamService {
         message: error instanceof Error ? error.message : 'AI Tutor pipeline failed',
         recoverable: true
       };
-      
+
       ws.send(JSON.stringify(errorMsg));
     }
   }
@@ -1344,14 +1346,14 @@ export class VoiceStreamService {
         'sad': 'frustrated'
       };
       const voiceCurriculumEmotion = voiceEmotionMap[emotionResult.emotion] || 'neutral';
-      
+
       // 1. Check for demotivation signals
       const voiceDemotivationCheck = tutorSessionService.checkDemotivation(session, queryText, 5000);
-      
+
       if (voiceDemotivationCheck.needsIntervention) {
         console.log(`[TEXT QUERY CURRICULUM] Demotivation detected (level ${voiceDemotivationCheck.level})`);
       }
-      
+
       // 2. Determine request type from intent
       const voiceRequestTypeMap: Record<string, 'doubt' | 'practice' | 'revision' | 'concept'> = {
         'ask_doubt': 'doubt',
@@ -1362,28 +1364,28 @@ export class VoiceStreamService {
         'submit_answer': 'practice'
       };
       const voiceRequestType = voiceRequestTypeMap[intentResult.intent] || 'concept';
-      
+
       // 3. Decide teaching mode based on context
       const voiceTeachingDecision = tutorSessionService.decideTeachingMode(session, voiceCurriculumEmotion, voiceRequestType);
       console.log(`[TEXT QUERY CURRICULUM] Teaching mode: ${voiceTeachingDecision.mode} (${voiceTeachingDecision.toneModifier})`);
-      
+
       // 4. Build enhanced prompt context
       const voiceDetectedLangForPrompt = detectedLang as 'english' | 'hindi' | 'hinglish';
       const voiceEnhancedContext = tutorSessionService.buildEnhancedPromptContext(session, voiceCurriculumEmotion, voiceDetectedLangForPrompt);
-      
+
       if (voiceDemotivationCheck.needsIntervention && voiceDemotivationCheck.level) {
         voiceEnhancedContext.demotivationLevel = voiceDemotivationCheck.level;
       }
-      
+
       // 5. Generate enhanced system prompt
       const voiceEnhancedPromptResult = enhancedPromptEngine.generateEnhancedSystemPrompt(voiceEnhancedContext);
-      
+
       // Add persona and teaching approach context
       const voicePersonaContext = `
 TEACHING APPROACH: ${voiceTeachingDecision.mode} (${voiceTeachingDecision.toneModifier})
 ${voiceDemotivationCheck.needsIntervention ? `STUDENT SUPPORT NEEDED: ${voiceDemotivationCheck.intervention}` : ''}
       `.trim();
-      
+
       const systemPrompt = `${voiceEnhancedPromptResult.systemPrompt}\n\n${voicePersonaContext}`;
       console.log(`[TEXT QUERY PROMPT] Generated ${systemPrompt.length} chars | Teaching: ${voiceTeachingDecision.mode}`);
 
@@ -1460,6 +1462,18 @@ ${voiceDemotivationCheck.needsIntervention ? `STUDENT SUPPORT NEEDED: ${voiceDem
                   // 🎵 THEN generate TTS in parallel (don't block text streaming!)
                   const canGenerateTTS = avatarStateService.canGenerateTTS(ws.sessionId || '');
                   if (canGenerateTTS) {
+                    // 🔥 REFACTOR: Send explicit TTS_START signal for the first sentence
+                    if (sentenceIndex === 0) {
+                      const startMsg: VoiceMessage = {
+                        type: 'TTS_START',
+                        timestamp: new Date().toISOString(),
+                        sessionId: ws.sessionId,
+                        messageId // Associate with this response
+                      };
+                      ws.send(JSON.stringify(startMsg));
+                      console.log(`[TEXT QUERY] 🚀 Sent TTS_START signal for message ${messageId}`);
+                    }
+
                     // Fire-and-forget: TTS generation happens in background
                     // Note: generateAndStreamSentenceTTS returns immediately (line 673)
                     // The actual TTS work runs async in the ttsInFlightMap
@@ -1550,21 +1564,21 @@ ${voiceDemotivationCheck.needsIntervention ? `STUDENT SUPPORT NEEDED: ${voiceDem
 
       // 🎯 Generate proper SSML using dual output service (post-streaming)
       console.log(`[TEXT QUERY] 🔄 Generating proper SSML for final message using dual output...`);
-      
+
       const { generateDualOutput } = await import('./aiDualOutput');
-      
+
       let speakSSML = '';
       let speakMeta: any = {};
       let dualOutputSource = 'fallback';
-      
+
       try {
         // Get recent context for dual output
         const contextMessages = await storage.getChatMessages(chatId, 5);
-        
+
         // Map personaId to dual output persona (Garima → Priya for female voice)
-        const dualOutputPersona = session.personaId === 'garima' ? 'Priya' : 
-                                  session.personaId === 'amit' ? 'Amit' : 'Priya';
-        
+        const dualOutputPersona = session.personaId === 'garima' ? 'Priya' :
+          session.personaId === 'amit' ? 'Amit' : 'Priya';
+
         const dualOutput = await generateDualOutput({
           userQuery: queryText,
           contextMessages: contextMessages
@@ -1577,15 +1591,15 @@ ${voiceDemotivationCheck.needsIntervention ? `STUDENT SUPPORT NEEDED: ${voiceDem
           language: language as 'en' | 'hi' | 'hinglish',
           emotion: emotionResult.emotion
         });
-        
+
         speakSSML = dualOutput.speak_ssml;
         speakMeta = dualOutput.speak_meta;
         dualOutputSource = dualOutput.metadata?.source || 'ai';
-        
+
         console.log(`[TEXT QUERY] ✅ Dual output SSML generated: ${speakSSML.substring(0, 50)}...`);
       } catch (error) {
         console.error('[TEXT QUERY] ⚠️ Dual output failed, using fallback SSML:', error);
-        
+
         // Fallback: Basic SSML wrapping
         const { sanitizeSSML } = await import('../utils/ssmlUtils');
         const plainText = fullResponse

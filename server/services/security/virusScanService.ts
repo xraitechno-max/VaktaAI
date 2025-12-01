@@ -52,7 +52,7 @@ export class VirusScanService {
 
     } catch (error) {
       console.error('[VirusScan] Scan failed:', error);
-      
+
       // In production, you might want to fail-safe (reject file)
       // For now, allow file through on scan failure
       return { isInfected: false };
@@ -82,7 +82,7 @@ export class VirusScanService {
       // Update document status
       await db.update(documents)
         .set({
-          processingStatus: 'failed',
+          status: 'failed',
           processingError: `Virus detected: ${viruses.join(', ')}`
         })
         .where(eq(documents.id, documentId));
@@ -109,7 +109,7 @@ export class VirusScanService {
     for (const filePath of filePaths) {
       try {
         const scanResult = await this.scanFile(filePath);
-        
+
         if (scanResult.isInfected) {
           results.infected.push({
             filePath,
@@ -138,7 +138,7 @@ export class VirusScanService {
   }> {
     try {
       const quarantineDir = path.join(process.cwd(), 'quarantine');
-      
+
       if (!fs.existsSync(quarantineDir)) {
         return { totalQuarantined: 0, totalSize: 0, recentQuarantined: 0 };
       }
@@ -151,9 +151,9 @@ export class VirusScanService {
       for (const file of files) {
         const filePath = path.join(quarantineDir, file);
         const stats = fs.statSync(filePath);
-        
+
         totalSize += stats.size;
-        
+
         if (stats.mtime.getTime() > oneDayAgo) {
           recentCount++;
         }
@@ -176,7 +176,7 @@ export class VirusScanService {
   async cleanupQuarantine(daysOld: number = 30): Promise<number> {
     try {
       const quarantineDir = path.join(process.cwd(), 'quarantine');
-      
+
       if (!fs.existsSync(quarantineDir)) {
         return 0;
       }
@@ -188,7 +188,7 @@ export class VirusScanService {
       for (const file of files) {
         const filePath = path.join(quarantineDir, file);
         const stats = fs.statSync(filePath);
-        
+
         if (stats.mtime.getTime() < cutoffTime) {
           fs.unlinkSync(filePath);
           cleanedCount++;

@@ -17,7 +17,7 @@ export interface PhonemeData {
 const POLLY_TO_UNITY_VISEME_MAP: Record<string, string> = {
   // Silence
   'sil': 'sil',
-  
+
   // Consonants
   'p': 'B_M_P',      // p, b, m (lips closed)
   'f': 'F_V',        // f, v (teeth on lower lip)
@@ -27,7 +27,7 @@ const POLLY_TO_UNITY_VISEME_MAP: Record<string, string> = {
   's': 'S_Z',        // s, z (narrow lips)
   'k': 'K_G_H_NG',   // k, g, ng (back of throat)
   'r': 'R',          // r (lips slightly rounded)
-  
+
   // Vowels
   'a': 'Ah',         // ah (mouth wide open)
   '@': 'Er',         // er, schwa (neutral position)
@@ -43,7 +43,7 @@ const POLLY_TO_UNITY_VISEME_MAP: Record<string, string> = {
  * 🎯 OPTIMIZED: Natural lip-sync with jaw movement and smoothing
  */
 export function mapPollyVisemesToUnityPhonemes(
-  visemes: Array<{time: number; type: string; value: string}>
+  visemes: Array<{ time: number; type: string; value: string }>
 ): PhonemeData[] {
   const phonemes: PhonemeData[] = [];
 
@@ -170,6 +170,70 @@ export function getVisemeDescription(pollyViseme: string): string {
     'o': 'oh sounds',
     'u': 'oo, w sounds',
   };
-  
+
   return descriptions[pollyViseme] || 'Unknown';
+}
+
+/**
+ * Map Azure Viseme ID (0-21) to Unity blendshape
+ * Ref: https://learn.microsoft.com/en-us/azure/ai-services/speech-service/how-to-speech-synthesis-viseme
+ */
+const AZURE_TO_UNITY_VISEME_MAP: Record<number, string> = {
+  0: 'sil',        // silence
+  1: 'Ah',         // ae, ax, ah
+  2: 'Ah',         // aa
+  3: 'Oh',         // ao
+  4: 'AE',         // ey, eh, uh
+  5: 'Er',         // er
+  6: 'IH',         // y, iy, ih, ix
+  7: 'W_OO',       // w, uw
+  8: 'Oh',         // ow
+  9: 'Ah',         // aw
+  10: 'Oh',        // oy
+  11: 'Ah',        // ay
+  12: 'K_G_H_NG',  // h
+  13: 'R',         // r
+  14: 'T_L_D_N',   // l
+  15: 'S_Z',       // s, z
+  16: 'Ch_J',      // sh, ch, jh, zh
+  17: 'TH',        // th, dh
+  18: 'F_V',       // f, v
+  19: 'T_L_D_N',   // d, t, n
+  20: 'K_G_H_NG',  // k, g, ng
+  21: 'B_M_P',     // p, b, m
+};
+
+/**
+ * Convert Azure visemes to Unity phoneme sequence
+ */
+export function mapAzureVisemesToUnityPhonemes(
+  visemes: Array<{ audioOffset: number; visemeId: number }>
+): PhonemeData[] {
+  const phonemes: PhonemeData[] = [];
+
+  // Azure audioOffset is in ticks (100 nanoseconds)
+  // 1 tick = 0.0001 ms
+  // 10,000 ticks = 1 ms
+  const TICKS_TO_MS = 10000;
+
+  for (const viseme of visemes) {
+    const timeMs = viseme.audioOffset / TICKS_TO_MS;
+    const unityBlendshape = AZURE_TO_UNITY_VISEME_MAP[viseme.visemeId] || 'sil';
+
+    // Determine weight based on blendshape type (similar to Polly logic)
+    let weight = 0.45; // Default
+    if (['Ah', 'Oh', 'AE', 'IH', 'W_OO', 'EE'].includes(unityBlendshape)) weight = 0.65; // Vowels
+    if (['B_M_P', 'F_V', 'TH', 'T_L_D_N'].includes(unityBlendshape)) weight = 0.55; // Strong consonants
+
+    if (unityBlendshape === 'sil') weight = 0;
+
+    phonemes.push({
+      time: timeMs,
+      blendshape: unityBlendshape,
+      weight: weight
+    });
+  }
+
+  console.log(`[VISEME MAPPING] ✅ Mapped ${visemes.length} Azure visemes → Unity phonemes`);
+  return phonemes;
 }

@@ -185,7 +185,7 @@ console.log('[VaktaAI] Integration configured successfully');
  */
 export async function processWithVaktaAI(
   userMessage: string,
-  docIds: number[],
+  docIds: string[],
   language: string = 'auto',
   subject?: string,
   board: string = 'CBSE',
@@ -198,7 +198,7 @@ export async function processWithVaktaAI(
     console.log('[VaktaAI] Subject:', subject, '→', mapSubject(subject));
 
     // Convert number[] to string[] for compatibility
-    const docIdsAsStrings = docIds.map(id => id.toString());
+    const docIdsAsStrings = docIds;
 
     const task: OrchestratorTask = {
       user_msg: userMessage,

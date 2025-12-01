@@ -1,0 +1,13 @@
+
+> rest-express@1.0.0 check
+> tsc
+
+client/src/pages/Dashboard.tsx(115,33): error TS2719: Type 'ActivityItem[] | undefined' is not assignable to type 'ActivityItem[] | undefined'. Two different types with this name exist, but they are unrelated.
+  Type 'ActivityItem[]' is not assignable to type 'ActivityItem[]'. Two different types with this name exist, but they are unrelated.
+    Property 'type' is missing in type 'ActivityItem' but required in type 'ActivityItem'.
+server/routes/tutor-chat.ts(46,9): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(values: { role: string | SQL<unknown> | Placeholder<string, any>; chatId: string | SQL<unknown> | Placeholder<string, any>; content: string | SQL<unknown> | Placeholder<...>; id?: string | ... 2 more ... | undefined; createdAt?: SQL<...> | ... 3 more ... | undefined; metadata?: SQL<...> | ... 3 more ... | undefined; tool?: string | ... 3 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'chatId' does not exist in type '{ role: string | SQL<unknown> | Placeholder<string, any>; chatId: string | SQL<unknown> | Placeholder<string, any>; content: string | SQL<unknown> | Placeholder<string, any>; id?: string | ... 2 more ... | undefined; createdAt?: SQL<...> | ... 3 more ... | undefined; metadata?: SQL<...> | ... 3 more ... | undefined;...'.
+server/routes/tutor-chat.ts(141,9): error TS2769: No overload matches this call.
+  Overload 2 of 2, '(values: { role: string | SQL<unknown> | Placeholder<string, any>; chatId: string | SQL<unknown> | Placeholder<string, any>; content: string | SQL<unknown> | Placeholder<...>; id?: string | ... 2 more ... | undefined; createdAt?: SQL<...> | ... 3 more ... | undefined; metadata?: SQL<...> | ... 3 more ... | undefined; tool?: string | ... 3 more ... | undefined; }[]): PgInsertBase<...>', gave the following error.
+    Object literal may only specify known properties, and 'chatId' does not exist in type '{ role: string | SQL<unknown> | Placeholder<string, any>; chatId: string | SQL<unknown> | Placeholder<string, any>; content: string | SQL<unknown> | Placeholder<string, any>; id?: string | ... 2 more ... | undefined; createdAt?: SQL<...> | ... 3 more ... | undefined; metadata?: SQL<...> | ... 3 more ... | undefined;...'.

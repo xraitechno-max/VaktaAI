@@ -18,7 +18,7 @@ export class DeduplicationService {
 
     if (existing) {
       console.log(`[Dedup] Found duplicate: ${existing.id}`);
-      
+
       return {
         isDuplicate: true,
         existingDocument: existing
@@ -55,10 +55,10 @@ export class DeduplicationService {
     const newDocument = await db.insert(documents).values({
       userId,
       title: userDocument!.title,
-      fileType: userDocument!.fileType,
-      fileUrl: userDocument!.fileUrl,
+      sourceType: userDocument!.sourceType,
+      sourceUrl: userDocument!.sourceUrl,
       fileHash: userDocument!.fileHash,
-      processingStatus: 'completed',
+      status: 'ready',
       isNCERT: userDocument!.isNCERT,
       ncertClass: userDocument!.ncertClass,
       ncertSubject: userDocument!.ncertSubject,
@@ -131,7 +131,7 @@ export class DeduplicationService {
         duplicatesFound: duplicates || 0,
         storageSaved
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Dedup] Failed to get stats:', error);
       return {
         totalDocuments: 0,
@@ -166,13 +166,13 @@ export class DeduplicationService {
         .from(documents)
         .where(
           sql`id != ${documentId} 
-              AND file_type = ${document.fileType}
+              AND source_type = ${document.sourceType}
               AND similarity(title, ${document.title}) > ${threshold}`
         )
         .limit(limit);
 
       return similar;
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Dedup] Failed to find similar documents:', error);
       return [];
     }
@@ -204,8 +204,8 @@ export class DeduplicationService {
           where: eq(documents.id, duplicateId)
         });
 
-        if (!primary || !duplicate || 
-            primary.userId !== userId || duplicate.userId !== userId) {
+        if (!primary || !duplicate ||
+          primary.userId !== userId || duplicate.userId !== userId) {
           continue;
         }
 
@@ -228,7 +228,7 @@ export class DeduplicationService {
         success: true,
         mergedCount
       };
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Dedup] Merge failed:', error);
       return {
         success: false,
@@ -252,7 +252,7 @@ export class DeduplicationService {
 
       console.log(`[Dedup] Cleaned up ${orphanedChunks.rowCount} orphaned chunks`);
       return orphanedChunks.rowCount || 0;
-    } catch (error) {
+    } catch (error: any) {
       console.error('[Dedup] Cleanup failed:', error);
       return 0;
     }

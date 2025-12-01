@@ -169,7 +169,7 @@ export class IntelligentQueryProcessor {
     ];
 
     const isVeryVague = vaguenessPatterns.some(pattern => pattern.test(queryLower))
-                        && wordCount <= 5;
+      && wordCount <= 5;
 
     if (isVeryVague) {
       intentScores[QueryIntent.EXPLORATORY] += 5;
@@ -288,14 +288,14 @@ export class IntelligentQueryProcessor {
 // ==================== ENHANCED HYBRID SEARCH ====================
 
 export interface SearchResult {
-  chunkId: number;
+  chunkId: string;
   content: string;
   metadata: any;
   pageNumber: number | null;
   semanticScore: number;
   keywordScore: number;
   combinedScore: number;
-  documentId: number;
+  documentId: string;
 }
 
 /**
@@ -308,7 +308,7 @@ export class EnhancedHybridSearch {
    */
   public async search(
     query: string,
-    documentIds: number[],
+    documentIds: string[],
     topK: number = 5,
     alpha: number = 0.6 // Weight for semantic vs keyword (0-1)
   ): Promise<SearchResult[]> {
@@ -321,9 +321,9 @@ export class EnhancedHybridSearch {
     const semanticResults = await db
       .select({
         id: chunks.id,
-        content: chunks.content,
+        content: chunks.text,
         metadata: chunks.metadata,
-        documentId: chunks.documentId,
+        documentId: chunks.docId,
         embedding: chunks.embedding,
         // Calculate cosine similarity using pgvector's <=> operator
         similarity: sql<number>`1 - (${chunks.embedding} <=> ${JSON.stringify(queryEmbedding)}::vector)`
@@ -331,7 +331,7 @@ export class EnhancedHybridSearch {
       .from(chunks)
       .where(
         and(
-          inArray(chunks.documentId, documentIds),
+          inArray(chunks.docId, documentIds),
           sql`${chunks.embedding} IS NOT NULL`
         )
       )
@@ -348,20 +348,20 @@ export class EnhancedHybridSearch {
       keywordResults = await db
         .select({
           id: chunks.id,
-          content: chunks.content,
+          content: chunks.text,
           metadata: chunks.metadata,
-          documentId: chunks.documentId,
+          documentId: chunks.docId,
           // Calculate keyword match score
-          rank: sql<number>`ts_rank(to_tsvector('english', ${chunks.content}), to_tsquery('english', ${tsQuery}))`
+          rank: sql<number>`ts_rank(to_tsvector('english', ${chunks.text}), to_tsquery('english', ${tsQuery}))`
         })
         .from(chunks)
         .where(
           and(
-            inArray(chunks.documentId, documentIds),
-            sql`to_tsvector('english', ${chunks.content}) @@ to_tsquery('english', ${tsQuery})`
+            inArray(chunks.docId, documentIds),
+            sql`to_tsvector('english', ${chunks.text}) @@ to_tsquery('english', ${tsQuery})`
           )
         )
-        .orderBy(desc(sql`ts_rank(to_tsvector('english', ${chunks.content}), to_tsquery('english', ${tsQuery}))`))
+        .orderBy(desc(sql`ts_rank(to_tsvector('english', ${chunks.text}), to_tsquery('english', ${tsQuery}))`))
         .limit(topK * 2);
     }
 
@@ -403,7 +403,7 @@ export class EnhancedHybridSearch {
     keywordResults: any[],
     alpha: number
   ): SearchResult[] {
-    const resultsMap = new Map<number, SearchResult>();
+    const resultsMap = new Map<string, SearchResult>();
 
     // Normalize semantic scores (0-1)
     const maxSemantic = Math.max(...semanticResults.map(r => r.similarity), 0.01);
@@ -474,14 +474,14 @@ export interface DocumentStructure {
  */
 export class DocumentStructureAnalyzer {
   // In-memory cache: documentId -> structure
-  private cache = new Map<number, { structure: DocumentStructure; timestamp: number }>();
+  private cache = new Map<string, { structure: DocumentStructure; timestamp: number }>();
   private readonly CACHE_TTL = 5 * 60 * 1000; // 5 minutes
 
   /**
    * Extract document structure and metadata
    * CACHED for performance
    */
-  public async analyzeDocument(documentId: number): Promise<DocumentStructure> {
+  public async analyzeDocument(documentId: string): Promise<DocumentStructure> {
     // Check cache first
     const cached = this.cache.get(documentId);
     if (cached && (Date.now() - cached.timestamp) < this.CACHE_TTL) {
@@ -503,8 +503,8 @@ export class DocumentStructureAnalyzer {
     const documentChunks = await db
       .select()
       .from(chunks)
-      .where(eq(chunks.documentId, documentId))
-      .orderBy(chunks.chunkIndex);
+      .where(eq(chunks.docId, documentId))
+      .orderBy(chunks.ord);
 
     // Extract chapters/sections
     const chapters = this.extractChapters(documentChunks);
@@ -517,8 +517,8 @@ export class DocumentStructureAnalyzer {
 
     const structure: DocumentStructure = {
       title: document.title,
-      type: document.mimeType || 'unknown',
-      totalPages: document.metadata?.pageCount || documentChunks.length,
+      type: document.sourceType || 'unknown',
+      totalPages: document.pages || documentChunks.length,
       chapters,
       keyTopics,
       contentSummary
@@ -534,8 +534,8 @@ export class DocumentStructureAnalyzer {
   /**
    * Extract chapter/section information
    */
-  private extractChapters(chunks: any[]): Array<{title: string; pageNumber?: number}> {
-    const chapters: Array<{title: string; pageNumber?: number}> = [];
+  private extractChapters(chunks: any[]): Array<{ title: string; pageNumber?: number }> {
+    const chapters: Array<{ title: string; pageNumber?: number }> = [];
 
     // Patterns to detect chapter headings
     const chapterPatterns = [
@@ -546,10 +546,10 @@ export class DocumentStructureAnalyzer {
     ];
 
     chunks.forEach((chunk, index) => {
-      const content = chunk.content.trim();
-      const lines = content.split('\n').filter(line => line.trim());
+      const content = chunk.text.trim();
+      const lines = content.split('\n').filter((line: string) => line.trim());
 
-      lines.forEach(line => {
+      lines.forEach((line: string) => {
         for (const pattern of chapterPatterns) {
           const match = line.match(pattern);
           if (match) {
@@ -585,13 +585,13 @@ export class DocumentStructureAnalyzer {
 
     // Count word frequencies
     chunks.forEach(chunk => {
-      const words = chunk.content
+      const words = chunk.text
         .toLowerCase()
         .replace(/[^\w\s]/g, ' ')
         .split(/\s+/)
-        .filter(word => word.length > 4 && !stopWords.has(word));
+        .filter((word: string) => word.length > 4 && !stopWords.has(word));
 
-      words.forEach(word => {
+      words.forEach((word: string) => {
         wordFrequency.set(word, (wordFrequency.get(word) || 0) + 1);
       });
     });
@@ -1092,7 +1092,7 @@ export class IntelligentDocChatOrchestrator {
    */
   public async processQuery(
     query: string,
-    documentIds: number[],
+    documentIds: string[],
     language: Language = 'english'
   ): Promise<{
     classification: QueryClassification;
@@ -1116,7 +1116,7 @@ export class IntelligentDocChatOrchestrator {
     const searchResultArrays = await Promise.all(searchPromises);
 
     // Combine and deduplicate search results
-    const seenChunkIds = new Set<number>();
+    const seenChunkIds = new Set<string>();
     const searchResults: SearchResult[] = [];
 
     for (const results of searchResultArrays) {

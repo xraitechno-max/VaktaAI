@@ -9,6 +9,7 @@ import type { UnityAvatarHandle } from '@/components/tutor/UnityAvatar';
 
 interface TTSChunk {
   id: string;
+  chunkIndex: number;       // 🔢 Sequence number for ordering
   audio: string;           // Base64 audio data
   phonemes: Array<{
     time: number;
@@ -31,9 +32,13 @@ interface QueueMetrics {
 /**
  * Smart TTS Queue Manager
  * Only plays TTS when avatar is in READY or PLAYING state
+ * Ensures chunks are played in correct sequence order
  */
 export class SmartTTSQueue {
   private queue: TTSChunk[] = [];
+  private buffer: Map<number, TTSChunk> = new Map(); // ⏳ Buffer for out-of-order chunks
+  private nextExpectedIndex = 0; // 🔢 Track next expected chunk index
+
   private avatarState: AvatarState = 'CLOSED';
   private avatarRef: React.MutableRefObject<UnityAvatarHandle | null>;
   private isProcessing = false;
@@ -59,35 +64,61 @@ export class SmartTTSQueue {
   }
 
   /**
-   * Enqueue TTS chunk with avatar state validation
+   * Enqueue TTS chunk with avatar state validation and ordering
    * Returns false if avatar not ready (chunk rejected)
    */
   enqueue(chunk: TTSChunk): boolean {
     // 🔒 VALIDATION: Check avatar state
-    if (!this.canAcceptTTS()) {
-      console.warn('[TTS Queue] ❌ Rejected - avatar not ready:', {
+    // Allow LOADING state to buffer chunks until ready
+    if (this.avatarState === 'CLOSED' || this.avatarState === 'ERROR') {
+      console.warn('[TTS Queue] ❌ Rejected - avatar state invalid:', {
         avatarState: this.avatarState,
-        chunkId: chunk.id,
-        canAccept: this.canAcceptTTS()
+        chunkId: chunk.id
       });
 
       this.metrics.rejected++;
       return false;
     }
 
-    // Validate avatar ref
-    if (!this.avatarRef.current || !this.avatarRef.current.isReady) {
-      console.warn('[TTS Queue] ❌ Rejected - Unity not ready:', {
-        chunkId: chunk.id,
-        hasRef: !!this.avatarRef.current,
-        isReady: this.avatarRef.current?.isReady
-      });
+    // 🔢 ORDERING: Handle out-of-order chunks
+    if (chunk.chunkIndex === this.nextExpectedIndex) {
+      // Correct order - add to queue immediately
+      this.addToQueue(chunk);
+      this.nextExpectedIndex++;
 
-      this.metrics.rejected++;
-      return false;
+      // Check if we have subsequent chunks in buffer
+      this.checkBuffer();
+    } else if (chunk.chunkIndex > this.nextExpectedIndex) {
+      // Future chunk - buffer it
+      console.log(`[TTS Queue] ⏳ Buffering out-of-order chunk ${chunk.chunkIndex} (waiting for ${this.nextExpectedIndex})`);
+      this.buffer.set(chunk.chunkIndex, chunk);
+    } else {
+      // Old chunk - ignore or log warning
+      console.warn(`[TTS Queue] ⚠️ Received old/duplicate chunk ${chunk.chunkIndex} (expected ${this.nextExpectedIndex})`);
+      // We don't play old chunks to prevent confusion
     }
 
-    // Add to queue
+    return true;
+  }
+
+  /**
+   * Check buffer for next expected chunks
+   */
+  private checkBuffer() {
+    while (this.buffer.has(this.nextExpectedIndex)) {
+      const chunk = this.buffer.get(this.nextExpectedIndex)!;
+      this.buffer.delete(this.nextExpectedIndex);
+
+      console.log(`[TTS Queue] 🔓 Unbuffering chunk ${chunk.chunkIndex}`);
+      this.addToQueue(chunk);
+      this.nextExpectedIndex++;
+    }
+  }
+
+  /**
+   * Add chunk to processing queue
+   */
+  private addToQueue(chunk: TTSChunk) {
     this.queue.push({
       ...chunk,
       timestamp: chunk.timestamp || Date.now()
@@ -98,17 +129,15 @@ export class SmartTTSQueue {
 
     console.log('[TTS Queue] ✅ Enqueued:', {
       id: chunk.id,
+      index: chunk.chunkIndex,
       queueLength: this.queue.length,
-      avatarState: this.avatarState,
-      duration: chunk.duration
+      avatarState: this.avatarState
     });
 
     // Start processing if not already
     if (!this.isProcessing) {
       this.processQueue();
     }
-
-    return true;
   }
 
   /**
@@ -225,6 +254,32 @@ export class SmartTTSQueue {
   }
 
   /**
+   * Notify queue that audio playback has ended
+   */
+  notifyAudioEnded(chunkId: string): void {
+    console.log('[TTS Queue] 🎤 Audio ended notification received:', chunkId);
+
+    // 🎯 CRITICAL FIX: Allow 'html5-fallback' to resolve ANY currently playing chunk
+    // This handles cases where Unity falls back to browser audio and loses the original message ID
+    const isFallback = chunkId === 'html5-fallback';
+    const isMatch = this.currentlyPlaying?.id === chunkId || (isFallback && this.currentlyPlaying);
+
+    if (isMatch && this.playbackResolver) {
+      console.log(`[TTS Queue] ✅ Resolving playback promise for: ${this.currentlyPlaying?.id} (Trigger: ${chunkId})`);
+      this.playbackResolver();
+      this.playbackResolver = null;
+    } else {
+      console.warn('[TTS Queue] ⚠️ Received audio ended for non-playing chunk:', {
+        receivedId: chunkId,
+        currentId: this.currentlyPlaying?.id,
+        isFallback
+      });
+    }
+  }
+
+  private playbackResolver: (() => void) | null = null;
+
+  /**
    * Play chunk on Unity avatar with audio-phoneme timing sync
    */
   private async playChunk(chunk: TTSChunk): Promise<void> {
@@ -236,18 +291,9 @@ export class SmartTTSQueue {
 
     // 🎯 CRITICAL FIX: Adjust phoneme timestamps for Unity audio playback delay
     // Unity WebGL audio has ~150-200ms initialization delay on low-end devices
-    // 
-    // IDEAL SOLUTION (requires Unity source code access):
-    //   - Unity sends UNITY_AUDIO_START postMessage when audio actually begins
-    //   - We measure real delay and adjust phonemes dynamically
-    // 
-    // CURRENT PRAGMATIC SOLUTION (no Unity source access):
-    //   - Use empirically measured fixed offset of 180ms (tested on low-end devices)
-    //   - Conservative estimate works across device performance range
     const UNITY_AUDIO_START_OFFSET_MS = 180; // Empirical average delay for Unity WebGL audio init
 
     // 🎯 ADJUST PHONEME TIMESTAMPS: Subtract Unity delay from all phonemes
-    // This pre-compensates for Unity's audio initialization lag
     const adjustedPhonemes = chunk.phonemes.map(p => ({
       ...p,
       time: Math.max(0, p.time - UNITY_AUDIO_START_OFFSET_MS) // Ensure no negative timestamps
@@ -267,43 +313,21 @@ export class SmartTTSQueue {
       chunk.id
     );
 
-    // 🎵 Create Audio element to track playback completion
-    const audioBlob = this.base64ToBlob(chunk.audio, 'audio/mpeg');
-    const audioUrl = URL.createObjectURL(audioBlob);
-    const audio = new Audio(audioUrl);
-
-    // 🎵 Wait for audio playback to complete
+    // 🎵 Wait for explicit AUDIO_ENDED signal from Unity
+    // This is much more reliable than playing a dummy audio element in the browser
     await new Promise<void>((resolve) => {
-      let timeoutId: NodeJS.Timeout | undefined;
+      this.playbackResolver = resolve;
 
-      // Cleanup function
-      const cleanup = () => {
-        if (timeoutId) clearTimeout(timeoutId);
-        URL.revokeObjectURL(audioUrl);
-        audio.remove();
-      };
+      // Safety timeout: If Unity doesn't send AUDIO_ENDED within 30 seconds (or duration + 10s), force advance
+      const safetyTimeoutMs = Math.max(30000, chunk.duration + 10000);
 
-      // Listen for audio ended event
-      audio.addEventListener('ended', () => {
-        console.log('[TTS Queue] ✅ Audio ended naturally:', chunk.id);
-        cleanup();
-        resolve();
-      });
-
-      // Fallback: If audio doesn't end in reasonable time (max 10s)
-      timeoutId = setTimeout(() => {
-        console.warn('[TTS Queue] ⏰ Audio timeout after 10s:', chunk.id);
-        cleanup();
-        resolve();
-      }, 10000);
-
-      // Start playback (muted, just to track timing)
-      audio.volume = 0;
-      audio.play().catch((err: Error) => {
-        console.error('[TTS Queue] ❌ Audio play error:', err);
-        cleanup();
-        resolve();
-      });
+      const timeoutId = setTimeout(() => {
+        if (this.playbackResolver) {
+          console.warn('[TTS Queue] ⏰ Safety timeout waiting for AUDIO_ENDED:', chunk.id);
+          this.playbackResolver();
+          this.playbackResolver = null;
+        }
+      }, safetyTimeoutMs);
     });
   }
 
@@ -330,6 +354,8 @@ export class SmartTTSQueue {
     });
 
     this.queue = [];
+    this.buffer.clear(); // 🧹 Clear buffer
+    this.nextExpectedIndex = 0; // 🔢 Reset index
     this.currentlyPlaying = null;
     this.isProcessing = false;
     this.metrics.currentQueueLength = 0;

@@ -1,7 +1,7 @@
 import OpenAI from 'openai';
 import { generateEmbedding } from '../embedding/embeddingService';
 import { db } from '../../db';
-import { chunks } from '../../db/schema';
+import { chunks } from '@shared/schema';
 
 let openai: OpenAI | null = null;
 
@@ -46,7 +46,7 @@ export class SemanticChunkingService {
 
     // Step 1: Split into sentences
     const sentences = this.splitIntoSentences(text, language);
-    
+
     if (sentences.length < 3) {
       // Too few sentences, return as single chunk
       return [{
@@ -120,7 +120,7 @@ export class SemanticChunkingService {
       return response.data.map(item => item.embedding);
     } catch (error) {
       console.error('[SemanticChunk] OpenAI embeddings failed, using local:', error);
-      
+
       // Fallback to local embeddings
       const embeddings: number[][] = [];
       for (const sentence of sentences) {
@@ -246,7 +246,7 @@ export class SemanticChunkingService {
 
     for (let i = 0; i < chunks.length; i++) {
       const chunk = chunks[i];
-      
+
       // Add previous context
       const prevStart = Math.max(0, chunk.startIndex - this.overlapSize);
       const prevContext = originalText.substring(prevStart, chunk.startIndex);
@@ -275,15 +275,15 @@ export class SemanticChunkingService {
    */
   async storeChunks(
     documentId: string,
-    chunks: Chunk[],
+    chunkList: Chunk[],
     embeddings: number[][]
   ): Promise<void> {
-    const chunkRecords = chunks.map((chunk, index) => ({
+    const chunkRecords = chunkList.map((chunk, index) => ({
       id: crypto.randomUUID(),
-      documentId,
-      content: chunk.content,
-      position: index,
-      embedding: JSON.stringify(embeddings[index]), // Will be converted to vector
+      docId: documentId,
+      text: chunk.content,
+      ord: index,
+      embedding: embeddings[index], // Will be converted to vector
       metadata: chunk.metadata,
       createdAt: new Date()
     }));
@@ -291,7 +291,7 @@ export class SemanticChunkingService {
     // Batch insert
     await db.insert(chunks).values(chunkRecords);
 
-    console.log(`[SemanticChunk] Stored ${chunks.length} chunks for doc ${documentId}`);
+    console.log(`[SemanticChunk] Stored ${chunkList.length} chunks for doc ${documentId}`);
   }
 
   /**

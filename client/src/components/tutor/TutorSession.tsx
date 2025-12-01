@@ -80,7 +80,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
   const [playingAudio, setPlayingAudio] = useState<string | null>(null);
   const [audioElement, setAudioElement] = useState<HTMLAudioElement | null>(null);
   const audioTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   // Safety timeout: Clear playingAudio if Unity doesn't respond within 30 seconds
   const startAudioSafetyTimeout = useCallback(() => {
     if (audioTimeoutRef.current) {
@@ -91,14 +91,14 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       setPlayingAudio(null);
     }, 30000); // 30 seconds max for audio playback
   }, []);
-  
+
   const clearAudioSafetyTimeout = useCallback(() => {
     if (audioTimeoutRef.current) {
       clearTimeout(audioTimeoutRef.current);
       audioTimeoutRef.current = null;
     }
   }, []);
-  
+
   const [shouldAutoPlayTTS, setShouldAutoPlayTTS] = useState(false);
   const [voiceMode, setVoiceMode] = useState(false);
   const [showChatPanel, setShowChatPanel] = useState(true);
@@ -108,7 +108,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const videoRef = useRef<HTMLVideoElement>(null);
-  
+
   // 🎵 Per-chunk TTS queue (play audio chunks in sequence)
   const chunkTTSQueueRef = useRef<Array<{ messageId: string; audio: Blob }>>([]);
   const isPlayingChunkRef = useRef(false);
@@ -116,16 +116,16 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
   // 🎵 Play next chunk audio from queue
   const playNextChunkAudio = useCallback(async () => {
     if (isPlayingChunkRef.current || chunkTTSQueueRef.current.length === 0) return;
-    
+
     const { messageId, audio } = chunkTTSQueueRef.current.shift()!;
     isPlayingChunkRef.current = true;
-    
+
     try {
       const url = URL.createObjectURL(audio);
       const newAudio = new Audio(url);
       setAudioElement(newAudio);
       setPlayingAudio(messageId);
-      
+
       newAudio.onended = () => {
         URL.revokeObjectURL(url);
         isPlayingChunkRef.current = false;
@@ -133,7 +133,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
         setPlayingAudio(null);
         playNextChunkAudio();  // Play next queued chunk
       };
-      
+
       await newAudio.play();
     } catch (err) {
       console.error('[CHUNK TTS] Playback failed:', err);
@@ -165,69 +165,35 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
     },
     // 🎵 NEW: Per-chunk TTS generation
     onChunkReceived: async (chunk) => {
-      if (!chat || chat.mode !== 'tutor') return;  // Only for tutor mode
-      
-      try {
-        console.log('[CHUNK TTS] Generating TTS for chunk:', chunk.messageId, '- content:', chunk.content.substring(0, 50));
-        
-        // Generate SSML from chunk
-        const cleanText = chunk.content.replace(/[🌅✅🎭]/g, '').trim();
-        if (!cleanText) return;  // Skip empty chunks
-        
-        const ssml = `<speak>${cleanText}</speak>`;
-        const persona = 'Priya';
-        const language = chat?.language || 'en';
-        
-        // Call TTS endpoint for this chunk
-        const response = await fetch('/api/tutor/optimized/session/tts-with-phonemes', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({ 
-            chatId, 
-            ssml, 
-            persona, 
-            language 
-          }),
-        });
-        
-        if (!response.ok) throw new Error(`TTS failed: ${response.status}`);
-        
-        const ttsData = await response.json();
-        const audioBuffer = Uint8Array.from(atob(ttsData.audio), c => c.charCodeAt(0));
-        const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
-        
-        // Queue for sequential playback
-        chunkTTSQueueRef.current.push({ messageId: chunk.messageId, audio: audioBlob });
-        console.log('[CHUNK TTS] ✅ Queued chunk audio, queue length:', chunkTTSQueueRef.current.length);
-        
-        // Start playing if not already playing
-        if (!isPlayingChunkRef.current) {
-          playNextChunkAudio();
-        }
-      } catch (err) {
-        console.error('[CHUNK TTS] Generation failed:', err);
-      }
+      // 🛑 DISABLED: Server now handles TTS streaming via WebSocket (PHONEME_TTS_CHUNK)
+      // Keeping this callback for potential UI updates or debugging only
+      console.log('[CHUNK TTS] Chunk received:', chunk.messageId, '- content:', chunk.content.substring(0, 50));
     }
   });
-  
+
   // 🔥 CRITICAL FIX: Connect WebSocket on mount
   useEffect(() => {
     console.log('[TutorSession] 🚀 Connecting WebSocket for chat:', chatId);
     voiceTutor.connect();
-    
+
+    // 🔥 Sync initial LOADING state
+    voiceTutor.updateAvatarState('LOADING');
+
     return () => {
       console.log('[TutorSession] 🔌 Disconnecting WebSocket');
       voiceTutor.disconnect();
       clearAudioSafetyTimeout(); // Clear safety timeout on unmount
     };
   }, [chatId, clearAudioSafetyTimeout]);
-  
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const chatContainerRef = useRef<HTMLDivElement>(null);
   const avatarDisplayBoxRef = useRef<HTMLDivElement>(null);
-  const localAvatarRef = useRef<UnityAvatarHandle>(null);
-  
+
+  // 🔥 CRITICAL FIX: Use shared avatar ref from context so useVoiceTutor can access it
+  const { avatarRef } = useUnityAvatar();
+  // const localAvatarRef = useRef<UnityAvatarHandle>(null); // Removed local ref
+
   // Local avatar state (same pattern as Landing.tsx)
   const [avatarReady, setAvatarReady] = useState(false);
   const [avatarLoading, setAvatarLoading] = useState(true);
@@ -279,7 +245,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
   const sendMessageMutation = useMutation({
     mutationFn: async (messageText: string) => {
       console.log('[TutorSession] Sending text query via WebSocket:', messageText);
-      
+
       // 🔥 OPTIMISTIC UPDATE: Add user message to UI immediately
       const tempUserMessage: Message = {
         id: `temp-${crypto.randomUUID()}`, // ✅ Use UUID instead of Date.now() to prevent collisions
@@ -290,22 +256,22 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
         tool: null,
         metadata: null,
       };
-      
+
       queryClient.setQueryData<Message[]>(
         [`/api/chats/${chatId}/messages`],
         (old) => [...(old || []), tempUserMessage]
       );
-      
+
       // Send via WebSocket instead of HTTP
       const success = voiceTutor.sendTextQuery(messageText, chat?.language as 'hi' | 'en' | undefined);
-      
+
       if (!success) {
         throw new Error('WebSocket not connected');
       }
-      
+
       // Wait a bit for response to start (WebSocket is async)
       await new Promise(resolve => setTimeout(resolve, 100));
-      
+
       return { success: true };
     },
     onSuccess: () => {
@@ -377,12 +343,12 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
           tool: null,
           metadata: null,
         };
-        
+
         queryClient.setQueryData<Message[]>(
           [`/api/chats/${chatId}/messages`],
           (old = []) => [...old, tempUserMessage]
         );
-        
+
         sendMessageMutation.mutate(transcript.trim());
       }
     },
@@ -436,20 +402,20 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
   // 📹 Camera functions
   const startCamera = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
-        video: { 
-          width: { ideal: 640 }, 
+      const stream = await navigator.mediaDevices.getUserMedia({
+        video: {
+          width: { ideal: 640 },
           height: { ideal: 480 },
           facingMode: 'user'
-        } 
+        }
       });
       setCameraStream(stream);
-      
+
       // Attach stream to video element
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
       }
-      
+
       toast({
         title: "Camera Started",
         description: "Your camera is now active"
@@ -469,11 +435,11 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
     if (cameraStream) {
       cameraStream.getTracks().forEach(track => track.stop());
       setCameraStream(null);
-      
+
       if (videoRef.current) {
         videoRef.current.srcObject = null;
       }
-      
+
       console.log('[CAMERA] Stopped camera stream');
     }
   };
@@ -511,7 +477,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
 
   const playAudio = async (messageId: string, text: string) => {
     console.log('[TTS] playAudio called for message:', messageId);
-    
+
     if (playingAudio === messageId && audioElement) {
       console.log('[TTS] Muting/stopping currently playing audio');
       audioElement.pause();
@@ -539,19 +505,19 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
 
       console.log('[TTS] 🚀 CODE VERSION: 2025-10-09-PHONEME-FINAL 🚀');
       console.log('[TTS] Fetching emotion-based TTS for text:', text.substring(0, 50) + '...');
-      
+
       // 🎯 CRITICAL: Reliable tutor session detection (use tutorSession data, not chat!)
       // tutorSession comes from useTutorSessionData hook - more reliable than chat
       const isOptimizedSession = !!tutorSession || chat?.mode === 'tutor';
       console.log('[TTS] tutorSession exists:', !!tutorSession, 'chat.mode:', chat?.mode, 'isOptimizedSession:', isOptimizedSession);
-      
+
       // 🎯 ALWAYS use phoneme endpoint for tutor mode
       const usePhonemeTTS = isOptimizedSession;
       const ttsEndpoint = usePhonemeTTS
         ? '/api/tutor/optimized/session/tts-with-phonemes'
         : '/api/tutor/tts';
       console.log('[TTS] Endpoint:', ttsEndpoint);
-      
+
       const requestBody = isOptimizedSession
         ? { chatId, text }
         : { text: text, voice: 'nova' };
@@ -572,8 +538,8 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
 
       // 🎯 Handle phoneme-based response (JSON) vs regular audio (blob)
       let audioBlob: Blob;
-      let phonemes: Array<{time: number; blendshape: string; weight: number}> = [];
-      
+      let phonemes: Array<{ time: number; blendshape: string; weight: number }> = [];
+
       if (usePhonemeTTS) {
         // Phoneme-based TTS returns JSON
         const ttsData = await response.json();
@@ -581,36 +547,36 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
         console.log('🔍🔍🔍 [TTS PHONEMES] Phonemes count:', ttsData.phonemes?.length || 0);
         console.log('🔍🔍🔍 [TTS PHONEMES] Audio base64 length:', ttsData.audio?.length || 0);
         console.log('🔍🔍🔍 [TTS PHONEMES] First 3 phonemes:', JSON.stringify(ttsData.phonemes?.slice(0, 3)));
-        
+
         // Convert base64 audio to blob (🎯 FIX: Polly returns MP3, not WAV)
         const audioBuffer = Uint8Array.from(atob(ttsData.audio), c => c.charCodeAt(0));
         audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' }); // Correct MIME type for Polly MP3
         phonemes = ttsData.phonemes || [];
-        
+
         console.log('🔍🔍🔍 [TTS PHONEMES] Converted to blob, size:', audioBlob.size, 'Phonemes array length:', phonemes.length);
       } else {
         // Regular TTS returns audio blob
         audioBlob = await response.blob();
         console.log('[TTS] Audio blob received, size:', audioBlob.size, 'type:', audioBlob.type);
       }
-      
+
       // 🎭 AVATAR: Check if Unity is ready OR loading (wait if loading)
-      const currentAvatarReady = localAvatarRef.current?.isReady || false;
+      const currentAvatarReady = avatarRef.current?.isReady || false;
       const isAvatarStillLoading = avatarLoading && !currentAvatarReady;
-      
-      console.log('🔍🔍🔍 [Avatar] Status check - Ready:', currentAvatarReady, 'Loading:', isAvatarStillLoading, 'localAvatarRef exists:', !!localAvatarRef.current);
+
+      console.log('🔍🔍🔍 [Avatar] Status check - Ready:', currentAvatarReady, 'Loading:', isAvatarStillLoading, 'localAvatarRef exists:', !!avatarRef.current);
       console.log('🔍🔍🔍 [Avatar] Phonemes available:', phonemes.length, 'usePhonemeTTS:', usePhonemeTTS);
-      
+
       // 🎭 AVATAR: If Unity is loading, wait up to 5 seconds for it to be ready
-      if (isAvatarStillLoading && localAvatarRef.current) {
+      if (isAvatarStillLoading && avatarRef.current) {
         console.log('[Avatar] ⏳ Unity loading... waiting for it to be ready (max 5s)');
-        
+
         const waitForUnity = new Promise<boolean>((resolve) => {
           const startTime = Date.now();
           const checkInterval = setInterval(() => {
-            const isNowReady = localAvatarRef.current?.isReady || false;
+            const isNowReady = avatarRef.current?.isReady || false;
             const elapsed = Date.now() - startTime;
-            
+
             if (isNowReady) {
               clearInterval(checkInterval);
               console.log('[Avatar] ✅ Unity ready after', elapsed, 'ms');
@@ -622,10 +588,10 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
             }
           }, 100); // Check every 100ms
         });
-        
+
         const unityBecameReady = await waitForUnity;
-        
-        if (unityBecameReady && localAvatarRef.current) {
+
+        if (unityBecameReady && avatarRef.current) {
           console.log('[Avatar] ✅ Unity ready - sending audio with lip-sync');
           try {
             // 🎯 Use phoneme-based method if phonemes available
@@ -637,10 +603,10 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
                 reader.onloadend = () => resolve(reader.result?.toString().split(',')[1] || '');
                 reader.readAsDataURL(audioBlob);
               });
-              localAvatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, phonemes, messageId);
+              avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, phonemes, messageId);
             } else {
               console.log('[Avatar] 🔊 Sending amplitude-based lip-sync (no phonemes)');
-              await localAvatarRef.current.sendAudioToAvatar(audioBlob);
+              await avatarRef.current.sendAudioToAvatar(audioBlob);
             }
             console.log('[Avatar] ✅ Audio sent to Unity successfully - keeping playingAudio active until Unity confirms completion');
             // DON'T clear playingAudio here - wait for AUDIO_ENDED from Unity
@@ -653,35 +619,35 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
           }
         }
       }
-      
+
       // 🎭 AVATAR: If Unity is already ready, send immediately
-      if (currentAvatarReady && localAvatarRef.current) {
+      if (currentAvatarReady && avatarRef.current) {
         console.log('🔍🔍🔍 [Avatar] ✅ Avatar ready - sending audio to Unity WebGL with lip-sync');
         console.log('🔍🔍🔍 [Avatar] Phonemes count:', phonemes.length, 'usePhonemeTTS:', usePhonemeTTS);
-        
+
         try {
           // 🎯 Use phoneme-based method if phonemes available
           if (phonemes.length > 0 && usePhonemeTTS) {
             console.log('🔍🔍🔍 [Avatar] 🎵🎵🎵 SENDING PHONEME-BASED LIP-SYNC - Phonemes:', phonemes.length);
             console.log('🔍🔍🔍 [Avatar] First 3 phonemes being sent:', JSON.stringify(phonemes.slice(0, 3)));
-            
+
             // Convert blob to base64 for phoneme method
             const audioBase64 = await new Promise<string>((resolve) => {
               const reader = new FileReader();
               reader.onloadend = () => resolve(reader.result?.toString().split(',')[1] || '');
               reader.readAsDataURL(audioBlob);
             });
-            
+
             console.log('🔍 DEBUG: Base64 audio length:', audioBase64.length);
             console.log('🔍 DEBUG: Calling sendAudioWithPhonemesToAvatar...');
-            
-            localAvatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, phonemes, messageId);
-            
+
+            avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, phonemes, messageId);
+
             console.log('🔍 DEBUG: ✅ sendAudioWithPhonemesToAvatar called successfully!');
           } else {
             console.log('[Avatar] 🔊 Sending amplitude-based lip-sync (no phonemes)');
             console.log('🔍 DEBUG: No phonemes, using amplitude method');
-            await localAvatarRef.current.sendAudioToAvatar(audioBlob);
+            await avatarRef.current.sendAudioToAvatar(audioBlob);
           }
           console.log('[Avatar] ✅ Audio sent to Unity successfully - keeping playingAudio active until Unity confirms completion');
           // DON'T clear playingAudio here - wait for AUDIO_ENDED from Unity
@@ -694,15 +660,15 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
         }
       } else {
         console.log('[Avatar] Avatar not ready - using browser audio playback');
-        console.log('🔍 DEBUG: currentAvatarReady:', currentAvatarReady, 'localAvatarRef exists:', !!localAvatarRef.current);
+        console.log('🔍 DEBUG: currentAvatarReady:', currentAvatarReady, 'localAvatarRef exists:', !!avatarRef.current);
       }
-      
+
       const audioUrl = URL.createObjectURL(audioBlob);
       console.log('[TTS] Audio URL created:', audioUrl);
-      
+
       const audio = new Audio(audioUrl);
       console.log('[TTS] Audio element created');
-      
+
       // Add load event handlers
       audio.onloadstart = () => console.log('[TTS] Audio loading started');
       audio.onloadedmetadata = () => {
@@ -723,12 +689,12 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
 
       audio.onerror = (e) => {
         console.error('[TTS] Audio playback error event:', e);
-        
+
         // Get detailed error information from audio element
         const mediaError = audio.error;
         let errorDetails = 'Unknown error';
         let errorCode = 'UNKNOWN';
-        
+
         if (mediaError) {
           errorCode = mediaError.code.toString();
           switch (mediaError.code) {
@@ -751,16 +717,16 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
           console.error('[TTS] Media Error Message:', mediaError.message);
           console.error('[TTS] Error Details:', errorDetails);
         }
-        
+
         console.error('[TTS] Audio src:', audio.src);
         console.error('[TTS] Audio readyState:', audio.readyState);
         console.error('[TTS] Audio networkState:', audio.networkState);
-        
+
         clearAudioSafetyTimeout(); // Clear timeout on error
         setPlayingAudio(null);
         setAudioElement(null);
         URL.revokeObjectURL(audioUrl);
-        
+
         toast({
           title: "Audio Playback Error",
           description: `${errorDetails} (Code: ${errorCode})`,
@@ -770,7 +736,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
 
       setAudioElement(audio);
       console.log('[TTS] Attempting to play audio...');
-      
+
       await audio.play();
       console.log('[TTS] Audio play() successful');
     } catch (error: any) {
@@ -778,7 +744,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       clearAudioSafetyTimeout(); // Clear timeout on error
       setPlayingAudio(null);
       setAudioElement(null);
-      
+
       if (error.name === 'NotAllowedError') {
         console.log('[TTS] Audio autoplay blocked by browser policy');
         toast({
@@ -798,7 +764,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
 
   const playSSMLAudio = async (messageId: string, ssml: string, persona: string, language: string) => {
     console.log('[TTS SSML] playSSMLAudio called for message:', messageId);
-    
+
     if (playingAudio === messageId && audioElement) {
       console.log('[TTS SSML] Stopping currently playing audio');
       audioElement.pause();
@@ -831,10 +797,10 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       }
 
       console.log('[TTS SSML] Fetching SSML-based TTS - ChatId:', sessionChatId, 'SSML length:', ssml.length, 'Persona:', persona, 'Language:', language);
-      
+
       const requestBody = { chatId: sessionChatId, ssml, persona, language };
       console.log('[TTS SSML] 🔍 REQUEST BODY:', JSON.stringify(requestBody, null, 2));
-      
+
       const response = await fetch('/api/tutor/optimized/session/tts-with-phonemes', {
         method: 'POST',
         headers: {
@@ -851,27 +817,27 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
 
       const ttsData = await response.json();
       console.log('[TTS SSML] Received - Phonemes:', ttsData.phonemes?.length || 0, 'Audio base64 length:', ttsData.audio?.length || 0);
-      
+
       const audioBuffer = Uint8Array.from(atob(ttsData.audio), c => c.charCodeAt(0));
       const audioBlob = new Blob([audioBuffer], { type: 'audio/mpeg' });
       const phonemes = ttsData.phonemes || [];
-      
+
       console.log('[TTS SSML] Converted to blob, size:', audioBlob.size);
-      
-      const currentAvatarReady = localAvatarRef.current?.isReady || false;
+
+      const currentAvatarReady = avatarRef.current?.isReady || false;
       const isAvatarStillLoading = avatarLoading && !currentAvatarReady;
-      
+
       console.log('[Avatar] Status check - Ready:', currentAvatarReady, 'Loading:', isAvatarStillLoading);
-      
-      if (isAvatarStillLoading && localAvatarRef.current) {
+
+      if (isAvatarStillLoading && avatarRef.current) {
         console.log('[Avatar] ⏳ Unity loading... waiting for it to be ready (max 5s)');
-        
+
         const waitForUnity = new Promise<boolean>((resolve) => {
           const startTime = Date.now();
           const checkInterval = setInterval(() => {
-            const isNowReady = localAvatarRef.current?.isReady || false;
+            const isNowReady = avatarRef.current?.isReady || false;
             const elapsed = Date.now() - startTime;
-            
+
             if (isNowReady) {
               clearInterval(checkInterval);
               console.log('[Avatar] ✅ Unity ready after', elapsed, 'ms');
@@ -883,15 +849,15 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
             }
           }, 100);
         });
-        
+
         const unityBecameReady = await waitForUnity;
-        
-        if (unityBecameReady && localAvatarRef.current) {
+
+        if (unityBecameReady && avatarRef.current) {
           console.log('[Avatar] ✅ Unity ready - sending SSML audio with lip-sync');
           try {
             if (phonemes.length > 0) {
               console.log('[Avatar] 🎵 Sending SSML phoneme-based lip-sync - Phonemes:', phonemes.length);
-              
+
               // 🎯 CRITICAL FIX: Adjust phoneme timestamps for Unity audio delay
               // Unity WebGL audio has ~150-200ms initialization delay on low-end devices
               const UNITY_AUDIO_START_OFFSET_MS = 180;
@@ -904,16 +870,16 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
                 adjustedFirst: adjustedPhonemes[0]?.time || 0,
                 fixedOffset: UNITY_AUDIO_START_OFFSET_MS
               });
-              
+
               const audioBase64 = await new Promise<string>((resolve) => {
                 const reader = new FileReader();
                 reader.onloadend = () => resolve(reader.result?.toString().split(',')[1] || '');
                 reader.readAsDataURL(audioBlob);
               });
-              localAvatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, adjustedPhonemes, messageId);
+              avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, adjustedPhonemes, messageId);
             } else {
               console.log('[Avatar] 🔊 Sending amplitude-based lip-sync (no phonemes)');
-              await localAvatarRef.current.sendAudioToAvatar(audioBlob);
+              await avatarRef.current.sendAudioToAvatar(audioBlob);
             }
             console.log('[Avatar] ✅ SSML audio sent to Unity successfully - keeping playingAudio active until Unity confirms completion');
             // DON'T clear playingAudio here - wait for AUDIO_ENDED from Unity
@@ -926,14 +892,14 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
           }
         }
       }
-      
-      if (currentAvatarReady && localAvatarRef.current) {
+
+      if (currentAvatarReady && avatarRef.current) {
         console.log('[Avatar] ✅ Avatar ready - sending SSML audio to Unity WebGL with lip-sync');
-        
+
         try {
           if (phonemes.length > 0) {
             console.log('[Avatar] 🎵 Sending SSML phoneme-based lip-sync - Phonemes:', phonemes.length);
-            
+
             // 🎯 CRITICAL FIX: Adjust phoneme timestamps for Unity audio delay
             // Unity WebGL audio has ~150-200ms initialization delay on low-end devices
             const UNITY_AUDIO_START_OFFSET_MS = 180;
@@ -946,16 +912,16 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
               adjustedFirst: adjustedPhonemes[0]?.time || 0,
               fixedOffset: UNITY_AUDIO_START_OFFSET_MS
             });
-            
+
             const audioBase64 = await new Promise<string>((resolve) => {
               const reader = new FileReader();
               reader.onloadend = () => resolve(reader.result?.toString().split(',')[1] || '');
               reader.readAsDataURL(audioBlob);
             });
-            localAvatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, adjustedPhonemes, messageId);
+            avatarRef.current.sendAudioWithPhonemesToAvatar(audioBase64, adjustedPhonemes, messageId);
           } else {
             console.log('[Avatar] 🔊 Sending amplitude-based lip-sync (no phonemes)');
-            await localAvatarRef.current.sendAudioToAvatar(audioBlob);
+            await avatarRef.current.sendAudioToAvatar(audioBlob);
           }
           console.log('[Avatar] ✅ SSML audio sent to Unity successfully - keeping playingAudio active until Unity confirms completion');
           // DON'T clear playingAudio here - wait for AUDIO_ENDED from Unity
@@ -967,11 +933,11 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
           clearAudioSafetyTimeout(); // Clear Unity timeout before browser fallback
         }
       }
-      
+
       console.log('[TTS SSML] 🔊 Using browser fallback audio player');
       const audioUrl = URL.createObjectURL(audioBlob);
       const audio = new Audio(audioUrl);
-      
+
       audio.onended = () => {
         console.log('[TTS SSML] Browser audio playback ended');
         clearAudioSafetyTimeout(); // Clear timeout on successful completion
@@ -979,13 +945,13 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
         setAudioElement(null);
         URL.revokeObjectURL(audioUrl);
       };
-      
+
       audio.onerror = (e) => {
         console.error('[TTS SSML] Browser audio error:', e);
         const mediaError = audio.error;
         let errorCode = 'UNKNOWN';
         let errorDetails = 'Unknown audio error';
-        
+
         if (mediaError) {
           switch (mediaError.code) {
             case MediaError.MEDIA_ERR_ABORTED:
@@ -1008,12 +974,12 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
               errorDetails = mediaError.message || 'Unknown media error';
           }
         }
-        
+
         clearAudioSafetyTimeout(); // Clear timeout on error
         setPlayingAudio(null);
         setAudioElement(null);
         URL.revokeObjectURL(audioUrl);
-        
+
         toast({
           title: "Audio Playback Error",
           description: `${errorDetails} (Code: ${errorCode})`,
@@ -1023,7 +989,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
 
       setAudioElement(audio);
       console.log('[TTS SSML] Attempting to play audio...');
-      
+
       await audio.play();
       console.log('[TTS SSML] Audio play() successful');
     } catch (error: any) {
@@ -1031,7 +997,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       clearAudioSafetyTimeout(); // Clear timeout on error
       setPlayingAudio(null);
       setAudioElement(null);
-      
+
       if (error.name === 'NotAllowedError') {
         console.log('[TTS SSML] Audio autoplay blocked by browser policy');
         toast({
@@ -1053,7 +1019,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
     if (chatContainerRef.current) {
       const container = chatContainerRef.current;
       const isNearBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-      
+
       if (isNearBottom) {
         container.scrollTop = container.scrollHeight;
       }
@@ -1064,21 +1030,21 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
   useEffect(() => {
     setIsStreaming(voiceTutor.isProcessing);
   }, [voiceTutor.isProcessing]);
-  
+
   // 📝 Clear streaming response IMMEDIATELY when NEW assistant message appears (no race condition)
   const lastAssistantIdRef = useRef<string | null>(null);
-  
+
   useEffect(() => {
     // Find most recent assistant message
     const lastAssistant = [...messages].reverse().find(m => m.role === 'assistant');
-    
+
     // 🔥 FIX: Clear streaming response IMMEDIATELY when new DB message appears
     // Don't wait for isProcessing=false to avoid duplicates
     if (voiceTutor.streamingResponse && lastAssistant) {
       // Check if content matches (to prevent clearing wrong streaming response)
       const streamingStart = voiceTutor.streamingResponse.substring(0, 50).trim();
       const messageStart = lastAssistant.content.substring(0, 50).trim();
-      
+
       // If this DB message matches current streaming response, clear it
       if (streamingStart && messageStart && messageStart.includes(streamingStart.substring(0, 20))) {
         console.log(`[STREAMING] ✅ Matching DB message found, clearing streaming response to prevent duplicate`);
@@ -1092,7 +1058,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
         voiceTutor.clearStreamingResponse();
       }
     }
-    
+
     // Update tracking even if not clearing (for next message)
     if (lastAssistant && lastAssistantIdRef.current !== lastAssistant.id) {
       lastAssistantIdRef.current = lastAssistant.id;
@@ -1107,13 +1073,13 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
   useEffect(() => {
     console.log('[TTS] 🧹 Chat changed, clearing lastPlayedRef');
     lastPlayedRef.current = null;
-    
+
     // 🔥 Clear pending TTS debounce
     if (ttsDebounceRef.current) {
       clearTimeout(ttsDebounceRef.current);
       ttsDebounceRef.current = null;
     }
-    
+
     return () => {
       console.log('[TTS] 🧹 Component unmounting, clearing lastPlayedRef');
       lastPlayedRef.current = null;
@@ -1124,10 +1090,38 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
     };
   }, [chatId]);
 
+  // 🎯 AUTO-PLAY GREETING: Play initial greeting when avatar is ready
+  const hasPlayedGreetingRef = useRef<boolean>(false);
+
+  useEffect(() => {
+    // Only proceed if avatar is ready and we haven't played greeting yet
+    if (!avatarReady || hasPlayedGreetingRef.current) return;
+
+    // Find the first assistant message (greeting)
+    const greetingMsg = messages.find(m => m.role === 'assistant');
+
+    if (greetingMsg) {
+      console.log('[TTS] 🎯 Avatar ready, auto-playing greeting:', greetingMsg.id);
+      hasPlayedGreetingRef.current = true;
+
+      // Small delay to ensure Unity is fully listening
+      setTimeout(() => {
+        const ssml = (greetingMsg.metadata as any)?.speakSSML;
+        if (ssml) {
+          const persona = (greetingMsg.metadata as any)?.speakMeta?.persona || tutorSession?.session?.personaId || 'Priya';
+          const language = (greetingMsg.metadata as any)?.speakMeta?.language || chat?.language || 'en';
+          playSSMLAudio(greetingMsg.id, ssml, persona, language);
+        } else {
+          playAudio(greetingMsg.id, greetingMsg.content);
+        }
+      }, 500);
+    }
+  }, [avatarReady, messages]);
+
   // 🔧 FIX: Stop audio when avatar closes
   const stopAudioPlayback = useCallback(() => {
     console.log('[TTS] 🛑 Stopping all audio playback');
-    
+
     // Stop browser audio
     if (audioElement) {
       console.log('[TTS] 🛑 Stopping browser audio element');
@@ -1137,13 +1131,13 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       setAudioElement(null);
       setPlayingAudio(null);
     }
-    
+
     // Stop Unity audio
-    if (localAvatarRef.current?.stopAudio) {
+    if (avatarRef.current?.stopAudio) {
       console.log('[TTS] 🛑 Stopping Unity avatar audio');
-      localAvatarRef.current.stopAudio();
+      avatarRef.current.stopAudio();
     }
-  }, [audioElement, localAvatarRef]);
+  }, [audioElement, avatarRef]);
 
   // 🔧 FIX: Stop audio when avatar minimizes
   useEffect(() => {
@@ -1153,109 +1147,9 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
     }
   }, [avatarViewState, stopAudioPlayback]);
 
-  useEffect(() => {
-    // 🎯 CRITICAL: Auto-play TTS ONLY when avatar is VISIBLE (not minimized)
-    const isAvatarVisible = avatarViewState !== 'minimized';
-
-    if (messages.length === 0 || !chat) {
-      return; // No messages or chat yet
-    }
-
-    const lastMessage = messages[messages.length - 1];
-
-    // Debug logging
-    console.log('[TTS AUTO-PLAY] Checking conditions:', {
-      messageCount: messages.length,
-      lastMessageRole: lastMessage.role,
-      lastMessageId: lastMessage.id,
-      alreadyPlayed: lastPlayedRef.current,
-      avatarReady: avatarReady,
-      avatarVisible: isAvatarVisible,
-      streaming: isStreaming
-    });
-
-    // Skip if not an assistant message or already played
-    if (lastMessage.role !== 'assistant' || lastMessage.id === lastPlayedRef.current) {
-      return;
-    }
-
-    // Skip if streaming in progress
-    if (isStreaming) {
-      console.log('[TTS AUTO-PLAY] ⏳ Streaming in progress, waiting...');
-      return;
-    }
-
-    // Get SSML and check if this is a greeting message
-    const ssml = (lastMessage.metadata as any)?.speakSSML;
-    const isGreeting = (lastMessage.metadata as any)?.isGreeting;
-    
-    // 🔥 FIX: For streamed responses (non-greeting), wait for SSML metadata
-    // Greeting messages don't have SSML - they use text-based TTS fallback
-    if (!ssml && !isGreeting) {
-      console.log('[TTS AUTO-PLAY] ⏳ SSML metadata not yet available, waiting for refetch...', {
-        messageId: lastMessage.id,
-        hasMetadata: !!lastMessage.metadata,
-        metadataKeys: lastMessage.metadata ? Object.keys(lastMessage.metadata) : []
-      });
-      return; // Will re-trigger when messages refetch with SSML
-    }
-
-    // Check avatar state
-    if (!avatarReady) {
-      console.log('[TTS AUTO-PLAY] ⏳ Avatar not ready yet, will auto-play when ready...');
-      return;
-    }
-
-    if (!isAvatarVisible) {
-      console.log('[TTS AUTO-PLAY] ⏳ Avatar minimized, will auto-play when opened...');
-      return;
-    }
-
-    // 🔥 All conditions met - use debounced auto-play to prevent duplicates
-    console.log('[TTS AUTO-PLAY] ✅ All conditions met - Auto-playing:', lastMessage.id);
-    console.log('[TTS AUTO-PLAY] Chat mode:', chat.mode, '- Will use', ssml ? 'SSML PHONEME' : 'TEXT FALLBACK', 'TTS');
-    if (ssml) {
-      console.log('[TTS AUTO-PLAY] 🎤 Fresh SSML available:', ssml.substring(0, 60) + '...');
-    } else {
-      console.log('[TTS AUTO-PLAY] 📝 Using text fallback for greeting');
-    }
-    
-    // 🔥 Clear any pending TTS debounce
-    if (ttsDebounceRef.current) {
-      clearTimeout(ttsDebounceRef.current);
-    }
-    
-    // Mark as played immediately to prevent effect re-runs
-    lastPlayedRef.current = lastMessage.id;
-
-    // Debounce the actual TTS call by 100ms to prevent duplicates
-    ttsDebounceRef.current = setTimeout(() => {
-      const persona = (lastMessage.metadata as any)?.speakMeta?.persona || (lastMessage.metadata as any)?.personaId || tutorSession?.session?.personaId || 'Priya';
-      const language = (lastMessage.metadata as any)?.speakMeta?.language || chat?.language || 'en';
-      
-      if (ssml) {
-        // 🎯 Use SSML-based TTS with phonemes for Unity lip-sync
-        console.log('[TTS AUTO-PLAY] 🎵 Playing with SSML phonemes - persona:', persona, 'lang:', language);
-        playSSMLAudio(lastMessage.id, ssml, persona, language).catch((err) => {
-          console.error('[TTS AUTO-PLAY] ❌ Playback failed:', err);
-          console.log('[TTS AUTO-PLAY] User can click speaker icon manually');
-        });
-      } else {
-        // 📝 Fallback to text-based TTS for greeting messages
-        console.log('[TTS AUTO-PLAY] 📝 Playing text-based TTS - persona:', persona, 'lang:', language);
-        playAudio(lastMessage.id, lastMessage.content).catch((err) => {
-          console.error('[TTS AUTO-PLAY] ❌ Playback failed:', err);
-          console.log('[TTS AUTO-PLAY] User can click speaker icon manually');
-        });
-      }
-    }, 100);
-    
-    return () => {
-      if (ttsDebounceRef.current) {
-        clearTimeout(ttsDebounceRef.current);
-      }
-    };
-  }, [messages, isStreaming, chat, avatarReady, avatarViewState, playSSMLAudio, playAudio, tutorSession?.session?.personaId]); // 🆕 Added avatarViewState dependency
+  // 🛑 LEGACY AUTO-PLAY REMOVED
+  // Auto-play is now handled by real-time TTS streaming in useVoiceTutor.ts
+  // This ensures audio plays immediately as text is generated.
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -1313,7 +1207,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
             if (line.startsWith('data: ')) {
               try {
                 const data = JSON.parse(line.slice(6));
-                
+
                 if (data.type === 'chunk') {
                   fullContent += data.content;
                   setToolStreamingContent(fullContent);
@@ -1406,6 +1300,10 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
     console.log('[TutorSession] ✅ Avatar ready!');
     setAvatarReady(true);
     setAvatarLoading(false);
+
+    // 🔥 CRITICAL FIX: Notify Voice System that avatar is ready
+    // This updates SmartTTSQueue and Server state
+    voiceTutor.updateAvatarState('READY');
   };
 
   const handleAvatarError = (error: string) => {
@@ -1464,18 +1362,16 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-blue-900/10 via-transparent to-transparent pointer-events-none" />
 
       {/* Unity Avatar: 60% LEFT | Chat Panel: 40% RIGHT */}
-      <div className={`relative flex-1 min-h-0 overflow-hidden ${
-        showChatPanel ? 'grid grid-cols-1 md:grid-cols-[60%_40%]' : 'flex flex-col'
-      }`}>
+      <div className={`relative flex-1 min-h-0 overflow-hidden ${showChatPanel ? 'grid grid-cols-1 md:grid-cols-[60%_40%]' : 'flex flex-col'
+        }`}>
         <div className="relative flex flex-col min-h-0">
           <div className="flex items-center justify-between px-4 py-3 lg:px-6 lg:py-4 bg-black/20 backdrop-blur-xl border-b border-white/5">
             <div className="flex items-center gap-3 flex-wrap">
-              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${
-                chat.subject?.toLowerCase() === 'physics' ? 'from-blue-500 to-cyan-500' :
+              <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full bg-gradient-to-r ${chat.subject?.toLowerCase() === 'physics' ? 'from-blue-500 to-cyan-500' :
                 chat.subject?.toLowerCase() === 'chemistry' ? 'from-green-500 to-emerald-500' :
-                chat.subject?.toLowerCase() === 'mathematics' ? 'from-purple-500 to-pink-500' :
-                'from-orange-500 to-amber-500'
-              } text-white shadow-lg`}>
+                  chat.subject?.toLowerCase() === 'mathematics' ? 'from-purple-500 to-pink-500' :
+                    'from-orange-500 to-amber-500'
+                } text-white shadow-lg`}>
                 <BookOpen className="w-3.5 h-3.5" />
                 <span className="text-xs lg:text-sm font-semibold capitalize">{chat.subject || 'Subject'}</span>
               </div>
@@ -1493,9 +1389,8 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
               <Button
                 variant="ghost"
                 size="icon"
-                className={`w-8 h-8 lg:w-9 lg:h-9 rounded-full transition-all ${
-                  showChatPanel ? 'bg-blue-500/30 text-blue-300' : 'text-white/50 hover:text-white hover:bg-white/10'
-                }`}
+                className={`w-8 h-8 lg:w-9 lg:h-9 rounded-full transition-all ${showChatPanel ? 'bg-blue-500/30 text-blue-300' : 'text-white/50 hover:text-white hover:bg-white/10'
+                  }`}
                 onClick={() => setShowChatPanel(!showChatPanel)}
                 data-testid="button-chat-toggle"
               >
@@ -1504,9 +1399,8 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
               <Button
                 variant="ghost"
                 size="icon"
-                className={`w-8 h-8 lg:w-9 lg:h-9 rounded-full transition-all ${
-                  !isMuted ? 'bg-blue-500/30 text-blue-300' : 'text-white/50 hover:text-white hover:bg-white/10'
-                }`}
+                className={`w-8 h-8 lg:w-9 lg:h-9 rounded-full transition-all ${!isMuted ? 'bg-blue-500/30 text-blue-300' : 'text-white/50 hover:text-white hover:bg-white/10'
+                  }`}
                 onClick={() => setIsMuted(!isMuted)}
                 data-testid="button-speaker-toggle"
               >
@@ -1515,9 +1409,8 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
               <Button
                 variant="ghost"
                 size="icon"
-                className={`w-8 h-8 lg:w-9 lg:h-9 rounded-full transition-all ${
-                  showCamera ? 'bg-blue-500/30 text-blue-300' : 'text-white/50 hover:text-white hover:bg-white/10'
-                }`}
+                className={`w-8 h-8 lg:w-9 lg:h-9 rounded-full transition-all ${showCamera ? 'bg-blue-500/30 text-blue-300' : 'text-white/50 hover:text-white hover:bg-white/10'
+                  }`}
                 onClick={() => setShowCamera(!showCamera)}
                 data-testid="button-video-toggle"
               >
@@ -1537,12 +1430,12 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
           </div>
 
           <div className="flex-1 flex flex-col items-center justify-center p-2 lg:p-6 relative">
-            <div 
+            <div
               ref={avatarDisplayBoxRef}
               className="relative w-full h-full max-w-5xl rounded-2xl lg:rounded-3xl overflow-hidden shadow-2xl bg-gradient-to-br from-slate-800 to-slate-900"
             >
               <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_var(--tw-gradient-stops))] from-purple-900/30 via-transparent to-transparent" />
-              
+
               {avatarLoading && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
                   <div className="text-center px-4">
@@ -1556,7 +1449,7 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
                   </div>
                 </div>
               )}
-              
+
               {avatarError && !avatarLoading && (
                 <div className="absolute inset-0 z-20 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm">
                   <div className="text-center px-4">
@@ -1568,9 +1461,9 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
                   </div>
                 </div>
               )}
-              
+
               <UnityAvatar
-                ref={localAvatarRef}
+                ref={avatarRef}
                 className="w-full h-full"
                 defaultAvatar="priya"
                 onReady={handleAvatarReady}
@@ -1580,14 +1473,25 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
                     console.log('[TTS] Unity audio playback ended:', msg.id);
                     clearAudioSafetyTimeout();
                     setPlayingAudio(null);
+
+                    // 🎯 CRITICAL FIX: Notify SmartTTSQueue that playback finished
+                    // This allows the queue to process the next chunk
+                    if (msg.id) {
+                      voiceTutor.notifyAudioEnded(msg.id);
+                    }
                   } else if (msg.type === 'AUDIO_FAILED') {
                     console.error('[TTS] Unity audio playback failed:', msg.error);
                     clearAudioSafetyTimeout();
                     setPlayingAudio(null);
+
+                    // Also notify queue on failure to prevent stalling
+                    if (msg.id) {
+                      voiceTutor.notifyAudioEnded(msg.id);
+                    }
                   }
                 }}
               />
-              
+
               {playingAudio && (
                 <div className="absolute top-3 right-3 lg:top-4 lg:right-4 z-30">
                   <div className="px-2.5 py-1 lg:px-3 lg:py-1.5 rounded-full backdrop-blur-md border flex items-center gap-1.5 lg:gap-2 bg-blue-500/20 border-blue-400/30">
@@ -1626,11 +1530,10 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
                   <Button
                     size="sm"
                     variant="ghost"
-                    className={`rounded-full px-3 lg:px-4 h-8 text-xs font-medium transition-all ${
-                      lectureMode
-                        ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
-                        : 'text-white/60 hover:text-white hover:bg-white/10'
-                    }`}
+                    className={`rounded-full px-3 lg:px-4 h-8 text-xs font-medium transition-all ${lectureMode
+                      ? 'bg-gradient-to-r from-blue-500 to-cyan-500 text-white shadow-lg'
+                      : 'text-white/60 hover:text-white hover:bg-white/10'
+                      }`}
                     onClick={() => updateLearningMode('lecture')}
                     data-testid="button-mode-lecture"
                   >
@@ -1640,11 +1543,10 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
                   <Button
                     size="sm"
                     variant="ghost"
-                    className={`rounded-full px-3 lg:px-4 h-8 text-xs font-medium transition-all ${
-                      !lectureMode
-                        ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg'
-                        : 'text-white/60 hover:text-white hover:bg-white/10'
-                    }`}
+                    className={`rounded-full px-3 lg:px-4 h-8 text-xs font-medium transition-all ${!lectureMode
+                      ? 'bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg'
+                      : 'text-white/60 hover:text-white hover:bg-white/10'
+                      }`}
                     onClick={() => updateLearningMode('practice')}
                     data-testid="button-mode-practice"
                   >
@@ -1672,11 +1574,10 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
                     </div>
                   )}
                   <div className={`group max-w-[80%] ${msg.role === 'user' ? 'items-end' : 'items-start'}`}>
-                    <div className={`rounded-2xl px-3.5 py-2.5 lg:px-4 lg:py-3 ${
-                      msg.role === 'user'
-                        ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-md'
-                        : 'bg-white/10 backdrop-blur-sm border border-white/10 text-white/90 rounded-bl-md'
-                    }`}>
+                    <div className={`rounded-2xl px-3.5 py-2.5 lg:px-4 lg:py-3 ${msg.role === 'user'
+                      ? 'bg-gradient-to-br from-blue-600 to-blue-700 text-white rounded-br-md'
+                      : 'bg-white/10 backdrop-blur-sm border border-white/10 text-white/90 rounded-bl-md'
+                      }`}>
                       {msg.role === 'assistant' ? (
                         <div className="prose prose-sm prose-invert max-w-none text-sm lg:text-base leading-relaxed">
                           <ReactMarkdown remarkPlugins={[remarkMath]} rehypePlugins={[rehypeKatex]}>
@@ -1800,11 +1701,10 @@ export default function TutorSession({ chatId, onEndSession }: TutorSessionProps
                         type="button"
                         size="icon"
                         variant="ghost"
-                        className={`w-9 h-9 lg:w-10 lg:h-10 rounded-full transition-all ${
-                          isRecording
-                            ? 'bg-red-500 hover:bg-red-600 text-white'
-                            : 'text-white/60 hover:text-white hover:bg-white/10'
-                        }`}
+                        className={`w-9 h-9 lg:w-10 lg:h-10 rounded-full transition-all ${isRecording
+                          ? 'bg-red-500 hover:bg-red-600 text-white'
+                          : 'text-white/60 hover:text-white hover:bg-white/10'
+                          }`}
                         onClick={isRecording ? stopRecording : startRecording}
                         disabled={isStreaming || transcribeMutation.isPending}
                         data-testid="button-voice-input"

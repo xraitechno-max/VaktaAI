@@ -85,6 +85,9 @@ export class TTSRouter {
       const isHealthy = await this.isProviderHealthy(providerName);
       if (!isHealthy) {
         console.log(`[TTS Router] ⏭️  Skipping ${providerName} (unhealthy)`);
+        if (providerName === 'azure') {
+          console.warn('[TTS Router] ⚠️ Azure TTS is marked as unhealthy. Check AZURE_SPEECH_KEY and AZURE_SPEECH_REGION env vars.');
+        }
         continue;
       }
 
@@ -158,13 +161,43 @@ export class TTSRouter {
   ): Promise<TTSResult> {
     console.log('[TTS Router] 🎤 Synthesize with phonemes requested');
 
-    // Try Polly first (only provider with viseme support)
+    // 🎯 Azure First Strategy for Phonemes
+    // Azure now supports visemes for many neural voices including Indian ones
+    const azure = this.providers.get('azure') as AzureTTS;
+    const isAzureHealthy = await this.isProviderHealthy('azure');
+
+    if (azure && isAzureHealthy) {
+      try {
+        console.log('[TTS Router] 🔄 Using Azure for phonemes (Primary)...');
+        // Call dedicated method for visemes
+        const { audio, visemes } = await azure.synthesizeWithVisemes(text, options);
+
+        // If we got phonemes/visemes, great!
+        if (visemes && visemes.length > 0) {
+          const result: TTSResult = {
+            audioBuffer: audio,
+            format: 'mp3',
+            provider: 'azure',
+            cached: false,
+            visemes: visemes, // Return raw Azure visemes
+          };
+          console.log('[TTS Router] ✅ Success with Azure + visemes:', { count: visemes.length });
+          return result;
+        } else {
+          console.log('[TTS Router] ⚠️ Azure returned audio but NO visemes. Falling back to Polly for lip-sync...');
+        }
+      } catch (error) {
+        console.warn('[TTS Router] ⚠️ Azure with visemes failed:', error);
+      }
+    }
+
+    // Try Polly as fallback (reliable viseme support)
     const polly = this.providers.get('polly') as PollyTTS;
     const isPollyHealthy = await this.isProviderHealthy('polly');
 
     if (polly && isPollyHealthy) {
       try {
-        console.log('[TTS Router] 🔄 Using Polly for phonemes + word boundaries...');
+        console.log('[TTS Router] 🔄 Using Polly for phonemes (Fallback)...');
 
         const { audio, visemes, words } = await polly.synthesizeWithVisemes(text, options);
 

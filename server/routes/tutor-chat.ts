@@ -28,7 +28,6 @@ router.post('/chat', async (req: any, res: Response) => {
 
     // Create chat
     await db.insert(chats).values({
-      id: chatId,
       userId,
       subject,
       topic,
@@ -44,7 +43,6 @@ router.post('/chat', async (req: any, res: Response) => {
 
     try {
       await db.insert(messages).values({
-        id: nanoid(),
         chatId,
         role: 'assistant',
         content: greeting,
@@ -96,7 +94,6 @@ router.post('/respond', async (req: any, res: Response) => {
     // Save user message
     try {
       await db.insert(messages).values({
-        id: nanoid(),
         chatId,
         role: 'user',
         content: userMessage,
@@ -141,7 +138,6 @@ router.post('/respond', async (req: any, res: Response) => {
     // Save response
     try {
       await db.insert(messages).values({
-        id: nanoid(),
         chatId,
         role: 'assistant',
         content: tutorResponse,

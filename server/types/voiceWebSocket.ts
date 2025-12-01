@@ -79,8 +79,9 @@ export interface PhonemeTTSChunkMessage extends VoiceWebSocketMessage {
 // TTS start notification
 export interface TTSStartMessage extends VoiceWebSocketMessage {
   type: 'TTS_START';
-  text: string;
+  text?: string; // Optional: Text being spoken
   estimatedDuration?: number; // milliseconds
+  messageId?: string; // 🔥 Associate with specific AI response
 }
 
 // TTS end notification
@@ -223,7 +224,7 @@ export interface VoiceWebSocketClient extends WebSocket {
   isTTSActive?: boolean;
   ttsSequence?: number; // PHASE 1: Sequence counter for streaming TTS chunks
   ttsInFlightMap?: Map<string, Promise<void>>; // 🔥 ATOMIC: Track in-flight TTS promises to prevent race conditions
-  
+
   // Avatar state management
   avatarSession?: any; // AvatarSession from avatarStateService
   avatarState?: string; // Current avatar state (CLOSED, LOADING, READY, PLAYING, ERROR)

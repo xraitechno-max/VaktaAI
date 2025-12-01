@@ -6,15 +6,15 @@ import { SmartTTSQueue } from '@/services/SmartTTSQueue';
 import { useAvatarState } from './useAvatarState';
 
 // WebSocket message types
-type WSMessageType = 
-  | 'AUDIO_CHUNK' 
-  | 'TRANSCRIPTION' 
-  | 'TTS_CHUNK' 
+type WSMessageType =
+  | 'AUDIO_CHUNK'
+  | 'TRANSCRIPTION'
+  | 'TTS_CHUNK'
   | 'PHONEME_TTS_CHUNK'  // 🎤 TTS with phoneme data for Unity lip-sync
-  | 'TTS_START' 
+  | 'TTS_START'
   | 'TTS_END'
   | 'TTS_SKIP'           // Deprecated - use ERROR instead
-  | 'INTERRUPT' 
+  | 'INTERRUPT'
   | 'SESSION_STATE'
   | 'AVATAR_STATE'       // 🎭 Client → Server: Avatar state change
   | 'AVATAR_STATE_ACK'   // 🎭 Server → Client: Avatar state acknowledgment  
@@ -22,8 +22,8 @@ type WSMessageType =
   | 'TEXT_QUERY'         // 📝 PHASE 2: Client → Server: Text chat query
   | 'AI_RESPONSE_CHUNK'  // 📝 PHASE 2: Server → Client: Streaming AI response chunk
   | 'AI_RESPONSE_COMPLETE' // 📝 PHASE 2: Server → Client: AI response complete with metadata
-  | 'ERROR' 
-  | 'PING' 
+  | 'ERROR'
+  | 'PING'
   | 'PONG';
 
 // ✅ CORRECT: WebSocket message with flat format fields
@@ -31,32 +31,32 @@ interface WSMessage {
   type: WSMessageType;
   data?: any;
   error?: string;  // Legacy field
-  
+
   // ✅ Flat format fields for TTSChunkMessage
   chunkIndex?: number;
   totalChunks?: number;
-  
+
   // ✅ Flat format fields for ERROR VoiceMessage
   code?: string;
   message?: string;
   recoverable?: boolean;
-  
+
   // 🎤 Flat format fields for PHONEME_TTS_CHUNK
   audio?: string;  // Base64 audio data
-  phonemes?: Array<{time: number; blendshape: string; weight: number}>;  // Unity phoneme data
+  phonemes?: Array<{ time: number; blendshape: string; weight: number }>;  // Unity phoneme data
   text?: string;  // Text being spoken
-  
+
   // 🎭 Flat format fields for AVATAR_STATE and AVATAR_STATE_ACK
   state?: 'CLOSED' | 'LOADING' | 'READY' | 'PLAYING' | 'ERROR';
   canAcceptTTS?: boolean;
-  
+
   // 📝 Flat format field for AI_RESPONSE_TEXT
   messageId?: string;
-  
+
   // 📝 PHASE 2: Flat format fields for TEXT_QUERY
   chatId?: string;
   // text field already defined above for PHONEME_TTS_CHUNK
-  
+
   // 📝 PHASE 2: Flat format fields for AI_RESPONSE_CHUNK and AI_RESPONSE_COMPLETE
   content?: string;  // Chunk or complete AI response text
   isFirst?: boolean; // First chunk flag for AI_RESPONSE_CHUNK
@@ -65,7 +65,7 @@ interface WSMessage {
   currentPhase?: string;
   phase?: string;    // Alternative field name for currentPhase
   progress?: number;
-  
+
   timestamp?: string;
   sessionId?: string;
 }
@@ -91,8 +91,8 @@ interface UseVoiceTutorOptions {
   onChunkReceived?: (chunk: { messageId: string; content: string; isFirst: boolean; chunkIndex?: number }) => void;  // 🎵 Per-chunk TTS trigger
 }
 
-export function useVoiceTutor({ 
-  chatId, 
+export function useVoiceTutor({
+  chatId,
   onTranscription,
   onTTSStart,
   onTTSEnd,
@@ -120,12 +120,12 @@ export function useVoiceTutor({
   const shouldReconnectRef = useRef(true);
   const { toast } = useToast();
   const { avatarRef } = useUnityAvatar();  // 🎤 Access Unity avatar for lip-sync
-  const { state: avatarState, canAcceptTTS } = useAvatarState();  // 🎭 Get avatar state & TTS readiness
+  const { state: avatarState, transition: transitionAvatarState, canAcceptTTS } = useAvatarState();  // 🎭 Get avatar state & TTS readiness
 
   // 🚀 PHASE 1: Sequence-based TTS queue for out-of-order handling
   const ttsSequenceQueueRef = useRef<Map<number, AudioBuffer>>(new Map());
   const nextExpectedSequenceRef = useRef(0);
-  
+
   // 🔥 PHASE 2: Message ID + chunk index tracking to prevent duplicate chunks
   const currentStreamingMessageIdRef = useRef<string | null>(null);
   const receivedChunkIndicesRef = useRef<Set<number>>(new Set()); // Track received chunk indices
@@ -134,11 +134,24 @@ export function useVoiceTutor({
   // 🎭 Smart TTS Queue for avatar state management (PHASE 1 FIX: Pass avatarRef!)
   const smartTTSQueueRef = useRef<SmartTTSQueue>(new SmartTTSQueue(avatarRef));
 
-  // 🔥 CRITICAL FIX: Sync avatar state to TTS queue whenever it changes
+  // 🔥 CRITICAL FIX: Sync avatar state to TTS queue AND Server whenever it changes
   useEffect(() => {
+    // 1. Update local TTS Queue
     smartTTSQueueRef.current.updateState(avatarState);
     console.log(`[Voice Tutor] 🔄 Avatar state synced to TTS Queue: ${avatarState}`);
-  }, [avatarState]);
+
+    // 2. Update Server (so it knows it can stream TTS)
+    if (wsRef.current?.readyState === WebSocket.OPEN) {
+      const msg: WSMessage = {
+        type: 'AVATAR_STATE',
+        state: avatarState,
+        canAcceptTTS: canAcceptTTS,
+        timestamp: new Date().toISOString()
+      };
+      wsRef.current.send(JSON.stringify(msg));
+      console.log(`[Voice Tutor] 📤 Sent AVATAR_STATE to server: ${avatarState} (CanAccept: ${canAcceptTTS})`);
+    }
+  }, [avatarState, canAcceptTTS]);
 
   // Get WebSocket URL
   const getWsUrl = useCallback(() => {
@@ -166,25 +179,25 @@ export function useVoiceTutor({
 
     isPlayingRef.current = true;
     const audioBuffer = audioQueueRef.current.shift()!;
-    
+
     const source = audioContextRef.current.createBufferSource();
     source.buffer = audioBuffer;
     source.connect(audioContextRef.current.destination);
-    
+
     // 🔥 Track current playing source for interruption/reset
     currentAudioSourceRef.current = source;
-    
+
     source.onended = () => {
       isPlayingRef.current = false;
       currentAudioSourceRef.current = null; // Clear reference when done
-      
+
       if (audioQueueRef.current.length > 0) {
         playNextAudio();
       } else {
         setState(prev => ({ ...prev, isSpeaking: false }));
       }
     };
-    
+
     source.start();
   }, []);
 
@@ -196,7 +209,7 @@ export function useVoiceTutor({
       skippedSequencesRef.current.has(nextExpectedSequenceRef.current)
     ) {
       const seq = nextExpectedSequenceRef.current;
-      
+
       if (skippedSequencesRef.current.has(seq)) {
         // Skip this sequence - TTS generation failed
         console.log(`[STREAMING TTS] ⏭️ Skipping sequence ${seq}`);
@@ -208,10 +221,10 @@ export function useVoiceTutor({
         ttsSequenceQueueRef.current.delete(seq);
         console.log(`[STREAMING TTS] ▶️ Queued sequence ${seq}`);
       }
-      
+
       nextExpectedSequenceRef.current++;
     }
-    
+
     // Start playback if not already playing
     playNextAudio();
   }, [playNextAudio]);
@@ -224,7 +237,7 @@ export function useVoiceTutor({
 
     try {
       const audioBuffer = await audioContextRef.current.decodeAudioData(audioData.slice(0));
-      
+
       if (sequence !== undefined) {
         // 🚀 PHASE 1: Sequence-based handling
         console.log(`[STREAMING TTS] 📥 Received chunk with sequence ${sequence}`);
@@ -261,8 +274,8 @@ export function useVoiceTutor({
 
       switch (message.type) {
         case 'TRANSCRIPTION':
-          setState(prev => ({ 
-            ...prev, 
+          setState(prev => ({
+            ...prev,
             isProcessing: false,
             transcription: message.data?.text || '',
             detectedLanguage: message.data?.language || prev.detectedLanguage
@@ -278,7 +291,7 @@ export function useVoiceTutor({
           let audioDataB64: string | undefined;
           let sequence: number | undefined;
           let isLast = false;
-          
+
           // Check for new FLAT format (chunkIndex at top level)
           if (typeof message.data === 'string' && typeof message.chunkIndex === 'number') {
             // ✅ CORRECT: Flat format from server
@@ -297,11 +310,11 @@ export function useVoiceTutor({
             audioDataB64 = message.data;
             console.log('[STREAMING TTS] 📥 Legacy format chunk (no sequence)');
           }
-          
+
           if (audioDataB64) {
             const audioData = Uint8Array.from(atob(audioDataB64), c => c.charCodeAt(0));
             await handleTTSChunk(audioData.buffer, sequence);
-            
+
             if (isLast) {
               console.log('[STREAMING TTS] ✅ Last chunk received');
             }
@@ -313,44 +326,29 @@ export function useVoiceTutor({
           // 🎤 Handle TTS with phoneme data for Unity lip-sync via Smart TTS Queue
           // { type: 'PHONEME_TTS_CHUNK', audio: 'base64...', phonemes: [...], chunkIndex: 1, text: '...' }
           const { audio, phonemes, chunkIndex, text } = message;
-          
+
           if (audio && phonemes) {
             console.log(`[PHONEME STREAM] 🎤 Received phoneme TTS chunk ${chunkIndex}: ${phonemes.length} phonemes for "${text?.substring(0, 30)}..."`);
-            
+
             // 🎭 Enqueue through Smart TTS Queue with avatar state validation
             const enqueueResult = smartTTSQueueRef.current.enqueue({
               id: `tts-chunk-${chunkIndex}`,
+              chunkIndex: chunkIndex ?? 0, // 🔢 Pass chunkIndex for ordering
               audio,
               phonemes,
               duration: 1000, // Estimate 1 second per chunk (actual duration from Unity)
               timestamp: Date.now()
             });
-            
+
             console.log(`[Smart TTS Queue] 📊 Enqueue result:`, enqueueResult);
-            
-            // If successfully enqueued, send to Unity
-            if (enqueueResult && avatarRef.current) {
-              try {
-                // Send audio + phonemes to Unity avatar for synchronized lip-sync
-                avatarRef.current.sendAudioWithPhonemesToAvatar(
-                  audio, 
-                  phonemes, 
-                  `tts-chunk-${chunkIndex}`
-                );
-                
-                // Update speaking state
-                setState(prev => ({ ...prev, isSpeaking: true }));
-                
-                console.log(`[PHONEME STREAM] ✅ Sent to Unity: ${phonemes.length} phonemes`);
-              } catch (error) {
-                console.error('[PHONEME STREAM] ❌ Error sending to Unity:', error);
-                // Fallback to regular audio playback
-                const audioData = Uint8Array.from(atob(audio), c => c.charCodeAt(0));
-                await handleTTSChunk(audioData.buffer, chunkIndex);
-              }
+
+            // If successfully enqueued, let SmartTTSQueue handle playback (now or when ready)
+            if (enqueueResult) {
+              console.log(`[PHONEME STREAM] ✅ Enqueued in SmartTTSQueue (will play when ready)`);
+              setState(prev => ({ ...prev, isSpeaking: true }));
             } else {
-              // 🔊 BROWSER FALLBACK: Avatar not ready - play TTS in browser instead of rejecting
-              console.log(`[Smart TTS Queue] 🔊 Avatar not ready - falling back to browser audio playback`);
+              // 🔊 BROWSER FALLBACK: Only if rejected (CLOSED/ERROR)
+              console.log(`[Smart TTS Queue] 🔊 Avatar rejected (CLOSED/ERROR) - falling back to browser audio playback`);
               try {
                 const audioData = Uint8Array.from(atob(audio), c => c.charCodeAt(0));
                 await handleTTSChunk(audioData.buffer, chunkIndex);
@@ -373,13 +371,13 @@ export function useVoiceTutor({
           // 📝 Handle text-only AI response (when avatar not ready for TTS)
           // { type: 'AI_RESPONSE_TEXT', text: '...', messageId: '...' }
           const { text, messageId } = message;
-          
+
           if (text) {
             console.log(`[AI RESPONSE] 📝 Text-only response (avatar not ready): "${text.substring(0, 50)}..."`);
-            
+
             // Display text in chat UI - use callback if provided
             onTranscription?.(text);
-            
+
             // Log metrics
             console.log(`[AI RESPONSE] 📊 Message ID: ${messageId || 'none'}`);
           }
@@ -419,7 +417,15 @@ export function useVoiceTutor({
 
           // 🔥 NEW: Clear Smart TTS Queue to prevent duplicate playback
           smartTTSQueueRef.current.clear();
-          console.log('[TTS START] 🧹 Cleared all audio queues and reset state');
+
+          // Update message ID tracking if provided
+          if (message.messageId) {
+            currentStreamingMessageIdRef.current = message.messageId;
+            receivedChunkIndicesRef.current.clear();
+            console.log(`[TTS START] 🆕 New message started (ID: ${message.messageId}) - Queue Reset`);
+          } else {
+            console.log('[TTS START] 🧹 Cleared all audio queues and reset state (No ID)');
+          }
 
           setState(prev => ({ ...prev, isSpeaking: true }));
           onTTSStart?.();
@@ -444,9 +450,9 @@ export function useVoiceTutor({
           // 🎭 Server acknowledged avatar state change
           const newState = message.state;
           const canAccept = message.canAcceptTTS ?? false;
-          
+
           console.log(`[AVATAR STATE ACK] 📬 Received from server - State: ${newState}, CanAcceptTTS: ${canAccept}`);
-          
+
           // 🔥 CRITICAL: Update SmartTTSQueue avatar state via global reference
           if (smartTTSQueueRef.current) {
             smartTTSQueueRef.current.updateAvatarState(newState as any, canAccept);
@@ -469,10 +475,10 @@ export function useVoiceTutor({
             variant: "destructive"
           });
           onError?.(errorMsg);
-          setState(prev => ({ 
-            ...prev, 
-            isProcessing: false, 
-            isRecording: false 
+          setState(prev => ({
+            ...prev,
+            isProcessing: false,
+            isRecording: false
           }));
           break;
         }
@@ -483,25 +489,27 @@ export function useVoiceTutor({
           const messageId = message.messageId;
           const isFirst = message.isFirst || false;
           const chunkIndex = message.chunkIndex;
-          
+
           // 🚨 Validate messageId exists
           if (!messageId) {
             console.error('[TEXT QUERY] ❌ Chunk missing messageId - ignoring');
             break;
           }
-          
+
           // 🔥 FIX: Prevent duplicate chunks from same message
           if (isFirst) {
             // New message started - reset tracking
             currentStreamingMessageIdRef.current = messageId;
             receivedChunkIndicesRef.current.clear(); // Clear chunk index set
             console.log(`[TEXT QUERY] 🆕 New message started: ${messageId}`);
+
+            // Note: Queue reset is now handled by TTS_START message
           } else if (currentStreamingMessageIdRef.current !== messageId) {
             // Chunk from old/different message - IGNORE
             console.warn(`[TEXT QUERY] ⚠️ Ignoring chunk from old message: ${messageId} (current: ${currentStreamingMessageIdRef.current})`);
             break;
           }
-          
+
           // 🔥 Index-based deduplication: Check if chunk index already received
           if (chunkIndex !== undefined) {
             if (receivedChunkIndicesRef.current.has(chunkIndex)) {
@@ -510,9 +518,9 @@ export function useVoiceTutor({
             }
             receivedChunkIndicesRef.current.add(chunkIndex);
           }
-          
+
           console.log(`[TEXT QUERY] 📝 Chunk #${chunkIndex ?? '?'} received [${messageId}]: "${content.substring(0, 50)}..." (total: ${receivedChunkIndicesRef.current.size} chunks)`);
-          
+
           // Update BOTH transcription (temp) and streamingResponse (persistent)
           setState(prev => ({
             ...prev,
@@ -520,10 +528,10 @@ export function useVoiceTutor({
             streamingResponse: isFirst ? content : prev.streamingResponse + content, // 📝 Persist here
             isProcessing: true
           }));
-          
+
           // 🎵 CRITICAL: Trigger per-chunk TTS generation immediately (not waiting for completion)
           onChunkReceived?.({ messageId, content, isFirst, chunkIndex });
-          
+
           break;
         }
 
@@ -532,20 +540,20 @@ export function useVoiceTutor({
           const emotion = message.emotion;
           const phase = message.phase;
           const chatId = message.chatId;
-          
+
           console.log(`[TEXT QUERY] ✅ Response complete - Emotion: ${emotion}, Phase: ${phase}`);
-          
+
           // 🔥 Reset message ID tracking and clear chunk index set
           currentStreamingMessageIdRef.current = null;
           receivedChunkIndicesRef.current.clear();
-          
+
           // 📝 Keep streamingResponse visible, just stop processing
           setState(prev => ({
             ...prev,
             isProcessing: false
             // streamingResponse stays - will be cleared when messages refresh
           }));
-          
+
           // 🔥 CRITICAL: Refetch messages query to get updated message with SSML metadata
           // Use refetchQueries (not invalidateQueries) to wait for completion
           if (chatId) {
@@ -567,6 +575,14 @@ export function useVoiceTutor({
     }
   }, [handleTTSChunk, handleTTSSkip, onTranscription, onTTSStart, onTTSEnd, onError, toast]);
 
+  // 🔥 Ref to track latest avatar state for WebSocket onopen
+  const avatarStateRef = useRef({ state: avatarState, canAcceptTTS });
+
+  // Update ref when state changes
+  useEffect(() => {
+    avatarStateRef.current = { state: avatarState, canAcceptTTS };
+  }, [avatarState, canAcceptTTS]);
+
   // Connect to WebSocket
   const connect = useCallback(() => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
@@ -581,13 +597,24 @@ export function useVoiceTutor({
       setState(prev => ({ ...prev, isConnected: true }));
       reconnectAttemptsRef.current = 0;
       shouldReconnectRef.current = true; // Enable auto-reconnect for fault tolerance
-      
+
       // 🔥 FIX: Set global WebSocket for avatar state sync
       (window as any).__wsService = {
         send: (msg: string) => ws.send(msg)
       };
       console.log('[VOICE] ✅ Global __wsService set for avatar state sync');
-      
+
+      // 🔥 Send initial AVATAR_STATE immediately on connection
+      const { state, canAcceptTTS } = avatarStateRef.current;
+      const msg: WSMessage = {
+        type: 'AVATAR_STATE',
+        state: state,
+        canAcceptTTS: canAcceptTTS,
+        timestamp: new Date().toISOString()
+      };
+      ws.send(JSON.stringify(msg));
+      console.log(`[Voice Tutor] 📤 Sent initial AVATAR_STATE to server: ${state}`);
+
       // Start heartbeat
       const pingInterval = setInterval(() => {
         if (ws.readyState === WebSocket.OPEN) {
@@ -606,23 +633,23 @@ export function useVoiceTutor({
 
     ws.onclose = (event) => {
       console.log('[VOICE] WebSocket closed:', event.code, event.reason);
-      
+
       // 🔥 FIX: Cleanup global __wsService
       (window as any).__wsService = null;
       console.log('[VOICE] 🧹 Global __wsService cleaned up');
-      
-      setState(prev => ({ 
-        ...prev, 
-        isConnected: false, 
+
+      setState(prev => ({
+        ...prev,
+        isConnected: false,
         isRecording: false,
-        isProcessing: false 
+        isProcessing: false
       }));
 
       // Only auto-reconnect if not intentionally disconnected
       if (shouldReconnectRef.current && reconnectAttemptsRef.current < 5) {
         const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 10000);
         reconnectAttemptsRef.current++;
-        
+
         reconnectTimeoutRef.current = setTimeout(() => {
           console.log('[VOICE] Reconnecting... attempt', reconnectAttemptsRef.current);
           connect();
@@ -643,11 +670,11 @@ export function useVoiceTutor({
   const disconnect = useCallback(() => {
     // Prevent auto-reconnect on intentional disconnect
     shouldReconnectRef.current = false;
-    
+
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
     }
-    
+
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
@@ -680,13 +707,13 @@ export function useVoiceTutor({
     }
 
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ 
+      const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           channelCount: 1,
           sampleRate: 16000,
           echoCancellation: true,
           noiseSuppression: true,
-        } 
+        }
       });
 
       const mediaRecorder = new MediaRecorder(stream, {
@@ -704,10 +731,10 @@ export function useVoiceTutor({
 
       mediaRecorder.onstop = () => {
         stream.getTracks().forEach(track => track.stop());
-        setState(prev => ({ 
-          ...prev, 
-          isRecording: false, 
-          isProcessing: true 
+        setState(prev => ({
+          ...prev,
+          isRecording: false,
+          isProcessing: true
         }));
       };
 
@@ -736,7 +763,7 @@ export function useVoiceTutor({
     // Stop audio playback
     audioQueueRef.current = [];
     isPlayingRef.current = false;
-    
+
     if (audioContextRef.current) {
       audioContextRef.current.close();
       audioContextRef.current = null;
@@ -744,7 +771,7 @@ export function useVoiceTutor({
 
     // Send interrupt signal to server
     sendMessage('INTERRUPT');
-    
+
     setState(prev => ({ ...prev, isSpeaking: false }));
   }, [sendMessage]);
 
@@ -766,10 +793,23 @@ export function useVoiceTutor({
 
       wsRef.current.send(JSON.stringify(message));
       console.log(`[TEXT QUERY] Sent: "${text.substring(0, 50)}..."`);
-      
+
+      // 🔥 CRITICAL: Resume AudioContext on user interaction to satisfy browser autoplay policy
+      if (audioContextRef.current) {
+        if (audioContextRef.current.state === 'suspended') {
+          audioContextRef.current.resume().then(() => {
+            console.log('[VOICE] 🔊 AudioContext resumed on user interaction');
+          });
+        }
+      } else {
+        // Initialize if not exists
+        audioContextRef.current = new (window.AudioContext || (window as any).webkitAudioContext)();
+        console.log('[VOICE] 🔊 AudioContext initialized on user interaction');
+      }
+
       // Set processing state
       setState(prev => ({ ...prev, isProcessing: true, transcription: '' }));
-      
+
       return true;
     } catch (error) {
       console.error('[TEXT QUERY] Send error:', error);
@@ -783,7 +823,7 @@ export function useVoiceTutor({
       // Avatar closed - clear pending TTS
       smartTTSQueueRef.current.clear();
       console.log('[Smart TTS Queue] 🧹 Queue cleared - Avatar closed');
-      
+
       // Log final metrics
       const metrics = smartTTSQueueRef.current.getMetrics();
       console.log('[Smart TTS Queue] 📊 Final metrics:', metrics);
@@ -801,7 +841,7 @@ export function useVoiceTutor({
             credentials: 'include',
             body: JSON.stringify({ language: state.detectedLanguage })
           });
-          
+
           if (response.ok) {
             console.log('[VOICE] Auto-updated chat language to:', state.detectedLanguage);
             onLanguageChange?.(state.detectedLanguage as 'hi' | 'en');
@@ -827,6 +867,12 @@ export function useVoiceTutor({
     }));
   }, []);
 
+  // Notify TTS queue of audio completion (from Unity)
+  const notifyAudioEnded = useCallback((chunkId: string) => {
+    console.log(`[Voice Tutor] 🎤 Audio ended notification: ${chunkId}`);
+    smartTTSQueueRef.current.notifyAudioEnded(chunkId);
+  }, []);
+
   return {
     state,
     connect,
@@ -836,6 +882,7 @@ export function useVoiceTutor({
     interrupt,
     sendTextQuery, // PHASE 2: Text query via WebSocket
     clearStreamingResponse, // 📝 Clear after messages refresh
+    notifyAudioEnded, // 🎯 NEW: Expose to allow Unity to notify completion
     isConnected: state.isConnected,
     isRecording: state.isRecording,
     isProcessing: state.isProcessing,
@@ -843,5 +890,6 @@ export function useVoiceTutor({
     transcription: state.transcription,
     streamingResponse: state.streamingResponse, // 📝 Expose persistent streaming text
     detectedLanguage: state.detectedLanguage,
+    updateAvatarState: (state: 'CLOSED' | 'LOADING' | 'READY' | 'PLAYING' | 'ERROR') => transitionAvatarState(state), // 🎭 Expose state update
   };
 }

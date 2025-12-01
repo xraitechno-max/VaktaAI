@@ -65,7 +65,7 @@ export default function AdminAPIManagement() {
   });
 
   // Fetch API keys config
-  const { data: apiKeysData } = useQuery({
+  const { data: apiKeysData } = useQuery<{ value: typeof apiKeys }>({
     queryKey: ['/api/admin/configs/api/keys'],
   });
 
@@ -119,7 +119,7 @@ export default function AdminAPIManagement() {
           <h1 className="text-3xl font-bold gradient-text">API Management</h1>
           <p className="text-muted-foreground">Manage API keys and service providers (encrypted storage)</p>
         </div>
-        <Button 
+        <Button
           onClick={() => saveApiKeysMutation.mutate()}
           disabled={saveApiKeysMutation.isPending}
           data-testid="button-save-api-keys"
@@ -194,8 +194,8 @@ export default function AdminAPIManagement() {
                   value={apiKeys.openai.models.chat}
                   onChange={(e) => setApiKeys({
                     ...apiKeys,
-                    openai: { 
-                      ...apiKeys.openai, 
+                    openai: {
+                      ...apiKeys.openai,
                       models: { ...apiKeys.openai.models, chat: e.target.value }
                     }
                   })}
@@ -258,8 +258,8 @@ export default function AdminAPIManagement() {
                 value={apiKeys.gemini.models.chat}
                 onChange={(e) => setApiKeys({
                   ...apiKeys,
-                  gemini: { 
-                    ...apiKeys.gemini, 
+                  gemini: {
+                    ...apiKeys.gemini,
                     models: { ...apiKeys.gemini.models, chat: e.target.value }
                   }
                 })}
@@ -321,8 +321,8 @@ export default function AdminAPIManagement() {
                 value={apiKeys.anthropic.models.chat}
                 onChange={(e) => setApiKeys({
                   ...apiKeys,
-                  anthropic: { 
-                    ...apiKeys.anthropic, 
+                  anthropic: {
+                    ...apiKeys.anthropic,
                     models: { ...apiKeys.anthropic.models, chat: e.target.value }
                   }
                 })}
@@ -384,8 +384,8 @@ export default function AdminAPIManagement() {
                   checked={apiKeys.sarvam.services.tts}
                   onCheckedChange={(checked) => setApiKeys({
                     ...apiKeys,
-                    sarvam: { 
-                      ...apiKeys.sarvam, 
+                    sarvam: {
+                      ...apiKeys.sarvam,
                       services: { ...apiKeys.sarvam.services, tts: checked }
                     }
                   })}
@@ -398,8 +398,8 @@ export default function AdminAPIManagement() {
                   checked={apiKeys.sarvam.services.stt}
                   onCheckedChange={(checked) => setApiKeys({
                     ...apiKeys,
-                    sarvam: { 
-                      ...apiKeys.sarvam, 
+                    sarvam: {
+                      ...apiKeys.sarvam,
                       services: { ...apiKeys.sarvam.services, stt: checked }
                     }
                   })}
@@ -501,8 +501,8 @@ export default function AdminAPIManagement() {
                   checked={apiKeys.aws.services.s3}
                   onCheckedChange={(checked) => setApiKeys({
                     ...apiKeys,
-                    aws: { 
-                      ...apiKeys.aws, 
+                    aws: {
+                      ...apiKeys.aws,
                       services: { ...apiKeys.aws.services, s3: checked }
                     }
                   })}
@@ -515,8 +515,8 @@ export default function AdminAPIManagement() {
                   checked={apiKeys.aws.services.polly}
                   onCheckedChange={(checked) => setApiKeys({
                     ...apiKeys,
-                    aws: { 
-                      ...apiKeys.aws, 
+                    aws: {
+                      ...apiKeys.aws,
                       services: { ...apiKeys.aws.services, polly: checked }
                     }
                   })}

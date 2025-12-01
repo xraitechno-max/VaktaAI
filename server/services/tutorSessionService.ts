@@ -3,9 +3,9 @@
 // Enhanced with curriculum-aligned tutoring engines (Nov 2025)
 
 import { storage } from '../storage';
-import { 
-  InsertTutorSession, 
-  TutorSession, 
+import {
+  InsertTutorSession,
+  TutorSession,
   User,
   TeachingMode,
   HintLevel,
@@ -15,7 +15,7 @@ import {
   SessionMetrics,
   CurriculumContext
 } from '@shared/schema';
-import { 
+import {
   selectPersonaBySubject,
   getPersonaCatchphrase,
   TUTOR_PERSONAS,
@@ -89,22 +89,22 @@ export interface EnhancedSessionContext extends SessionContext {
   // Teaching mode state
   currentTeachingMode?: TeachingMode;
   teachingModeRationale?: string;
-  
+
   // Hint ladder state
   currentHintLevel?: HintLevel;
   hintsGiven?: number;
-  
+
   // Student engagement metrics
   sessionMetrics?: SessionMetrics;
   demotivationLevel?: number;
-  
+
   // Curriculum context
   curriculumContext?: CurriculumContext;
-  
+
   // Subject/class context
   classLevel?: ClassLevel;
   subjectCode?: SubjectCode;
-  
+
   // Attempt tracking
   recentAttempts?: number;
   frustrationCount?: number;
@@ -126,14 +126,14 @@ export class TutorSessionService {
     personaId?: string // Optional: auto-select if not provided
   ): Promise<TutorSession> {
     // Select persona (use provided or auto-select based on subject)
-    const persona = personaId 
+    const persona = personaId
       ? TUTOR_PERSONAS[personaId] || selectPersonaBySubject(subject)
       : selectPersonaBySubject(subject);
-    
+
     // Use language preference from user profile (from onboarding) first, fallback to chat language
     // Priority: user.languagePreference > chat.language
     let preferredLanguage: string;
-    
+
     if (user.languagePreference) {
       // User completed onboarding and selected language
       preferredLanguage = user.languagePreference; // 'english', 'hinglish', or 'hindi'
@@ -148,7 +148,7 @@ export class TutorSessionService {
       // 'en' → 'english', 'hi' → 'hinglish'
       preferredLanguage = chatLanguage === 'hi' ? 'hinglish' : 'english';
     }
-    
+
     // Create profile snapshot
     const profileSnapshot = {
       firstName: user.firstName || 'Student',
@@ -159,7 +159,7 @@ export class TutorSessionService {
       subjects: user.subjects || [subject],
       preferredLanguage
     };
-    
+
     // Create session
     const session: InsertTutorSession = {
       chatId,
@@ -178,10 +178,10 @@ export class TutorSessionService {
         strongConcepts: []
       }
     };
-    
+
     return await storage.createTutorSession(session);
   }
-  
+
   // Get or create session
   async getOrCreateSession(
     chatId: string,
@@ -194,14 +194,14 @@ export class TutorSessionService {
     if (existing) {
       return existing;
     }
-    
+
     return await this.initializeSession(chatId, userId, subject, topic, user);
   }
-  
+
   // Get current phase template
   getCurrentPhaseTemplate(session: TutorSession): TemplateVariant {
     const timeOfDay = this.getTimeOfDay();
-    
+
     switch (session.currentPhase) {
       case 'greeting':
         // Get language preference from profile (english or hinglish)
@@ -212,26 +212,26 @@ export class TutorSessionService {
           examTarget: session.profileSnapshot?.examTarget
         };
         return getGreetingTemplate(timeOfDay, language as 'english' | 'hinglish', userProfile);
-      
+
       case 'rapport':
         const examTarget = session.profileSnapshot?.examTarget || 'JEE';
         return getRapportTemplate(examTarget);
-      
+
       case 'teaching':
         return getTeachingTemplate('hook');
-      
+
       case 'practice':
         return getPracticeTemplate('problem_introduction');
-      
+
       case 'feedback':
         const performance = session.progress >= 70 ? 'strong_performance'
           : session.progress >= 40 ? 'good_progress'
-          : 'needs_practice';
+            : 'needs_practice';
         return getFeedbackTemplate(performance);
-      
+
       case 'closure':
         return getClosureTemplate(session.progress >= 60);
-      
+
       default:
         return {
           text: 'Chalo aage badhte hain!',
@@ -239,12 +239,12 @@ export class TutorSessionService {
         };
     }
   }
-  
+
   // Fill template with session data
   fillSessionTemplate(template: TemplateVariant, session: TutorSession, additionalVars: Record<string, string> = {}): string {
     const persona = TUTOR_PERSONAS[session.personaId];
     const profile = session.profileSnapshot || {};
-    
+
     const variables = {
       studentName: profile.firstName || 'Student',
       teacherName: persona?.name || 'Teacher',
@@ -255,31 +255,31 @@ export class TutorSessionService {
       checkpointsPassed: String(session.adaptiveMetrics?.checkpointsPassed || 0),
       ...additionalVars
     };
-    
+
     return fillTemplate(template.text, variables);
   }
-  
+
   // Advance to next phase
   async advancePhase(chatId: string): Promise<TutorSession> {
     const session = await storage.getTutorSession(chatId);
     if (!session) {
       throw new Error('Session not found');
     }
-    
+
     const currentIndex = PHASE_ORDER.indexOf(session.currentPhase as Phase);
     if (currentIndex === -1 || currentIndex >= PHASE_ORDER.length - 1) {
       return session; // Already at last phase
     }
-    
+
     const nextPhase = PHASE_ORDER[currentIndex + 1];
     const newProgress = Math.round(((currentIndex + 1) / PHASE_ORDER.length) * 100);
-    
+
     return await storage.updateTutorSession(chatId, {
       currentPhase: nextPhase,
       progress: newProgress
     });
   }
-  
+
   // Record assessment result and adjust level
   async recordAssessment(
     chatId: string,
@@ -289,97 +289,97 @@ export class TutorSessionService {
     if (!session) {
       throw new Error('Session not found');
     }
-    
+
     const updatedMetrics = {
       ...session.adaptiveMetrics,
       diagnosticScore: assessmentResult.score,
       misconceptions: assessmentResult.misconceptions,
       strongConcepts: assessmentResult.strengths
     };
-    
+
     return await storage.updateTutorSession(chatId, {
       level: assessmentResult.level,
       adaptiveMetrics: updatedMetrics
     });
   }
-  
+
   // Record checkpoint passed
   async recordCheckpoint(chatId: string, checkpointName: string): Promise<TutorSession> {
     const session = await storage.getTutorSession(chatId);
     if (!session) {
       throw new Error('Session not found');
     }
-    
+
     const checkpointsPassed = (session.adaptiveMetrics?.checkpointsPassed || 0) + 1;
     const updatedMetrics = {
       ...session.adaptiveMetrics,
       checkpointsPassed
     };
-    
+
     // Increase progress by 5% for each checkpoint
     const newProgress = Math.min(session.progress + 5, 100);
-    
+
     return await storage.updateTutorSession(chatId, {
       progress: newProgress,
       adaptiveMetrics: updatedMetrics
     });
   }
-  
+
   // Add misconception
   async recordMisconception(chatId: string, misconception: string): Promise<TutorSession> {
     const session = await storage.getTutorSession(chatId);
     if (!session) {
       throw new Error('Session not found');
     }
-    
+
     const misconceptions = session.adaptiveMetrics?.misconceptions || [];
     if (!misconceptions.includes(misconception)) {
       misconceptions.push(misconception);
     }
-    
+
     const updatedMetrics = {
       ...session.adaptiveMetrics,
       misconceptions
     };
-    
+
     return await storage.updateTutorSession(chatId, {
       adaptiveMetrics: updatedMetrics
     });
   }
-  
+
   // Add strong concept
   async recordStrength(chatId: string, concept: string): Promise<TutorSession> {
     const session = await storage.getTutorSession(chatId);
     if (!session) {
       throw new Error('Session not found');
     }
-    
+
     const strongConcepts = session.adaptiveMetrics?.strongConcepts || [];
     if (!strongConcepts.includes(concept)) {
       strongConcepts.push(concept);
     }
-    
+
     const updatedMetrics = {
       ...session.adaptiveMetrics,
       strongConcepts
     };
-    
+
     return await storage.updateTutorSession(chatId, {
       adaptiveMetrics: updatedMetrics
     });
   }
-  
+
   // Generate resume context
   async generateResumeContext(chatId: string): Promise<string> {
     const session = await storage.getTutorSession(chatId);
     if (!session) {
       throw new Error('Session not found');
     }
-    
+
     const persona = TUTOR_PERSONAS[session.personaId];
     const profile = session.profileSnapshot || {};
     const catchphrase = getPersonaCatchphrase(session.personaId);
-    
+
     const resumeText = `${catchphrase} ${profile.firstName}! Aapka session resume kar rahe hain.
 
 Pichli baar hum ruk gaye the: ${session.currentPhase} phase mein
@@ -393,22 +393,22 @@ Chalo wahi se continue karte hain!`;
 
     return resumeText;
   }
-  
+
   // Check if phase should auto-advance
   shouldAutoAdvance(session: TutorSession, messageCount: number): boolean {
     // Greeting phase: Auto-advance after 1-2 messages
     if (session.currentPhase === 'greeting' && messageCount >= 2) {
       return true;
     }
-    
+
     // Rapport phase: Auto-advance after student responds
     if (session.currentPhase === 'rapport' && messageCount >= 4) {
       return true;
     }
-    
+
     return false;
   }
-  
+
   // Get time of day
   private getTimeOfDay(): 'morning' | 'afternoon' | 'evening' {
     const hour = new Date().getHours();
@@ -416,22 +416,22 @@ Chalo wahi se continue karte hain!`;
     if (hour < 17) return 'afternoon';
     return 'evening';
   }
-  
+
   // Get persona for session
   getPersona(session: TutorSession): PersonaConfig {
     return TUTOR_PERSONAS[session.personaId] || TUTOR_PERSONAS.priya;
   }
-  
+
   // Analyze student response for level assessment
   analyzeResponse(response: string, expectedAnswer?: string): AssessmentResult {
     const normalized = response.toLowerCase().trim();
-    
+
     // Simple heuristic assessment
     let score = 0;
     let level: StudentLevel = 'beginner';
     const misconceptions: string[] = [];
     const strengths: string[] = [];
-    
+
     // Self-assessment patterns
     if (normalized.includes('naya') || normalized.includes('pehli baar')) {
       score = 0;
@@ -447,7 +447,7 @@ Chalo wahi se continue karte hain!`;
       level = 'advanced';
       strengths.push('Strong conceptual foundation');
     }
-    
+
     // If expected answer provided, do simple matching
     if (expectedAnswer) {
       const expectedNorm = expectedAnswer.toLowerCase();
@@ -459,7 +459,7 @@ Chalo wahi se continue karte hain!`;
         misconceptions.push('Concept clarity needed');
       }
     }
-    
+
     return {
       score,
       level,
@@ -484,28 +484,28 @@ Chalo wahi se continue karte hain!`;
     const chatId = session.chatId;
     const metrics = this.sessionMetricsCache.get(chatId);
     const hintState = this.hintStateCache.get(chatId);
-    
+
     // Build teaching mode context
     const context: TeachingModeContext = {
       masteryScore: (session.adaptiveMetrics?.diagnosticScore || 50) / 100,
       recentAttempts: metrics?.consecutiveWrongAnswers || 0,
       emotion,
-      requestType,
+      requestType: requestType === 'concept' ? 'explain' : requestType,
       timePressure: false, // Could be determined from exam date proximity
-      prerequisiteStatus: 'complete', // Could be determined from curriculum context
+      prerequisiteStatus: 'solid', // Could be determined from curriculum context
       lastHintLevel: hintState?.level || 1,
       frustrationCount: metrics?.demotivationEvents || 0
     };
 
     const decision = teachingModeEngine.decide(context);
-    
+
     // Cache the teaching mode
     this.teachingModeCache.set(chatId, decision.mode);
-    
+
     return {
       mode: decision.mode,
       rationale: decision.rationale,
-      toneModifier: decision.toneModifier
+      toneModifier: decision.toneMod || 'calm'
     };
   }
 
@@ -521,15 +521,15 @@ Chalo wahi se continue karte hain!`;
     const chatId = session.chatId;
     const subject = this.mapSubjectToCode(session.subject);
     const currentMode = this.teachingModeCache.get(chatId) || 'direct';
-    
+
     // Get or initialize hint state
     let hintState = this.hintStateCache.get(chatId);
     if (!hintState) {
       // Entry level depends on teaching mode
-      const entryLevel = currentMode === 'socratic' ? 1 
-        : currentMode === 'scaffolded_direct' ? 3 
-        : currentMode === 'worked_example' ? 5 
-        : 1;
+      const entryLevel = currentMode === 'socratic' ? 1
+        : currentMode === 'scaffolded_direct' ? 3
+          : currentMode === 'worked_example' ? 5
+            : 1;
       hintState = { level: entryLevel as HintLevel, count: 0 };
     }
 
@@ -564,7 +564,7 @@ Chalo wahi se continue karte hain!`;
     const hintState = this.hintStateCache.get(chatId) || { level: 1 as HintLevel, count: 0 };
 
     const newLevel = hintLadderSystem.escalate(hintState.level, currentMode);
-    
+
     this.hintStateCache.set(chatId, {
       level: newLevel,
       count: hintState.count
@@ -583,7 +583,7 @@ Chalo wahi se continue karte hain!`;
   ): { needsIntervention: boolean; intervention?: string; level?: number } {
     const chatId = session.chatId;
     const subject = this.mapSubjectToCode(session.subject);
-    
+
     // Get or create session metrics
     let metrics = this.sessionMetricsCache.get(chatId);
     if (!metrics) {
@@ -606,10 +606,10 @@ Chalo wahi se continue karte hain!`;
     if (needsIntervention) {
       const level = demotivationMonitor.determineInterventionLevel(signals, metrics);
       const intervention = demotivationMonitor.getIntervention(level, subject);
-      
+
       // Record the event
       demotivationMonitor.recordDemotivationEvent(metrics);
-      
+
       return { needsIntervention: true, intervention, level };
     }
 
@@ -623,7 +623,7 @@ Chalo wahi se continue karte hain!`;
     const chatId = session.chatId;
     const metrics = this.sessionMetricsCache.get(chatId);
     if (metrics) {
-      demotivationMonitor.recordRecovery(metrics);
+      demotivationMonitor.recordRecovery(metrics, 0, true);
     }
   }
 
@@ -638,7 +638,7 @@ Chalo wahi se continue karte hain!`;
   ): EnhancedPromptContext {
     const chatId = session.chatId;
     const profile = session.profileSnapshot || {};
-    
+
     // Get current states
     const teachingMode = this.teachingModeCache.get(chatId) || 'direct';
     const hintState = this.hintStateCache.get(chatId);
@@ -647,24 +647,24 @@ Chalo wahi se continue karte hain!`;
     // Map to ClassLevel
     const classLevel = this.mapClassToLevel(profile.currentClass);
     const subjectCode = this.mapSubjectToCode(session.subject);
-    
+
     // Build enhanced context
     const context: EnhancedPromptContext = {
       // Language context
       detectedLanguage,
       languageConfidence: 0.9,
       preferredLanguage: profile.preferredLanguage as 'english' | 'hindi' | 'hinglish',
-      
+
       // Emotional context
       currentEmotion: emotion,
       emotionConfidence: 0.8,
-      
+
       // Learning context
       subject: session.subject || '',
       topic: session.topic || '',
       level: session.level || 'beginner',
       currentPhase: session.currentPhase || 'greeting',
-      
+
       // User profile
       userProfile: {
         currentClass: profile.currentClass,
@@ -672,11 +672,11 @@ Chalo wahi se continue karte hain!`;
         educationBoard: profile.educationBoard,
         firstName: profile.firstName
       },
-      
+
       // Enhanced curriculum context
       teachingMode,
       currentHintLevel: hintState?.level,
-      hintsGiven: hintState?.count,
+      // hintsGiven: hintState?.count, // Type mismatch: expects array of hints, we only have count
       classLevel,
       subjectCode,
       examTarget: profile.examTarget as any,
@@ -695,7 +695,7 @@ Chalo wahi se continue karte hain!`;
     const profile = session.profileSnapshot || {};
     const classLevel = this.mapClassToLevel(profile.currentClass);
     const examTarget = profile.examTarget as any;
-    
+
     return getAdaptation(classLevel, examTarget);
   }
 
@@ -706,7 +706,7 @@ Chalo wahi se continue karte hain!`;
     const subjectCode = this.mapSubjectToCode(session.subject);
     const profile = session.profileSnapshot || {};
     const examTarget = profile.examTarget as any;
-    
+
     return getStrategy(subjectCode, examTarget);
   }
 
@@ -743,10 +743,10 @@ Chalo wahi se continue karte hain!`;
   // Helper: Map class string to ClassLevel (individual class number)
   private mapClassToLevel(classStr?: string): ClassLevel {
     if (!classStr) return '11'; // Default to Class 11
-    
+
     const normalized = classStr.toLowerCase();
     if (normalized.includes('dropper')) return 'dropper';
-    
+
     const match = normalized.match(/(\d{1,2})/);
     if (match) {
       const classNum = parseInt(match[1]);
@@ -755,7 +755,7 @@ Chalo wahi se continue karte hain!`;
         return classNum.toString() as ClassLevel;
       }
     }
-    
+
     return '11'; // Default to Class 11
   }
 }

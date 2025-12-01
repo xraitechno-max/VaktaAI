@@ -64,12 +64,12 @@ export default function AdminVoiceSettings() {
   });
 
   // Fetch TTS config
-  const { data: ttsData } = useQuery({
+  const { data: ttsData } = useQuery<{ value: typeof ttsConfig }>({
     queryKey: ['/api/admin/configs/voice/tts'],
   });
 
   // Fetch STT config
-  const { data: sttData } = useQuery({
+  const { data: sttData } = useQuery<{ value: typeof sttConfig }>({
     queryKey: ['/api/admin/configs/voice/stt'],
   });
 
@@ -165,8 +165,8 @@ export default function AdminVoiceSettings() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Primary Provider</Label>
-                  <Select 
-                    value={ttsConfig.primaryProvider} 
+                  <Select
+                    value={ttsConfig.primaryProvider}
                     onValueChange={(val) => setTtsConfig({ ...ttsConfig, primaryProvider: val })}
                   >
                     <SelectTrigger data-testid="select-tts-primary">
@@ -180,8 +180,8 @@ export default function AdminVoiceSettings() {
                 </div>
                 <div className="space-y-2">
                   <Label>Fallback Provider</Label>
-                  <Select 
-                    value={ttsConfig.fallbackProvider} 
+                  <Select
+                    value={ttsConfig.fallbackProvider}
                     onValueChange={(val) => setTtsConfig({ ...ttsConfig, fallbackProvider: val })}
                   >
                     <SelectTrigger data-testid="select-tts-fallback">
@@ -222,16 +222,16 @@ export default function AdminVoiceSettings() {
                 data-testid="switch-sarvam-enabled"
               />
             </div>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Hindi Speaker</Label>
-                  <Select 
+                  <Select
                     value={ttsConfig.sarvam.speakers.hindi}
                     onValueChange={(val) => setTtsConfig({
                       ...ttsConfig,
-                      sarvam: { ...ttsConfig.sarvam, speakers: { ...ttsConfig.sarvam.speakers, hindi: val }}
+                      sarvam: { ...ttsConfig.sarvam, speakers: { ...ttsConfig.sarvam.speakers, hindi: val } }
                     })}
                   >
                     <SelectTrigger data-testid="select-sarvam-hindi-speaker">
@@ -246,11 +246,11 @@ export default function AdminVoiceSettings() {
                 </div>
                 <div className="space-y-2">
                   <Label>English Speaker</Label>
-                  <Select 
+                  <Select
                     value={ttsConfig.sarvam.speakers.english}
                     onValueChange={(val) => setTtsConfig({
                       ...ttsConfig,
-                      sarvam: { ...ttsConfig.sarvam, speakers: { ...ttsConfig.sarvam.speakers, english: val }}
+                      sarvam: { ...ttsConfig.sarvam, speakers: { ...ttsConfig.sarvam.speakers, english: val } }
                     })}
                   >
                     <SelectTrigger data-testid="select-sarvam-english-speaker">
@@ -335,16 +335,16 @@ export default function AdminVoiceSettings() {
                 data-testid="switch-polly-enabled"
               />
             </div>
-            
+
             <div className="space-y-4">
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Hindi Voice</Label>
-                  <Select 
+                  <Select
                     value={ttsConfig.polly.voices.hindi}
                     onValueChange={(val) => setTtsConfig({
                       ...ttsConfig,
-                      polly: { ...ttsConfig.polly, voices: { ...ttsConfig.polly.voices, hindi: val }}
+                      polly: { ...ttsConfig.polly, voices: { ...ttsConfig.polly.voices, hindi: val } }
                     })}
                   >
                     <SelectTrigger data-testid="select-polly-hindi-voice">
@@ -358,11 +358,11 @@ export default function AdminVoiceSettings() {
                 </div>
                 <div className="space-y-2">
                   <Label>English Voice</Label>
-                  <Select 
+                  <Select
                     value={ttsConfig.polly.voices.english}
                     onValueChange={(val) => setTtsConfig({
                       ...ttsConfig,
-                      polly: { ...ttsConfig.polly, voices: { ...ttsConfig.polly.voices, english: val }}
+                      polly: { ...ttsConfig.polly, voices: { ...ttsConfig.polly.voices, english: val } }
                     })}
                   >
                     <SelectTrigger data-testid="select-polly-english-voice">
@@ -379,7 +379,7 @@ export default function AdminVoiceSettings() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Engine</Label>
-                  <Select 
+                  <Select
                     value={ttsConfig.polly.engine}
                     onValueChange={(val: 'neural' | 'standard') => setTtsConfig({
                       ...ttsConfig,
@@ -463,7 +463,7 @@ export default function AdminVoiceSettings() {
           </Card>
 
           <div className="flex justify-end">
-            <Button 
+            <Button
               onClick={() => saveTtsMutation.mutate()}
               disabled={saveTtsMutation.isPending}
               data-testid="button-save-tts"
@@ -482,8 +482,8 @@ export default function AdminVoiceSettings() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Primary Provider</Label>
-                  <Select 
-                    value={sttConfig.primaryProvider} 
+                  <Select
+                    value={sttConfig.primaryProvider}
                     onValueChange={(val) => setSttConfig({ ...sttConfig, primaryProvider: val })}
                   >
                     <SelectTrigger data-testid="select-stt-primary">
@@ -497,8 +497,8 @@ export default function AdminVoiceSettings() {
                 </div>
                 <div className="space-y-2">
                   <Label>Fallback Provider</Label>
-                  <Select 
-                    value={sttConfig.fallbackProvider} 
+                  <Select
+                    value={sttConfig.fallbackProvider}
                     onValueChange={(val) => setSttConfig({ ...sttConfig, fallbackProvider: val })}
                   >
                     <SelectTrigger data-testid="select-stt-fallback">
@@ -539,11 +539,11 @@ export default function AdminVoiceSettings() {
                 data-testid="switch-sarvam-stt-enabled"
               />
             </div>
-            
+
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Model</Label>
-                <Select 
+                <Select
                   value={sttConfig.sarvam.model}
                   onValueChange={(val) => setSttConfig({
                     ...sttConfig,
@@ -561,7 +561,7 @@ export default function AdminVoiceSettings() {
               </div>
               <div className="space-y-2">
                 <Label>Language</Label>
-                <Select 
+                <Select
                   value={sttConfig.sarvam.language}
                   onValueChange={(val) => setSttConfig({
                     ...sttConfig,
@@ -593,10 +593,10 @@ export default function AdminVoiceSettings() {
                 data-testid="switch-assemblyai-enabled"
               />
             </div>
-            
+
             <div className="space-y-2">
               <Label>Language</Label>
-              <Select 
+              <Select
                 value={sttConfig.assemblyai.language}
                 onValueChange={(val) => setSttConfig({
                   ...sttConfig,
@@ -615,7 +615,7 @@ export default function AdminVoiceSettings() {
           </Card>
 
           <div className="flex justify-end">
-            <Button 
+            <Button
               onClick={() => saveSttMutation.mutate()}
               disabled={saveSttMutation.isPending}
               data-testid="button-save-stt"

@@ -189,7 +189,7 @@ router.post('/docchat/enhanced-session', isAuthenticated, async (req, res) => {
     // 2. (It starts with follow-up keywords OR it's short and doesn't start with question words)
     const isFollowUpQuery = hasConversationContext &&
       (followUpKeywords.test(query.trim()) ||
-       (!questionStarters.test(query.trim()) && query.trim().split(/\s+/).length <= 8));
+        (!questionStarters.test(query.trim()) && query.trim().split(/\s+/).length <= 8));
 
     console.log(`[Enhanced DocChat] Follow-up detection: hasContext=${hasConversationContext}, isFollowUp=${isFollowUpQuery}`);
 
@@ -257,7 +257,7 @@ router.post('/docchat/enhanced-session', isAuthenticated, async (req, res) => {
       // Extract citations from search results (format: { text, source, page })
       citationsUsed = searchResults.slice(0, 5).map(result => ({
         text: result.content.substring(0, 150) + '...',
-        source: result.documentTitle || `Chunk ${result.chunkId}`,
+        source: result.metadata?.title || `Chunk ${result.chunkId}`,
         ...(result.pageNumber && { page: result.pageNumber })
       }));
 
@@ -326,7 +326,7 @@ router.post('/docchat/enhanced-session', isAuthenticated, async (req, res) => {
  */
 router.get('/docchat/suggestions/:documentId', isAuthenticated, async (req, res) => {
   try {
-    const documentId = parseInt(req.params.documentId);
+    const documentId = req.params.documentId;
 
     // Verify document access
     const [document] = await db
@@ -369,7 +369,7 @@ router.get('/docchat/suggestions/:documentId', isAuthenticated, async (req, res)
     }
 
     // Type-specific suggestions
-    if (document.mimeType?.includes('pdf')) {
+    if (document.sourceType?.includes('pdf')) {
       suggestions.push('What are the important formulas?');
       suggestions.push('Give me practice questions');
     }
@@ -431,7 +431,7 @@ router.post('/docchat/analyze-intent', isAuthenticated, async (req, res) => {
  */
 router.get('/docchat/structure/:documentId', isAuthenticated, async (req, res) => {
   try {
-    const documentId = parseInt(req.params.documentId);
+    const documentId = req.params.documentId;
 
     // Verify document access
     const [document] = await db
@@ -513,7 +513,7 @@ router.post('/docchat/vaktaai/stream', isAuthenticated, async (req, res) => {
       return res.status(403).json({ error: 'No accessible documents found' });
     }
 
-    const accessibleDocIds = userDocuments.map(doc => parseInt(doc.id));
+    const accessibleDocIds = userDocuments.map(doc => doc.id);
 
     // Set up SSE streaming
     res.setHeader('Content-Type', 'text/event-stream');
@@ -683,7 +683,7 @@ router.post('/docchat/vaktaai', isAuthenticated, async (req, res) => {
       return res.status(403).json({ error: 'No accessible documents found' });
     }
 
-    const accessibleDocIds = userDocuments.map(doc => parseInt(doc.id));
+    const accessibleDocIds = userDocuments.map(doc => doc.id);
 
     console.log(`[VaktaAI Endpoint] Processing query: "${query}"`);
     console.log(`[VaktaAI Endpoint] Language: ${language}, Subject: ${subject || 'auto'}`);

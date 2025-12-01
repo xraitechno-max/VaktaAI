@@ -12,7 +12,7 @@ import {
 import { Button } from '@/components/ui/button';
 import { queryClient } from '@/lib/queryClient';
 
-interface ActivityItem {
+export interface ActivityItem {
   id: string;
   type: 'tutor' | 'docchat' | 'quiz';
   title: string;
@@ -41,7 +41,7 @@ function ActivitySkeleton({ index }: { index: number }) {
       <div className="flex items-start gap-3">
         {/* Icon Skeleton */}
         <div className="w-10 h-10 rounded-lg bg-gray-200 animate-pulse flex-shrink-0" />
-        
+
         {/* Content Skeleton */}
         <div className="flex-1 space-y-2">
           <div className="h-4 bg-gray-200 rounded animate-pulse w-32" />
@@ -164,14 +164,14 @@ export function RecentActivityFeed({ activities, isLoading = false, isError = fa
             displayActivities.slice(0, 4).map((activity, index) => {
               const config = activityIcons[activity.type];
               const Icon = config.icon;
-              
+
               // Compute href from type if not provided
               const href = activity.href || (
                 activity.type === 'tutor' ? '/tutor' :
-                activity.type === 'docchat' ? '/docchat' :
-                '/quiz'
+                  activity.type === 'docchat' ? '/docchat' :
+                    '/quiz'
               );
-              
+
               // Use description if provided, otherwise use title
               const description = activity.description || activity.title;
 
