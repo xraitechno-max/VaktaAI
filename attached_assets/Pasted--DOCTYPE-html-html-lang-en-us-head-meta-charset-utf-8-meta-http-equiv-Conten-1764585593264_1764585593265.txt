@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <title>VaktaAI Avatar - uLipSync</title>
+    <link rel="shortcut icon" href="TemplateData/favicon.ico">
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body { 
+        margin: 0; 
+        padding: 0; 
+        overflow: hidden;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      }
+      #unity-container { 
+        width: 100%; 
+        height: 100vh; 
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      }
+      #unity-canvas { 
+        width: 100%; 
+        height: 100%; 
+        display: block;
+        background: transparent;
+      }
+      #unity-loading-bar {
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        text-align: center;
+      }
+      #unity-progress-bar-empty {
+        width: 200px;
+        height: 8px;
+        background: rgba(255,255,255,0.2);
+        border-radius: 4px;
+        overflow: hidden;
+      }
+      #unity-progress-bar-full {
+        width: 0%;
+        height: 100%;
+        background: linear-gradient(90deg, #667eea, #764ba2);
+        transition: width 0.3s;
+      }
+      #unity-loading-text {
+        color: white;
+        font-family: Arial, sans-serif;
+        font-size: 14px;
+        margin-top: 10px;
+      }
+      #unity-warning {
+        position: absolute;
+        top: 10px;
+        left: 10px;
+        right: 10px;
+        display: none;
+      }
+      #audio-unlock-btn {
+        position: absolute;
+        bottom: 20px;
+        right: 20px;
+        z-index: 100;
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-family: Arial, sans-serif;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        transition: all 0.3s;
+        display: none;
+      }
+      #audio-unlock-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(0,0,0,0.4);
+      }
+      #audio-unlock-btn.pulse {
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.7; }
+      }
+    </style>
+  </head>
+  <body>
+    <div id="unity-container">
+      <canvas id="unity-canvas" tabindex="-1"></canvas>
+      <div id="unity-loading-bar">
+        <div id="unity-progress-bar-empty">
+          <div id="unity-progress-bar-full"></div>
+        </div>
+        <div id="unity-loading-text">Loading AI Tutor Avatar...</div>
+      </div>
+      <div id="unity-warning"></div>
+      <button id="audio-unlock-btn" class="pulse">
+        🔊 Enable Sound
+      </button>
+    </div>
+    
+    <script>
+      var container = document.querySelector("#unity-container");
+      var canvas = document.querySelector("#unity-canvas");
+      var loadingBar = document.querySelector("#unity-loading-bar");
+      var progressBarFull = document.querySelector("#unity-progress-bar-full");
+      var warningBanner = document.querySelector("#unity-warning");
+      
+      // 🎯 GLOBAL UNITY INSTANCE (for PostMessage communication)
+      var unityInstance = null;
+
+      // 🔒 SECURITY: Handshake-based origin validation (cross-browser compatible)
+      var trustedParentOrigin = null;
+      var isHandshakeComplete = false;
+      var isUnityInstanceReady = false; // Track Unity instance readiness
+      
+      // 🔊 AUDIO: Unlock AudioContext for autoplay policy compliance
+      var audioCtx = null;
+      var audioUnlocked = false;
+      var unlockBtn = document.getElementById('audio-unlock-btn');
+      
+      // 🎵 AUDIO QUEUE: Store audio that arrives before unlock
+      var pendingAudio = null;
+      
+      // 🎵 HTML5 AUDIO FALLBACK: For reliable playback with amplitude-driven lips
+      var audioElement = new Audio();
+      audioElement.crossOrigin = 'anonymous';
+      var analyser = null;
+      var dataArray = null;
+      var animationFrameId = null;
+
+      // 🎵 HTML5 AUDIO FALLBACK: Play audio with amplitude analysis
+      function playHtmlAudioFallback(base64Audio, audioId) {
+        console.log('[Unity] Using HTML5 Audio fallback with amplitude lip-sync');
+        
+        // Convert base64 to blob URL
+        var audioBlob = base64ToBlob(base64Audio, 'audio/mpeg');
+        var audioUrl = URL.createObjectURL(audioBlob);
+        
+        // Setup Web Audio API for amplitude analysis
+        var AudioContext = window.AudioContext || window.webkitAudioContext;
+        if (!audioCtx) audioCtx = new AudioContext();
+        
+        // Create analyser if not exists
+        if (!analyser) {
+          var source = audioCtx.createMediaElementSource(audioElement);
+          analyser = audioCtx.createAnalyser();
+          analyser.fftSize = 1024;
+          dataArray = new Uint8Array(analyser.frequencyBinCount);
+          source.connect(analyser);
+          analyser.connect(audioCtx.destination);
+        }
+        
+        // Play audio
+        audioElement.src = audioUrl;
+        audioElement.onplay = function() {
+          console.log('[Unity] HTML5 Audio playing, starting amplitude meter');
+          startAmplitudeMeter(audioId);
+        };
+        audioElement.onended = function() {
+          console.log('[Unity] HTML5 Audio ended');
+          stopAmplitudeMeter();
+          URL.revokeObjectURL(audioUrl);
+          if (trustedParentOrigin) {
+            window.parent.postMessage({
+              type: 'AUDIO_EVENT',
+              payload: { id: audioId, state: 'ended' }
+            }, trustedParentOrigin);
+          }
+        };
+        audioElement.play().catch(function(err) {
+          console.error('[Unity] HTML5 Audio play failed:', err);
+          stopAmplitudeMeter();
+        });
+      }
+      
+      // 📊 AMPLITUDE METER: Drive mouth blendshape from audio amplitude
+      function startAmplitudeMeter(audioId) {
+        function meterLoop() {
+          if (!analyser || !dataArray) return;
+          
+          // Get amplitude data
+          analyser.getByteTimeDomainData(dataArray);
+          
+          // Calculate RMS (Root Mean Square) amplitude
+          var sum = 0;
+          for (var i = 0; i < dataArray.length; i++) {
+            var normalized = (dataArray[i] - 128) / 128;
+            sum += normalized * normalized;
+          }
+          var rms = Math.sqrt(sum / dataArray.length);
+          
+          // Scale to 0-1 range (boost for visibility)
+          var mouthOpen = Math.min(1, rms * 6);
+          
+          // 🎯 DISABLED: Amplitude lip-sync not needed - phonemes handle it!
+          // Keeping audio playback only, lip-sync via PlayPhonemeSequence
+          // if (unityInstance) {
+          //   try {
+          //     unityInstance.SendMessage(
+          //       'AvatarController',
+          //       'OnExternalAmplitude',
+          //       mouthOpen.toFixed(3)
+          //     );
+          //   } catch (e) {
+          //     // Silently ignore if AvatarController doesn't exist
+          //   }
+          // }
+          
+          animationFrameId = requestAnimationFrame(meterLoop);
+        }
+        meterLoop();
+      }
+      
+      function stopAmplitudeMeter() {
+        if (animationFrameId) {
+          cancelAnimationFrame(animationFrameId);
+          animationFrameId = null;
+        }
+        // 🎯 DISABLED: No need to reset - phonemes handle lip-sync
+        // if (unityInstance) {
+        //   try {
+        //     unityInstance.SendMessage('AvatarController', 'OnExternalAmplitude', '0');
+        //   } catch (e) {
+        //     // Silently ignore if AvatarController doesn't exist
+        //   }
+        // }
+      }
+      
+      // 🔄 HELPER: Convert base64 to Blob
+      function base64ToBlob(base64, mimeType) {
+        var byteCharacters = atob(base64);
+        var byteNumbers = new Array(byteCharacters.length);
+        for (var i = 0; i < byteCharacters.length; i++) {
+          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        }
+        var byteArray = new Uint8Array(byteNumbers);
+        return new Blob([byteArray], { type: mimeType });
+      }
+
+      // 🚀 UNITY TO REACT COMMUNICATION (Secure with handshake)
+      function SendMessageToReact(message) {
+        try {
+          var targetOrigin = trustedParentOrigin || '*';
+          window.parent.postMessage({
+            type: 'UNITY_MESSAGE',
+            payload: message
+          }, targetOrigin);
+        } catch (e) {
+          console.error('Failed to send message to React:', e);
+        }
+      }
+
+      // 🔊 UNLOCK AUDIO: Resume AudioContext on user gesture
+      function unlockAudio() {
+        console.log('[Unity] Unlocking audio...');
+        var AudioContext = window.AudioContext || window.webkitAudioContext;
+        
+        if (!audioCtx) {
+          audioCtx = new AudioContext();
+        }
+        
+        if (audioCtx.state === 'suspended') {
+          audioCtx.resume().then(function() {
+            console.log('[Unity] AudioContext resumed successfully');
+            audioUnlocked = true;
+            unlockBtn.style.display = 'none';
+            
+            // Notify parent that audio is unlocked
+            if (trustedParentOrigin) {
+              window.parent.postMessage({
+                type: 'AUDIO_UNLOCKED',
+                payload: true
+              }, trustedParentOrigin);
+            }
+            
+            // 🎵 Play queued audio if any
+            if (pendingAudio) {
+              console.log('[Unity] ✅ Playing queued audio after unlock');
+              playHtmlAudioFallback(pendingAudio.audioData, pendingAudio.audioId);
+              
+              // If queued audio has phonemes, send to Unity
+              if (pendingAudio.phonemes && pendingAudio.phonemes.length > 0 && unityInstance) {
+                console.log('[Unity] ✅ Sending queued phonemes to Unity:', pendingAudio.phonemes.length);
+                try {
+                  var phonemeJson = JSON.stringify({ phonemes: pendingAudio.phonemes });
+                  unityInstance.SendMessage('AvatarController', 'PlayPhonemeSequence', phonemeJson);
+                } catch (e) {
+                  console.error('[Unity] ❌ Failed to send queued phonemes:', e);
+                }
+              }
+              
+              window.parent.postMessage({
+                type: 'AUDIO_STARTED',
+                payload: { id: pendingAudio.audioId }
+              }, trustedParentOrigin);
+              pendingAudio = null; // Clear queue
+            }
+          }).catch(function(err) {
+            console.error('[Unity] Failed to resume AudioContext:', err);
+          });
+        } else {
+          audioUnlocked = true;
+          unlockBtn.style.display = 'none';
+          
+          if (trustedParentOrigin) {
+            window.parent.postMessage({
+              type: 'AUDIO_UNLOCKED',
+              payload: true
+            }, trustedParentOrigin);
+          }
+          
+          // 🎵 Play queued audio if any
+          if (pendingAudio) {
+            console.log('[Unity] ✅ Playing queued audio after unlock');
+            playHtmlAudioFallback(pendingAudio.audioData, pendingAudio.audioId);
+            
+            // If queued audio has phonemes, send to Unity
+            if (pendingAudio.phonemes && pendingAudio.phonemes.length > 0 && unityInstance) {
+              console.log('[Unity] ✅ Sending queued phonemes to Unity:', pendingAudio.phonemes.length);
+              try {
+                var phonemeJson = JSON.stringify({ phonemes: pendingAudio.phonemes });
+                unityInstance.SendMessage('AvatarController', 'PlayPhonemeSequence', phonemeJson);
+              } catch (e) {
+                console.error('[Unity] ❌ Failed to send queued phonemes:', e);
+              }
+            }
+            
+            window.parent.postMessage({
+              type: 'AUDIO_STARTED',
+              payload: { id: pendingAudio.audioId }
+            }, trustedParentOrigin);
+            pendingAudio = null; // Clear queue
+          }
+        }
+      }
+      
+      // Attach unlock handler
+      if (unlockBtn) {
+        unlockBtn.addEventListener('click', unlockAudio);
+      }
+
+      // ✅ NOTIFY REACT WHEN UNITY IS READY (Only after handshake)
+      function OnUnityReady() {
+        console.log('[Unity] Avatar instance ready');
+        isUnityInstanceReady = true;
+        
+        // 🎯 CRITICAL: Only proceed if handshake is complete!
+        if (!isHandshakeComplete) {
+          console.log('[Unity] ⏳ Waiting for handshake before audio unlock...');
+          // Handshake completion handler will call this again via line 505-512
+          return;
+        }
+        
+        // 🎵 RELIABLE AUTO-UNLOCK: Try to unlock audio (with proper state checking!)
+        if (!audioUnlocked) {
+          console.log('[Unity] 🔓 Attempting audio unlock for phoneme lip-sync...');
+          
+          // Create AudioContext
+          var AudioContext = window.AudioContext || window.webkitAudioContext;
+          if (!audioCtx) audioCtx = new AudioContext();
+          
+          console.log('[Unity] 🔍 AudioContext state:', audioCtx.state);
+          
+          // 🎯 CRITICAL: Only unlock if AudioContext is running or can be resumed
+          if (audioCtx.state === 'running') {
+            // Already running - unlock immediately
+            audioUnlocked = true;
+            console.log('[Unity] ✅ AudioContext already running - audio unlocked!');
+            
+            if (isHandshakeComplete && trustedParentOrigin) {
+              window.parent.postMessage({
+                type: 'AUDIO_UNLOCKED',
+                payload: true
+              }, trustedParentOrigin);
+            }
+            
+            if (unlockBtn) unlockBtn.style.display = 'none';
+          } else if (audioCtx.state === 'suspended') {
+            // Try to resume (works if user has interacted with page)
+            console.log('[Unity] AudioContext suspended - attempting resume...');
+            audioCtx.resume().then(function() {
+              // 🚀 SUCCESS: Only set unlocked flag AFTER successful resume
+              if (audioCtx.state === 'running') {
+                audioUnlocked = true;
+                console.log('[Unity] ✅ AudioContext resumed successfully - audio unlocked!');
+                
+                if (isHandshakeComplete && trustedParentOrigin) {
+                  window.parent.postMessage({
+                    type: 'AUDIO_UNLOCKED',
+                    payload: true
+                  }, trustedParentOrigin);
+                }
+                
+                if (unlockBtn) unlockBtn.style.display = 'none';
+                
+                // Play queued audio if any
+                if (pendingAudio) {
+                  console.log('[Unity] ✅ Auto-playing queued audio after resume');
+                  playHtmlAudioFallback(pendingAudio.audioData, pendingAudio.audioId);
+                  
+                  if (pendingAudio.phonemes && pendingAudio.phonemes.length > 0 && unityInstance) {
+                    var phonemeJson = JSON.stringify({ phonemes: pendingAudio.phonemes });
+                    unityInstance.SendMessage('AvatarController', 'PlayPhonemeSequence', phonemeJson);
+                  }
+                  
+                  window.parent.postMessage({
+                    type: 'AUDIO_STARTED',
+                    payload: { id: pendingAudio.audioId }
+                  }, trustedParentOrigin);
+                  pendingAudio = null;
+                }
+              } else {
+                console.warn('[Unity] ⚠️ AudioContext still not running after resume - state:', audioCtx.state);
+                showUnlockButton();
+              }
+            }).catch(function(err) {
+              // 🔴 FAILED: Resume blocked by autoplay policy - keep locked, show button
+              console.warn('[Unity] ❌ AudioContext resume failed (autoplay policy):', err);
+              console.log('[Unity] User gesture required - showing unlock button');
+              showUnlockButton();
+            });
+          } else {
+            // Unknown state - show button to be safe
+            console.warn('[Unity] ⚠️ Unknown AudioContext state:', audioCtx.state);
+            showUnlockButton();
+          }
+        }
+        
+        // Helper: Show unlock button and notify React
+        function showUnlockButton() {
+          if (unlockBtn) unlockBtn.style.display = 'block';
+          
+          if (isHandshakeComplete && trustedParentOrigin) {
+            window.parent.postMessage({
+              type: 'AUDIO_UNLOCK_REQUEST',
+              payload: true
+            }, trustedParentOrigin);
+          }
+        }
+        
+        // Only send UNITY_READY if handshake is complete
+        if (isHandshakeComplete) {
+          console.log('[Unity] Handshake complete, notifying React...');
+          window.parent.postMessage({
+            type: 'UNITY_READY',
+            payload: true
+          }, trustedParentOrigin);
+        } else {
+          console.log('[Unity] Waiting for handshake before notifying React...');
+        }
+      }
+
+      // 📩 REACT TO UNITY COMMUNICATION LISTENER (Secure with handshake)
+      window.addEventListener('message', function(event) {
+        // 🔒 SECURITY: Handshake flow
+        if (event.data.type === 'UNITY_INIT' && !isHandshakeComplete) {
+          // Accept first UNITY_INIT message and capture origin
+          trustedParentOrigin = event.origin;
+          isHandshakeComplete = true;
+          console.log('[Unity] Handshake complete with origin:', trustedParentOrigin);
+          
+          // 🐛 CONSOLE FORWARDING: Hook console methods AFTER handshake
+          var originalLog = console.log;
+          var originalWarn = console.warn;
+          var originalError = console.error;
+          
+          console.log = function() {
+            originalLog.apply(console, arguments);
+            try {
+              window.parent.postMessage({
+                type: 'UNITY_LOG',
+                payload: { level: 'log', args: Array.from(arguments) }
+              }, trustedParentOrigin);
+            } catch (e) {}
+          };
+          
+          console.warn = function() {
+            originalWarn.apply(console, arguments);
+            try {
+              window.parent.postMessage({
+                type: 'UNITY_LOG',
+                payload: { level: 'warn', args: Array.from(arguments) }
+              }, trustedParentOrigin);
+            } catch (e) {}
+          };
+          
+          console.error = function() {
+            originalError.apply(console, arguments);
+            try {
+              window.parent.postMessage({
+                type: 'UNITY_LOG',
+                payload: { level: 'error', args: Array.from(arguments) }
+              }, trustedParentOrigin);
+            } catch (e) {}
+          };
+          
+          console.log('[Unity] Console forwarding enabled ✅');
+          
+          // Acknowledge handshake
+          window.parent.postMessage({
+            type: 'UNITY_INIT_ACK',
+            payload: true
+          }, trustedParentOrigin);
+          
+          // If Unity instance is already ready, call OnUnityReady NOW (handshake complete!)
+          if (isUnityInstanceReady) {
+            console.log('[Unity] Instance already ready, calling OnUnityReady (handshake done!)...');
+            // Call OnUnityReady again - now handshake is complete so audio unlock will work!
+            OnUnityReady();
+          }
+          return;
+        }
+
+        // 🔒 SECURITY: Validate origin after handshake
+        if (isHandshakeComplete && event.origin !== trustedParentOrigin) {
+          console.warn('[Unity] Rejected message from unauthorized origin:', event.origin);
+          return;
+        }
+
+        // 🐛 DEBUG: Log all incoming messages after handshake
+        console.log('[Unity] 📩 Message received:', event.data.type, '| unityInstance ready:', !!unityInstance, '| audioUnlocked:', audioUnlocked);
+
+        if (!unityInstance) {
+          console.warn('[Unity] ❌ Instance not ready yet, cannot process:', event.data.type);
+          return;
+        }
+
+        // Handle different message types from React
+        try {
+          switch(event.data.type) {
+            case 'PLAY_TTS_AUDIO':
+              // Use HTML5 Audio fallback with amplitude-driven lip-sync (reliable!)
+              // This works even if Unity audio fails or isn't configured
+              var audioData = event.data.payload.audioData || '';
+              var audioId = event.data.payload.id || 'tts-' + Date.now();
+              
+              console.log('[Unity] 🎵 PLAY_TTS_AUDIO received - audioUnlocked:', audioUnlocked, 'audioData length:', audioData ? audioData.length : 0);
+              
+              if (audioUnlocked && audioData) {
+                console.log('[Unity] ✅ Playing audio via HTML5 fallback...');
+                try {
+                  playHtmlAudioFallback(audioData, audioId);
+                  // Notify React that audio started successfully
+                  window.parent.postMessage({
+                    type: 'AUDIO_STARTED',
+                    payload: { id: audioId }
+                  }, trustedParentOrigin);
+                } catch (err) {
+                  console.error('[Unity] ❌ Audio playback failed:', err);
+                  window.parent.postMessage({
+                    type: 'AUDIO_FAILED',
+                    payload: { id: audioId, error: err.message }
+                  }, trustedParentOrigin);
+                }
+              } else if (!audioUnlocked) {
+                console.warn('[Unity] ❌ Audio not unlocked yet - queuing for later');
+                
+                // 🎵 QUEUE AUDIO: Store for playback after unlock
+                pendingAudio = { audioData: audioData, audioId: audioId };
+                console.log('[Unity] 📦 Audio queued - will play after unlock');
+                
+                // Show unlock button
+                if (unlockBtn) unlockBtn.style.display = 'block';
+                
+                // Request unlock from React
+                window.parent.postMessage({
+                  type: 'AUDIO_UNLOCK_REQUEST',
+                  payload: true
+                }, trustedParentOrigin);
+              } else if (!audioData) {
+                console.error('[Unity] ❌ No audio data received!');
+                window.parent.postMessage({
+                  type: 'AUDIO_FAILED',
+                  payload: { id: audioId, error: 'No audio data' }
+                }, trustedParentOrigin);
+              }
+              break;
+
+            case 'PLAY_TTS_WITH_PHONEMES':
+              // 🎯 NEW: Phoneme-based lip sync with audio
+              var audioData = event.data.payload.audioData || '';
+              var phonemes = event.data.payload.phonemes || [];
+              var audioId = event.data.payload.id || 'tts-phoneme-' + Date.now();
+              
+              console.log('[Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes:', phonemes.length, 'Audio unlocked:', audioUnlocked);
+              console.log('[Unity] 🔍 DEBUG - First 3 phonemes:', JSON.stringify(phonemes.slice(0, 3)));
+              
+              if (audioUnlocked && audioData && phonemes.length > 0) {
+                console.log('[Unity] ✅ Playing audio + sending phonemes to Unity...');
+                console.log('[Unity] 🔍 DEBUG - Unity instance exists:', !!unityInstance);
+                try {
+                  // 1. Play audio via HTML5
+                  playHtmlAudioFallback(audioData, audioId);
+                  
+                  // 2. Send phoneme sequence to Unity for blendshape animation
+                  var phonemeJson = JSON.stringify({ phonemes: phonemes });
+                  console.log('[Unity] 📤 Sending phonemes to AvatarController - Count:', phonemes.length);
+                  console.log('[Unity] 📦 Phoneme JSON length:', phonemeJson.length, 'chars');
+                  
+                  try {
+                    console.log('[Unity] 🚀 CALLING PlayPhonemeSequence NOW...');
+                    unityInstance.SendMessage(
+                      'AvatarController',
+                      'PlayPhonemeSequence',
+                      phonemeJson
+                    );
+                    console.log('[Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅');
+                  } catch (e) {
+                    console.error('[Unity] ❌❌❌ SendMessage FAILED:', e.toString());
+                    console.error('[Unity] ❌ Error stack:', e.stack);
+                  }
+                  
+                  // Notify React that audio+phonemes started
+                  window.parent.postMessage({
+                    type: 'AUDIO_STARTED',
+                    payload: { id: audioId }
+                  }, trustedParentOrigin);
+                } catch (err) {
+                  console.error('[Unity] ❌ Phoneme playback failed:', err);
+                  window.parent.postMessage({
+                    type: 'AUDIO_FAILED',
+                    payload: { id: audioId, error: err.message }
+                  }, trustedParentOrigin);
+                }
+              } else if (!audioUnlocked) {
+                console.warn('[Unity] ❌ Audio not unlocked - queuing phoneme audio');
+                
+                // Queue audio with phonemes
+                pendingAudio = { audioData: audioData, audioId: audioId, phonemes: phonemes };
+                console.log('[Unity] 📦 Audio+phonemes queued for playback after unlock');
+                
+                if (unlockBtn) unlockBtn.style.display = 'block';
+                
+                window.parent.postMessage({
+                  type: 'AUDIO_UNLOCK_REQUEST',
+                  payload: true
+                }, trustedParentOrigin);
+              } else {
+                console.error('[Unity] ❌ Missing data - Audio:', !!audioData, 'Phonemes:', phonemes.length);
+              }
+              break;
+
+            case 'SET_EMOTION':
+              // Change avatar emotion/expression
+              unityInstance.SendMessage(
+                'AvatarController',
+                'SetEmotion',
+                event.data.payload.emotion || 'neutral'
+              );
+              console.log('[Unity] Emotion set to:', event.data.payload.emotion);
+              break;
+
+            case 'TRIGGER_GESTURE':
+              // Trigger specific gesture/animation
+              unityInstance.SendMessage(
+                'AvatarController',
+                'TriggerGesture',
+                event.data.payload.gesture || 'idle'
+              );
+              console.log('[Unity] Gesture triggered:', event.data.payload.gesture);
+              break;
+
+            case 'CHANGE_AVATAR':
+              // Switch between different avatars
+              unityInstance.SendMessage(
+                'AvatarManager',
+                'SwitchAvatar',
+                event.data.payload.avatarName || 'priya'
+              );
+              console.log('[Unity] Avatar switched to:', event.data.payload.avatarName);
+              break;
+
+            case 'STOP_AUDIO':
+              // Stop HTML5 audio playback
+              if (audioElement && !audioElement.paused) {
+                audioElement.pause();
+                audioElement.currentTime = 0;
+              }
+              stopAmplitudeMeter();
+              
+              // Also stop Unity audio (if applicable)
+              if (unityInstance) {
+                unityInstance.SendMessage('AvatarController', 'StopAudio', '');
+              }
+              console.log('[Unity] Audio stopped (HTML5 + Unity)');
+              break;
+
+            default:
+              console.warn('[Unity] Unknown message type:', event.data.type);
+          }
+        } catch (e) {
+          console.error('[Unity] Error handling message:', e);
+        }
+      });
+
+      // Show error banner
+      function unityShowBanner(msg, type) {
+        function updateBannerVisibility() {
+          warningBanner.style.display = warningBanner.children.length ? 'block' : 'none';
+        }
+        var div = document.createElement('div');
+        div.innerHTML = msg;
+        warningBanner.appendChild(div);
+        if (type == 'error') div.style = 'background: red; color: white; padding: 10px; border-radius: 4px;';
+        else {
+          if (type == 'warning') div.style = 'background: yellow; color: black; padding: 10px; border-radius: 4px;';
+          setTimeout(function() {
+            warningBanner.removeChild(div);
+            updateBannerVisibility();
+          }, 5000);
+        }
+        updateBannerVisibility();
+      }
+
+      // 🚀 Unity S3 CDN Configuration
+      var buildUrl = "Build";
+      var loaderUrl = buildUrl + "/Build.loader.js"; // Loader always local (small file)
+      
+      // Fetch S3 presigned URLs for fast CDN loading
+      console.log('[Unity] 📡 Fetching S3 presigned URLs...');
+      fetch('/api/unity-assets/urls')
+        .then(res => res.json())
+        .then(data => {
+          if (!data.success || !data.urls) {
+            throw new Error('Failed to fetch Unity S3 URLs');
+          }
+          
+          console.log('[Unity] ✅ S3 URLs fetched successfully');
+          
+          var config = {
+            dataUrl: data.urls['Build.data.gz'],
+            frameworkUrl: data.urls['Build.framework.js.gz'],
+            codeUrl: data.urls['Build.wasm.gz'],
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "VaktaAI",
+            productName: "AI Tutor Avatar",
+            productVersion: "1.0",
+            showBanner: unityShowBanner,
+          };
+          
+          loadUnityWithConfig(config);
+        })
+        .catch(err => {
+          console.warn('[Unity] ⚠️ S3 fetch failed, falling back to local files:', err);
+          
+          // Fallback to local files
+          var config = {
+            dataUrl: buildUrl + "/Build.data.gz",
+            frameworkUrl: buildUrl + "/Build.framework.js.gz",
+            codeUrl: buildUrl + "/Build.wasm.gz",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "VaktaAI",
+            productName: "AI Tutor Avatar",
+            productVersion: "1.0",
+            showBanner: unityShowBanner,
+          };
+          
+          loadUnityWithConfig(config);
+        });
+      
+      // Extracted Unity loading function
+      function loadUnityWithConfig(config) {
+
+        // Mobile optimization
+        if (/iPhone|iPad|iPod|Android/i.test(navigator.userAgent)) {
+          var meta = document.createElement('meta');
+          meta.name = 'viewport';
+          meta.content = 'width=device-width, height=device-height, initial-scale=1.0, user-scalable=no, shrink-to-fit=yes';
+          document.getElementsByTagName('head')[0].appendChild(meta);
+          
+          // Lower resolution on mobile for performance
+          config.devicePixelRatio = 1;
+        }
+
+        // Show loading bar
+        loadingBar.style.display = "block";
+
+        // Load Unity
+        var script = document.createElement("script");
+        script.src = loaderUrl;
+        script.onload = () => {
+          createUnityInstance(canvas, config, (progress) => {
+            progressBarFull.style.width = 100 * progress + "%";
+          }).then((instance) => {
+            unityInstance = instance;
+            loadingBar.style.display = "none";
+            
+            console.log('[Unity] Instance created successfully');
+            
+            // 🔧 DIRECT CALL: Skip RAF for now (debugging)
+            console.log('[Unity] ⏰ Calling OnUnityReady directly...');
+            try {
+              OnUnityReady();
+            } catch (err) {
+              console.error('[Unity] ❌ OnUnityReady error:', err);
+            }
+          }).catch((message) => {
+            console.error('[Unity] Failed to create instance:', message);
+            unityShowBanner('Failed to load avatar: ' + message, 'error');
+            
+            // 🐛 FORWARD ERROR TO REACT: CSP violations and loader errors now visible!
+            if (trustedParentOrigin) {
+              window.parent.postMessage({
+                type: 'UNITY_ERROR',
+                payload: { error: String(message), stage: 'createUnityInstance' }
+              }, trustedParentOrigin);
+            }
+          });
+        };
+
+        script.onerror = () => {
+          console.error('[Unity] Failed to load Unity loader');
+          unityShowBanner('Failed to load Unity loader script', 'error');
+        };
+
+        document.body.appendChild(script);
+      }
+    </script>
+  </body>
+</html>

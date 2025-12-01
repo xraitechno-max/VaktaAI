@@ -1,0 +1,164 @@
+Avatar load karne ka process 3 steps mein hota hai:
+
+React Component (UnityAvatar.tsx): Ye ek iframe render karta hai jo /unity-avatar/index.html ko point karta hai.
+Iframe Loader (index.html): Ye file server se S3 URLs fetch karti hai (/api/unity-assets/urls) aur fir Unity instance create karti hai.
+Bridge (useUnityBridge.ts): Ye React aur Unity ke beech postMessage ke through secure communication handle karta hai (Handshake -> Ready).
+1. UnityAvatar.tsx (Component)
+Ye component UI handle karta hai (Loading bar, Error state) aur useUnityBridge ko initialize karta hai.
+
+tsx
+// client/src/components/tutor/UnityAvatar.tsx
+
+import { forwardRef, useRef, useImperativeHandle, useState, useEffect } from 'react';
+import { Loader2, AlertCircle, User } from 'lucide-react';
+import { useUnityBridge, UnityBridgeHandle } from './hooks/useUnityBridge';
+import { Card } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Progress } from '@/components/ui/progress';
+
+// ... (Imports & Helper functions)
+
+const UnityAvatar = forwardRef<UnityAvatarHandle, UnityAvatarProps>(
+  ({ className = '', defaultAvatar = 'priya', onReady, onMessage, onError, onAudioUnlocked }, ref) => {
+    const iframeRef = useRef<HTMLIFrameElement>(null);
+    const [isLoading, setIsLoading] = useState(true);
+    const [loadProgress, setLoadProgress] = useState(0);
+
+    // Fake progress bar logic (Unity loads inside iframe)
+    useEffect(() => {
+      if (!isLoading) return;
+      const progressInterval = setInterval(() => {
+        setLoadProgress((prev) => (prev >= 95 ? prev : prev + 5));
+      }, 750);
+      return () => clearInterval(progressInterval);
+    }, [isLoading]);
+
+    // Hook to handle communication with Unity Iframe
+    const unityBridge = useUnityBridge({
+      iframeRef,
+      onReady: () => {
+        setLoadProgress(100);
+        setIsLoading(false);
+        console.log('[Unity Avatar] Avatar ready!');
+        onReady?.();
+      },
+      onMessage: (msg) => onMessage?.(msg),
+      onError: (error) => onError?.(error),
+    });
+
+    useImperativeHandle(ref, () => unityBridge, [unityBridge]);
+
+    return (
+      <div className={`relative h-full ${className}`}>
+        {/* Loading Screen */}
+        {isLoading && (
+          <div className="absolute inset-0 flex items-center justify-center z-10 bg-white">
+            <Card className="p-6 text-center">
+              <Loader2 className="animate-spin mb-4" />
+              <p>Loading 3D Avatar...</p>
+              <Progress value={loadProgress} className="w-full h-2 mt-2" />
+            </Card>
+          </div>
+        )}
+
+        {/* The Actual Unity Iframe */}
+        <iframe
+          ref={iframeRef}
+          src="/unity-avatar/index.html"
+          className="w-full h-full border-0"
+          allow="autoplay"
+          sandbox="allow-scripts allow-same-origin allow-downloads allow-pointer-lock"
+        />
+      </div>
+    );
+  }
+);
+
+export default UnityAvatar;
+2. useUnityBridge.ts (Communication Hook)
+Ye hook window.postMessage use karke Iframe se baat karta hai.
+
+typescript
+// client/src/components/tutor/hooks/useUnityBridge.ts
+
+import { useEffect, useRef, useCallback, useState } from 'react';
+
+export function useUnityBridge({ iframeRef, onReady, onMessage, onError }) {
+  const [isReady, setIsReady] = useState(false);
+  const [isHandshakeComplete, setIsHandshakeComplete] = useState(false);
+  const trustedOriginRef = useRef<string | null>(null);
+
+  // 1. Initialize Handshake
+  useEffect(() => {
+    if (!iframeRef.current) return;
+    
+    const initHandshake = () => {
+      // Send INIT message to Iframe
+      iframeRef.current?.contentWindow?.postMessage(
+        { type: 'UNITY_INIT', payload: { timestamp: Date.now() } },
+        '*' // Initial handshake allows any origin, then locks it down
+      );
+    };
+
+    iframeRef.current.addEventListener('load', () => setTimeout(initHandshake, 500));
+  }, []);
+
+  // 2. Listen for Messages from Unity
+  useEffect(() => {
+    const handleMessage = (event: MessageEvent) => {
+      if (!iframeRef.current?.contentWindow) return;
+      if (event.source !== iframeRef.current.contentWindow) return;
+
+      const { type, payload } = event.data;
+
+      // Handle Handshake ACK
+      if (type === 'UNITY_INIT_ACK') {
+        trustedOriginRef.current = event.origin;
+        setIsHandshakeComplete(true);
+        return;
+      }
+
+      // Security Check
+      if (trustedOriginRef.current && event.origin !== trustedOriginRef.current) return;
+
+      switch (type) {
+        case 'UNITY_READY':
+          setIsReady(true);
+          onReady?.();
+          break;
+        case 'AUDIO_ENDED':
+          onMessage?.({ type: 'AUDIO_ENDED', id: payload?.id });
+          break;
+      }
+    };
+
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, [onReady, onMessage]);
+
+  // 3. Send Audio to Avatar
+  const sendAudioToAvatar = useCallback(async (audioBlob: Blob) => {
+    if (!isReady) return;
+    
+    // Convert Blob to Base64
+    const reader = new FileReader();
+    reader.readAsDataURL(audioBlob);
+    reader.onloadend = () => {
+      const base64 = reader.result?.toString().split(',')[1];
+      
+      // Send to Iframe
+      iframeRef.current?.contentWindow?.postMessage({
+        type: 'PLAY_TTS_AUDIO',
+        payload: { audioData: base64 }
+      }, trustedOriginRef.current || '*');
+    };
+  }, [isReady]);
+
+  return { isReady, sendAudioToAvatar };
+}
+3. Actual Loading Logic (Inside Iframe)
+public/unity-avatar/index.html mein ye logic chalta hai:
+
+Fetch URLs: /api/unity-assets/urls se S3 links mangwata hai.
+Load Unity: createUnityInstance function call karta hai.
+Notify React: Jab load ho jata hai, window.parent.postMessage({ type: 'UNITY_READY' }) bhejta hai.
