@@ -71,7 +71,7 @@ Ultra Pro AI Tutor Phase 1 implemented with 4 core components:
 - **DynamicPromptEngine Integration**: Enhanced with knowledge enrichment sections including NCERT citations, formula injection, prerequisite checks, and misconception warnings
 - **Key Files**: server/services/curriculum/KnowledgeIntelligenceService.ts, server/services/curriculum/FormulaBankService.ts, server/services/DynamicPromptEngine.ts
 
-### Phase 2: Pedagogical & Cognitive Foundations (Dec 2025) - IN PROGRESS
+### Phase 2: Pedagogical & Cognitive Foundations (Dec 2025) - COMPLETED
 Enhanced pedagogical components for adaptive tutoring:
 - **StudentCognitiveModelService with Deep Knowledge Tracing (DKT)**: Hybrid BKT+DKT implementation combining:
   - **Bayesian Knowledge Tracing (BKT)**: P(L_0) prior, P(T) transition, P(G) guess, P(S) slip parameters with subject-specific tuning
@@ -81,9 +81,9 @@ Enhanced pedagogical components for adaptive tutoring:
   - **Guaranteed Subject Resolution**: 5-level fallback chain (topicPrerequisites → curriculumEdges → ncertCurriculumChunks → studentMastery/interactions → inferSubjectFromTopicId) ensures every topic gets a canonical subject
   - **Subject Normalization**: `normalizeSubject()` with 35+ alias mappings (physics/phy/p → physics, mathematics/maths/m → math, etc.) covering all Indian curriculum subjects
   - **inferSubjectFromTopicId**: 15 comprehensive regex patterns covering physics, chemistry, biology, math, history, geography, economics, accountancy, computer, english, hindi, social, business_studies, statistics, physical_education; defaults to 'science' for unmatched
-- **TeachingModeEngine**: Expanded from 5 to 10 teaching strategies (socratic, direct, scaffolded_direct, revision_mode, worked_example, analogical, case_study, spaced_retrieval, elaborative, metacognitive)
-- **HintLadderSystem**: Extended from 6 to 8 hint levels with Level 7 (Extended Analysis - JEE/NEET strategies) and Level 8 (Comprehensive Mastery - all approaches + competition prep). Subject-specific templates for Physics, Chemistry, Math, Biology
-- **MisconceptionDetectorService**: Pattern-based misconception detection using trigger patterns from misconception_database, confidence scoring, severity-based prioritization, automated remediation plan generation with teaching mode recommendations
+- **TeachingModeEngine with Weighted Preference Layer**: Expanded from 5 to 10 teaching strategies with hard rule protection and score-based comparison for ties
+- **HintLadderSystem with Adaptive Class-Level Detection**: Extended to 8 hint levels with comprehensive board exam token detection (board, boards, cbse, icse, state_board, hsc, ssc, regional boards) for accurate Class 11-12 categorization
+- **MisconceptionDetectorService with Multi-Factor Scoring**: Pattern-based detection with linguistic analysis (1.2x boost), history-aware recurrence (1.3x boost), exam-target weighting (JEE Advanced formula 1.4x), and class-level adaptive thresholds
 - **Key Files**: server/services/curriculum/StudentCognitiveModelService.ts, server/services/curriculum/TeachingModeEngine.ts, server/services/curriculum/HintLadderSystem.ts, server/services/curriculum/MisconceptionDetectorService.ts
 
 ## External Dependencies
