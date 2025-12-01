@@ -18,9 +18,10 @@ import {
   Clock, TrendingUp, Zap, Target, ChevronRight, Loader2,
   Atom, Beaker, Calculator, Dna, Mic, Play, ArrowRight,
   Star, Users, Lightbulb, Settings, Globe, Languages, Code,
-  Activity, Building2, Palette, Music, FlaskConical
+  Activity, Building2, Palette, Music, FlaskConical, X, Check
 } from "lucide-react";
 import mentorAvatar from "@assets/generated_images/female_teacher_gradient_background.png";
+import { getChaptersForProfile, type Chapter } from "@shared/curriculum";
 
 const allSubjects = [
   {
@@ -179,6 +180,9 @@ export default function Tutor() {
   const [selectedSubject, setSelectedSubject] = useState<string | null>(null);
   const [quickStartSubject, setQuickStartSubject] = useState<string>('physics');
   const [quickStartTriggered, setQuickStartTriggered] = useState(false);
+  const [showChapterPicker, setShowChapterPicker] = useState(false);
+  const [selectedChapter, setSelectedChapter] = useState<Chapter | null>(null);
+  const [chapterPickerSubject, setChapterPickerSubject] = useState<string | null>(null);
   const preloadAvatarRef = useRef<UnityAvatarHandle>(null);
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -218,6 +222,19 @@ export default function Tutor() {
     }
   }, [filteredSubjects, quickStartSubject]);
 
+  // Get chapters for the selected subject based on user's profile
+  const availableChapters = useMemo(() => {
+    if (!chapterPickerSubject) return [];
+    return getChaptersForProfile(
+      chapterPickerSubject,
+      user?.currentClass || undefined,
+      user?.examTarget || undefined
+    );
+  }, [chapterPickerSubject, user?.currentClass, user?.examTarget]);
+
+  // Get current language for chapter names
+  const { language } = useLanguage();
+
   // Check if user needs onboarding
   useEffect(() => {
     if (user && !userLoading && !onboardingSkipped) {
@@ -238,19 +255,34 @@ export default function Tutor() {
     }
   }, [user, userLoading, onboardingSkipped]);
 
-  const triggerQuickStart = (subject: string = 'physics') => {
+  const triggerQuickStart = (subject: string = 'physics', chapter?: Chapter) => {
     const defaultConfig: TutorConfig = {
       subject: subject,
-      topic: 'mixed',
+      topic: chapter ? chapter.nameEn : 'mixed', // Use chapter name if selected
       level: 'medium',
-      language: 'hinglish',
-      examType: 'competitive',
+      language: user?.languagePreference || 'hinglish',
+      examType: user?.examTarget || 'competitive',
     };
     startSessionMutation.mutate(defaultConfig);
   };
 
   const handleQuickStart = () => {
-    triggerQuickStart(quickStartSubject);
+    // Open chapter picker instead of starting directly
+    setChapterPickerSubject(quickStartSubject);
+    setShowChapterPicker(true);
+  };
+
+  const handleChapterSelect = (chapter: Chapter) => {
+    setSelectedChapter(chapter);
+    setShowChapterPicker(false);
+    // Start session with selected chapter
+    triggerQuickStart(chapterPickerSubject || quickStartSubject, chapter);
+  };
+
+  const handleSkipChapterSelection = () => {
+    setShowChapterPicker(false);
+    // Start with general/mixed topic
+    triggerQuickStart(chapterPickerSubject || quickStartSubject);
   };
 
   useEffect(() => {
@@ -411,9 +443,15 @@ export default function Tutor() {
   };
 
   const handleOpenSetupWizard = (subject?: string) => {
-    if (subject) setSelectedSubject(subject);
-    setShowSetupWizard(true);
-    setIsPreloadingAvatar(true);
+    if (subject) {
+      setSelectedSubject(subject);
+      // Open chapter picker first
+      setChapterPickerSubject(subject);
+      setShowChapterPicker(true);
+    } else {
+      setShowSetupWizard(true);
+      setIsPreloadingAvatar(true);
+    }
   };
 
   const handlePreloadReady = () => {
@@ -834,6 +872,89 @@ export default function Tutor() {
           </div>
         </div>
       </div>
+
+      {/* Chapter Picker Modal */}
+      {showChapterPicker && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-lg w-full max-h-[80vh] overflow-hidden"
+          >
+            {/* Header */}
+            <div className="p-5 border-b border-gray-200 dark:border-gray-700">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white">
+                    {t('aiMentor.selectChapter')}
+                  </h2>
+                  <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
+                    {t(allSubjects.find(s => s.id === chapterPickerSubject)?.nameKey || 'subject.physics')} - {user?.currentClass ? `Class ${user.currentClass}` : 'Class 11-12'}
+                  </p>
+                </div>
+                <Button
+                  size="icon"
+                  variant="ghost"
+                  onClick={() => setShowChapterPicker(false)}
+                  data-testid="button-close-chapter-picker"
+                >
+                  <X className="w-5 h-5" />
+                </Button>
+              </div>
+            </div>
+
+            {/* Chapter List */}
+            <div className="p-4 overflow-y-auto max-h-[50vh]">
+              {availableChapters.length > 0 ? (
+                <div className="space-y-2">
+                  {availableChapters.map((chapter) => (
+                    <button
+                      key={chapter.id}
+                      onClick={() => handleChapterSelect(chapter)}
+                      className="w-full text-left p-4 rounded-xl border-2 border-gray-200 dark:border-gray-700 hover:border-purple-400 dark:hover:border-purple-500 hover:bg-purple-50 dark:hover:bg-purple-900/20 transition-all duration-200 group"
+                      data-testid={`chapter-${chapter.id}`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <div className="font-medium text-gray-900 dark:text-white">
+                            {language === 'hi' ? chapter.nameHi : chapter.nameEn}
+                          </div>
+                          {language !== 'hi' && chapter.nameHi && (
+                            <div className="text-sm text-gray-500 dark:text-gray-400 mt-0.5">
+                              {chapter.nameHi}
+                            </div>
+                          )}
+                        </div>
+                        <ChevronRight className="w-5 h-5 text-gray-400 group-hover:text-purple-500 transition" />
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  {t('aiMentor.noChaptersAvailable')}
+                </div>
+              )}
+            </div>
+
+            {/* Footer with Skip Option */}
+            <div className="p-4 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
+              <Button
+                onClick={handleSkipChapterSelection}
+                variant="outline"
+                className="w-full"
+                data-testid="button-skip-chapter"
+              >
+                {t('aiMentor.skipChapterSelection')}
+              </Button>
+              <p className="text-xs text-gray-500 dark:text-gray-400 text-center mt-2">
+                {t('aiMentor.skipChapterHint')}
+              </p>
+            </div>
+          </motion.div>
+        </div>
+      )}
 
       <TutorSetupWizard
         open={showSetupWizard}
