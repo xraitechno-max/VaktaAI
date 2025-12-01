@@ -1,7 +1,7 @@
 import { db } from '../../db.js';
 import { misconceptionDatabase, studentInteractionMetrics, studentTopicMastery } from '@shared/schema';
 import type { MisconceptionDatabase, StudentTopicMastery } from '@shared/schema';
-import { eq, and, sql, ilike, or } from 'drizzle-orm';
+import { eq, and, sql, ilike, or, desc } from 'drizzle-orm';
 import memoize from 'memoizee';
 
 export interface DetectedMisconception {
@@ -14,7 +14,44 @@ export interface DetectedMisconception {
   remediationStrategy: string;
   hintsToOvercome: string[];
   relatedFormulas: string[];
+  isRecurring?: boolean;
+  occurrenceCount?: number;
+  lastDetectedAt?: Date;
 }
+
+interface LinguisticIndicator {
+  pattern: RegExp;
+  weight: number;
+  type: 'uncertainty' | 'confusion' | 'wrong_assumption' | 'partial_knowledge';
+}
+
+const LINGUISTIC_INDICATORS: LinguisticIndicator[] = [
+  { pattern: /i think|maybe|probably|i guess|not sure/i, weight: 0.3, type: 'uncertainty' },
+  { pattern: /always|never|every time|in all cases/i, weight: 0.4, type: 'wrong_assumption' },
+  { pattern: /confused|don't understand|makes no sense/i, weight: 0.5, type: 'confusion' },
+  { pattern: /same as|equal to|equivalent|no difference/i, weight: 0.35, type: 'wrong_assumption' },
+  { pattern: /but why|how come|doesn't that mean/i, weight: 0.25, type: 'partial_knowledge' },
+  { pattern: /isn't it|right\?|correct\?|na\?|hai na\?/i, weight: 0.2, type: 'uncertainty' },
+];
+
+const CLASS_LEVEL_THRESHOLDS: Record<string, number> = {
+  foundation: 0.5,
+  bridge: 0.55,
+  board: 0.6,
+  competitive: 0.65,
+  dropper: 0.7,
+};
+
+const EXAM_TARGET_WEIGHTS: Record<string, Record<string, number>> = {
+  jee: { conceptual_confusion: 1.3, formula_misapplication: 1.4, unit_error: 1.2 },
+  jee_main: { conceptual_confusion: 1.3, formula_misapplication: 1.4, unit_error: 1.2 },
+  jee_advanced: { conceptual_confusion: 1.5, overgeneralization: 1.4, prerequisite_gap: 1.3 },
+  neet: { conceptual_confusion: 1.3, formula_misapplication: 1.2, sign_convention: 1.1 },
+  boards: { conceptual_confusion: 1.1, formula_misapplication: 1.0, unit_error: 1.0 },
+  cbse: { conceptual_confusion: 1.1, formula_misapplication: 1.0, unit_error: 1.0 },
+  icse: { conceptual_confusion: 1.1, formula_misapplication: 1.0, unit_error: 1.0 },
+  foundation: { conceptual_confusion: 1.0, prerequisite_gap: 1.2, overgeneralization: 1.1 },
+};
 
 export interface MisconceptionDetectionResult {
   detected: boolean;
@@ -69,7 +106,9 @@ export class MisconceptionDetectorService {
     studentResponse: string,
     topic: string,
     subject: string,
-    classLevel?: string
+    classLevel?: string,
+    userId?: string,
+    examTarget?: string
   ): Promise<MisconceptionDetectionResult> {
     const result: MisconceptionDetectionResult = {
       detected: false,
@@ -90,6 +129,21 @@ export class MisconceptionDetectorService {
     }
 
     const normalizedResponse = studentResponse.toLowerCase().trim();
+    
+    const linguisticBoost = this.analyzeLinguisticIndicators(normalizedResponse);
+    
+    const studentHistory = userId 
+      ? await this.getStudentMisconceptionHistory(userId, subject)
+      : [];
+    const historicalMisconceptionIds = new Set(
+      studentHistory.flatMap(h => h.misconceptions)
+    );
+
+    const classCategory = classLevel ? this.getClassCategory(parseInt(classLevel) || 10) : 'board';
+    const baseThreshold = CLASS_LEVEL_THRESHOLDS[classCategory] ?? 0.6;
+    
+    const normalizedExamTarget = examTarget?.toLowerCase().replace(/[\s-]/g, '_');
+    const examWeights = normalizedExamTarget ? EXAM_TARGET_WEIGHTS[normalizedExamTarget] : undefined;
 
     for (const m of misconceptions) {
       const patterns = m.triggerPatterns as string[];
@@ -113,10 +167,25 @@ export class MisconceptionDetectorService {
         }
       }
 
-      const confidenceThreshold = m.confidenceThreshold ?? 0.7;
-      const confidence = matchScore;
+      let adjustedScore = matchScore + (linguisticBoost * 0.15);
+      
+      if (examWeights && examWeights[m.rootCause]) {
+        adjustedScore *= examWeights[m.rootCause];
+      }
+      
+      const isRecurring = historicalMisconceptionIds.has(m.misconceptionId);
+      if (isRecurring) {
+        adjustedScore *= 1.2;
+      }
 
-      if (confidence >= confidenceThreshold * 0.7) {
+      const effectiveThreshold = baseThreshold * (m.confidenceThreshold ?? 0.7);
+      const confidence = Math.min(1, adjustedScore);
+
+      if (confidence >= effectiveThreshold) {
+        const historyEntry = studentHistory.find(h => 
+          h.misconceptions.includes(m.misconceptionId)
+        );
+        
         result.detected = true;
         result.misconceptions.push({
           misconceptionId: m.misconceptionId,
@@ -128,11 +197,17 @@ export class MisconceptionDetectorService {
           remediationStrategy: m.remediationStrategy,
           hintsToOvercome: (m.hintsToOvercome as string[]) || [],
           relatedFormulas: (m.relatedFormulas as string[]) || [],
+          isRecurring,
+          occurrenceCount: isRecurring ? (historyEntry?.misconceptions.length || 1) : 0,
+          lastDetectedAt: historyEntry?.lastSeen,
         });
       }
     }
 
     result.misconceptions.sort((a, b) => {
+      if (a.isRecurring && !b.isRecurring) return -1;
+      if (!a.isRecurring && b.isRecurring) return 1;
+      
       const severityOrder: Record<string, number> = { critical: 3, moderate: 2, minor: 1 };
       const severityDiff = (severityOrder[b.severity] || 0) - (severityOrder[a.severity] || 0);
       if (severityDiff !== 0) return severityDiff;
@@ -141,7 +216,7 @@ export class MisconceptionDetectorService {
 
     if (result.detected) {
       const topMisconception = result.misconceptions[0];
-      if (topMisconception.severity === 'critical' || topMisconception.confidence > 0.8) {
+      if (topMisconception.isRecurring || topMisconception.severity === 'critical' || topMisconception.confidence > 0.8) {
         result.suggestedApproach = 'address_immediately';
       } else if (topMisconception.severity === 'moderate' || topMisconception.confidence > 0.5) {
         result.suggestedApproach = 'gentle_correction';
@@ -151,6 +226,29 @@ export class MisconceptionDetectorService {
     }
 
     return result;
+  }
+
+  private analyzeLinguisticIndicators(text: string): number {
+    let totalWeight = 0;
+    let matchCount = 0;
+
+    for (const indicator of LINGUISTIC_INDICATORS) {
+      if (indicator.pattern.test(text)) {
+        totalWeight += indicator.weight;
+        matchCount++;
+      }
+    }
+
+    return matchCount > 0 ? totalWeight / matchCount : 0;
+  }
+
+  private getClassCategory(classLevel: number): string {
+    if (classLevel <= 7) return 'foundation';
+    if (classLevel <= 9) return 'bridge';
+    if (classLevel === 10 || classLevel === 12) return 'board';
+    if (classLevel === 11) return 'competitive';
+    if (classLevel >= 13) return 'dropper';
+    return 'board';
   }
 
   private async getMisconceptionsForSubject(subject: string): Promise<MisconceptionDatabase[]> {
