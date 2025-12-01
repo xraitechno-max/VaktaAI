@@ -223,8 +223,8 @@ export function useUnityBridge({
 
         case 'AUDIO_FAILED':
           // Audio playback failed in Unity
-          console.error('[Unity Bridge] ❌ Audio playback failed:', payload?.error);
-          onMessage?.({ type: 'AUDIO_FAILED', error: payload?.error });
+          console.error('[Unity Bridge] ❌ Audio playback failed:', payload?.error, 'ID:', payload?.id);
+          onMessage?.({ type: 'AUDIO_FAILED', error: payload?.error, id: payload?.id });
           break;
 
         default:

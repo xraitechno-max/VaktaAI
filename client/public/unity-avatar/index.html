@@ -128,59 +128,303 @@
       var audioUnlocked = false;
       var unlockBtn = document.getElementById('audio-unlock-btn');
       
-      // 🎵 AUDIO QUEUE: Store audio that arrives before unlock
-      var pendingAudio = null;
+      // 🎵 AUDIO QUEUE: Store audio that arrives before unlock (ARRAY to preserve all chunks)
+      var pendingAudioQueue = [];
       
       // 🎵 HTML5 AUDIO FALLBACK: For reliable playback with amplitude-driven lips
-      var audioElement = new Audio();
-      audioElement.crossOrigin = 'anonymous';
       var analyser = null;
       var dataArray = null;
       var animationFrameId = null;
-
-      // 🎵 HTML5 AUDIO FALLBACK: Play audio with amplitude analysis
-      function playHtmlAudioFallback(base64Audio, audioId) {
-        console.log('[Unity] Using HTML5 Audio fallback with amplitude lip-sync');
+      var isAnalyserConnected = false;  // Track if analyser is connected to destination
+      
+      // 🎯 AUDIO QUEUE SYSTEM: Queue chunks instead of replacing
+      var audioQueue = [];           // Queue of audio items to play
+      var isPlayingAudio = false;    // Is audio currently playing?
+      var currentPlayingId = null;   // ID of currently playing audio
+      var MAX_RETRY_COUNT = 2;       // Max retries for failed audio playback
+      
+      // 🎯 Add audio to queue
+      function enqueueAudio(base64Audio, audioId, phonemes) {
+        audioQueue.push({ audioData: base64Audio, audioId: audioId, phonemes: phonemes || [] });
+        console.log('[Unity Audio Queue] ➕ Enqueued:', audioId, '| Queue size:', audioQueue.length);
+        
+        // Start processing if not already playing
+        if (!isPlayingAudio) {
+          processAudioQueue();
+        }
+      }
+      
+      // 🎯 Track current audio element for cleanup
+      var currentAudioElement = null;
+      var currentAudioSource = null;
+      
+      // 🎯 Process audio queue sequentially
+      function processAudioQueue() {
+        if (audioQueue.length === 0) {
+          console.log('[Unity Audio Queue] 📭 Queue empty');
+          isPlayingAudio = false;
+          currentPlayingId = null;
+          return;
+        }
+        
+        if (isPlayingAudio) {
+          console.log('[Unity Audio Queue] ⏳ Already playing, waiting...');
+          return;
+        }
+        
+        isPlayingAudio = true;
+        var item = audioQueue.shift();
+        currentPlayingId = item.audioId;
+        var retryCount = item.retryCount || 0;
+        
+        console.log('[Unity Audio Queue] ▶️ Playing:', item.audioId, '| Remaining:', audioQueue.length, '| Retry:', retryCount);
+        
+        // Play audio with phonemes (pass retryCount for retry logic)
+        playAudioWithPhonemes(item.audioData, item.audioId, item.phonemes, retryCount);
+      }
+      
+      // 🎯 Play single audio item with phonemes (REUSE single AudioContext graph)
+      function playAudioWithPhonemes(base64Audio, audioId, phonemes, retryCount) {
+        console.log('[Unity] Playing audio:', audioId, '| Phonemes:', phonemes.length, '| Retry:', retryCount);
         
         // Convert base64 to blob URL
         var audioBlob = base64ToBlob(base64Audio, 'audio/mpeg');
         var audioUrl = URL.createObjectURL(audioBlob);
         
+        // 🎯 CRITICAL: Create FRESH audio element per chunk to avoid handler bleed-through
+        var audioElement = new Audio();
+        audioElement.crossOrigin = 'anonymous';
+        
+        // Clean up previous audio element and source if exists
+        if (currentAudioElement) {
+          currentAudioElement.onplay = null;
+          currentAudioElement.onended = null;
+          currentAudioElement.onerror = null;
+        }
+        if (currentAudioSource) {
+          try {
+            currentAudioSource.disconnect();
+          } catch (e) {
+            // Ignore disconnect errors
+          }
+        }
+        
+        currentAudioElement = audioElement;
+        
         // Setup Web Audio API for amplitude analysis
         var AudioContext = window.AudioContext || window.webkitAudioContext;
+        var isNewContext = !audioCtx;
         if (!audioCtx) audioCtx = new AudioContext();
+        
+        // 🎯 CRITICAL: If audioCtx was recreated, reset analyser and connection flag
+        if (isNewContext || audioCtx.state === 'closed') {
+          analyser = null;
+          isAnalyserConnected = false;
+          if (audioCtx.state === 'closed') {
+            audioCtx = new AudioContext();
+          }
+        }
         
         // Create analyser if not exists
         if (!analyser) {
-          var source = audioCtx.createMediaElementSource(audioElement);
           analyser = audioCtx.createAnalyser();
           analyser.fftSize = 1024;
           dataArray = new Uint8Array(analyser.frequencyBinCount);
-          source.connect(analyser);
-          analyser.connect(audioCtx.destination);
+          isAnalyserConnected = false; // Reset connection flag when creating new analyser
+        }
+        
+        // 🎯 Connect analyser to destination ONCE (prevents Safari/Firefox InvalidStateError)
+        if (!isAnalyserConnected) {
+          try {
+            analyser.connect(audioCtx.destination);
+            isAnalyserConnected = true;
+            console.log('[Unity] Analyser connected to destination');
+          } catch (e) {
+            console.warn('[Unity] Analyser connection error (continuing):', e.message);
+          }
+        }
+        
+        // Create MediaElementSource for this audio element and connect to analyser
+        try {
+          var audioSource = audioCtx.createMediaElementSource(audioElement);
+          currentAudioSource = audioSource;
+          audioSource.connect(analyser);
+        } catch (e) {
+          console.warn('[Unity] Web Audio setup error (continuing without amplitude):', e.message);
+          // Continue without amplitude analysis - audio will still play
+        }
+        
+        // Set up event handlers BEFORE setting src
+        audioElement.onplay = function() {
+          console.log('[Unity] HTML5 Audio playing:', audioId);
+          startAmplitudeMeter(audioId);
+          
+          // 🎯 CRITICAL: Send AUDIO_STARTED only when audio actually starts playing
+          if (trustedParentOrigin) {
+            window.parent.postMessage({
+              type: 'AUDIO_STARTED',
+              payload: { id: audioId }
+            }, trustedParentOrigin);
+          }
+        };
+        
+        audioElement.onended = function() {
+          console.log('[Unity] HTML5 Audio ended:', audioId);
+          stopAmplitudeMeter();
+          URL.revokeObjectURL(audioUrl);
+          
+          // Clean up audio element
+          audioElement.onplay = null;
+          audioElement.onended = null;
+          audioElement.onerror = null;
+          
+          // 🎯 CRITICAL: Disconnect audio source to prevent node leak
+          if (currentAudioSource) {
+            try {
+              currentAudioSource.disconnect();
+            } catch (e) {}
+            currentAudioSource = null;
+          }
+          currentAudioElement = null;
+          
+          // 🎯 CRITICAL: Send AUDIO_ENDED so SmartTTSQueue knows chunk completed
+          if (trustedParentOrigin) {
+            window.parent.postMessage({
+              type: 'AUDIO_ENDED',
+              payload: { id: audioId }
+            }, trustedParentOrigin);
+          }
+          
+          // 🎯 CRITICAL: Mark as not playing and process next in queue
+          isPlayingAudio = false;
+          currentPlayingId = null;
+          processAudioQueue();
+        };
+        
+        audioElement.onerror = function(err) {
+          console.error('[Unity] HTML5 Audio error:', audioId, err);
+          stopAmplitudeMeter();
+          URL.revokeObjectURL(audioUrl);
+          
+          // Clean up audio element
+          audioElement.onplay = null;
+          audioElement.onended = null;
+          audioElement.onerror = null;
+          
+          // 🎯 CRITICAL: Disconnect audio source to prevent node leak
+          if (currentAudioSource) {
+            try {
+              currentAudioSource.disconnect();
+            } catch (e) {}
+            currentAudioSource = null;
+          }
+          currentAudioElement = null;
+          
+          // Notify React of failure
+          if (trustedParentOrigin) {
+            window.parent.postMessage({
+              type: 'AUDIO_FAILED',
+              payload: { id: audioId, error: 'Audio playback error' }
+            }, trustedParentOrigin);
+          }
+          
+          // Continue to next in queue even on error
+          isPlayingAudio = false;
+          currentPlayingId = null;
+          processAudioQueue();
+        };
+        
+        // Send phonemes to Unity for lip-sync (if available)
+        if (phonemes && phonemes.length > 0 && unityInstance) {
+          try {
+            var phonemeJson = JSON.stringify({ phonemes: phonemes });
+            console.log('[Unity] 📤 Sending phonemes:', phonemes.length);
+            unityInstance.SendMessage('AvatarController', 'PlayPhonemeSequence', phonemeJson);
+          } catch (e) {
+            console.error('[Unity] ❌ Failed to send phonemes:', e);
+          }
         }
         
         // Play audio
         audioElement.src = audioUrl;
-        audioElement.onplay = function() {
-          console.log('[Unity] HTML5 Audio playing, starting amplitude meter');
-          startAmplitudeMeter(audioId);
-        };
-        audioElement.onended = function() {
-          console.log('[Unity] HTML5 Audio ended');
+        audioElement.play().catch(function(err) {
+          console.error('[Unity] HTML5 Audio play failed:', audioId, err);
           stopAmplitudeMeter();
           URL.revokeObjectURL(audioUrl);
-          if (trustedParentOrigin) {
-            window.parent.postMessage({
-              type: 'AUDIO_EVENT',
-              payload: { id: audioId, state: 'ended' }
-            }, trustedParentOrigin);
+          
+          // Clean up audio element
+          audioElement.onplay = null;
+          audioElement.onended = null;
+          audioElement.onerror = null;
+          
+          // Disconnect audio source
+          if (currentAudioSource) {
+            try {
+              currentAudioSource.disconnect();
+            } catch (e) {}
+            currentAudioSource = null;
           }
-        };
-        audioElement.play().catch(function(err) {
-          console.error('[Unity] HTML5 Audio play failed:', err);
-          stopAmplitudeMeter();
+          currentAudioElement = null;
+          
+          // 🎯 RETRY LOGIC: Keep item separate to maintain FIFO ordering
+          if (retryCount < MAX_RETRY_COUNT) {
+            console.warn('[Unity] ⚠️ Retrying audio playback:', audioId, '| Retry:', retryCount + 1);
+            
+            // 🎯 CRITICAL: Keep isPlayingAudio TRUE during retry to block queue
+            // Only set retryingItem AFTER setting isPlayingAudio to prevent race
+            var newRetryCount = retryCount + 1;
+            
+            // Delay then retry the same item (not from queue)
+            setTimeout(function() {
+              // Retry directly without going through queue
+              playAudioWithPhonemes(base64Audio, audioId, phonemes || [], newRetryCount);
+            }, 100);
+          } else {
+            // Max retries exceeded - ALWAYS notify React of failure
+            console.error('[Unity] ❌ Max retries exceeded for:', audioId);
+            if (trustedParentOrigin) {
+              window.parent.postMessage({
+                type: 'AUDIO_FAILED',
+                payload: { id: audioId, error: err ? err.message : 'Max retries exceeded' }
+              }, trustedParentOrigin);
+            }
+            
+            // Continue to next in queue
+            isPlayingAudio = false;
+            currentPlayingId = null;
+            processAudioQueue();
+          }
         });
+      }
+      
+      // 🎯 Clear audio queue (called on STOP_AUDIO)
+      function clearAudioQueue() {
+        console.log('[Unity Audio Queue] 🧹 Clearing queue of', audioQueue.length, 'items');
+        audioQueue = [];
+        isPlayingAudio = false;
+        currentPlayingId = null;
+        if (currentAudioElement) {
+          currentAudioElement.pause();
+          currentAudioElement.currentTime = 0;
+          currentAudioElement.onplay = null;
+          currentAudioElement.onended = null;
+          currentAudioElement.onerror = null;
+          currentAudioElement = null;
+        }
+        if (currentAudioSource) {
+          try {
+            currentAudioSource.disconnect();
+          } catch (e) {}
+          currentAudioSource = null;
+        }
+        stopAmplitudeMeter();
+      }
+
+      // 🎵 LEGACY: Play audio without queue (for backward compatibility)
+      function playHtmlAudioFallback(base64Audio, audioId) {
+        console.log('[Unity] Using HTML5 Audio fallback (legacy)');
+        // Use the queue system even for legacy calls
+        enqueueAudio(base64Audio, audioId, []);
       }
       
       // 📊 AMPLITUDE METER: Drive mouth blendshape from audio amplitude
@@ -283,27 +527,14 @@
               }, trustedParentOrigin);
             }
             
-            // 🎵 Play queued audio if any
-            if (pendingAudio) {
-              console.log('[Unity] ✅ Playing queued audio after unlock');
-              playHtmlAudioFallback(pendingAudio.audioData, pendingAudio.audioId);
-              
-              // If queued audio has phonemes, send to Unity
-              if (pendingAudio.phonemes && pendingAudio.phonemes.length > 0 && unityInstance) {
-                console.log('[Unity] ✅ Sending queued phonemes to Unity:', pendingAudio.phonemes.length);
-                try {
-                  var phonemeJson = JSON.stringify({ phonemes: pendingAudio.phonemes });
-                  unityInstance.SendMessage('AvatarController', 'PlayPhonemeSequence', phonemeJson);
-                } catch (e) {
-                  console.error('[Unity] ❌ Failed to send queued phonemes:', e);
-                }
-              }
-              
-              window.parent.postMessage({
-                type: 'AUDIO_STARTED',
-                payload: { id: pendingAudio.audioId }
-              }, trustedParentOrigin);
-              pendingAudio = null; // Clear queue
+            // 🎵 Play ALL queued audio (FIFO) using array-based queue
+            // AUDIO_STARTED will be sent by playAudioWithPhonemes when audio actually starts
+            if (pendingAudioQueue.length > 0) {
+              console.log('[Unity] ✅ Playing', pendingAudioQueue.length, 'queued audio items after unlock');
+              pendingAudioQueue.forEach(function(item) {
+                enqueueAudio(item.audioData, item.audioId, item.phonemes || []);
+              });
+              pendingAudioQueue = [];
             }
           }).catch(function(err) {
             console.error('[Unity] Failed to resume AudioContext:', err);
@@ -319,27 +550,14 @@
             }, trustedParentOrigin);
           }
           
-          // 🎵 Play queued audio if any
-          if (pendingAudio) {
-            console.log('[Unity] ✅ Playing queued audio after unlock');
-            playHtmlAudioFallback(pendingAudio.audioData, pendingAudio.audioId);
-            
-            // If queued audio has phonemes, send to Unity
-            if (pendingAudio.phonemes && pendingAudio.phonemes.length > 0 && unityInstance) {
-              console.log('[Unity] ✅ Sending queued phonemes to Unity:', pendingAudio.phonemes.length);
-              try {
-                var phonemeJson = JSON.stringify({ phonemes: pendingAudio.phonemes });
-                unityInstance.SendMessage('AvatarController', 'PlayPhonemeSequence', phonemeJson);
-              } catch (e) {
-                console.error('[Unity] ❌ Failed to send queued phonemes:', e);
-              }
-            }
-            
-            window.parent.postMessage({
-              type: 'AUDIO_STARTED',
-              payload: { id: pendingAudio.audioId }
-            }, trustedParentOrigin);
-            pendingAudio = null; // Clear queue
+          // 🎵 Play ALL queued audio (FIFO) using array-based queue
+          // AUDIO_STARTED will be sent by playAudioWithPhonemes when audio actually starts
+          if (pendingAudioQueue.length > 0) {
+            console.log('[Unity] ✅ Playing', pendingAudioQueue.length, 'queued audio items after unlock');
+            pendingAudioQueue.forEach(function(item) {
+              enqueueAudio(item.audioData, item.audioId, item.phonemes || []);
+            });
+            pendingAudioQueue = [];
           }
         }
       }
@@ -403,21 +621,14 @@
                 
                 if (unlockBtn) unlockBtn.style.display = 'none';
                 
-                // Play queued audio if any
-                if (pendingAudio) {
-                  console.log('[Unity] ✅ Auto-playing queued audio after resume');
-                  playHtmlAudioFallback(pendingAudio.audioData, pendingAudio.audioId);
-                  
-                  if (pendingAudio.phonemes && pendingAudio.phonemes.length > 0 && unityInstance) {
-                    var phonemeJson = JSON.stringify({ phonemes: pendingAudio.phonemes });
-                    unityInstance.SendMessage('AvatarController', 'PlayPhonemeSequence', phonemeJson);
-                  }
-                  
-                  window.parent.postMessage({
-                    type: 'AUDIO_STARTED',
-                    payload: { id: pendingAudio.audioId }
-                  }, trustedParentOrigin);
-                  pendingAudio = null;
+                // Play ALL queued audio (FIFO) using array-based queue
+                // AUDIO_STARTED will be sent by playAudioWithPhonemes when audio actually starts
+                if (pendingAudioQueue.length > 0) {
+                  console.log('[Unity] ✅ Auto-playing', pendingAudioQueue.length, 'queued audio items after resume');
+                  pendingAudioQueue.forEach(function(item) {
+                    enqueueAudio(item.audioData, item.audioId, item.phonemes || []);
+                  });
+                  pendingAudioQueue = [];
                 }
               } else {
                 console.warn('[Unity] ⚠️ AudioContext still not running after resume - state:', audioCtx.state);
@@ -547,14 +758,11 @@
               console.log('[Unity] 🎵 PLAY_TTS_AUDIO received - audioUnlocked:', audioUnlocked, 'audioData length:', audioData ? audioData.length : 0);
               
               if (audioUnlocked && audioData) {
+                // 🎯 Use queue system (playHtmlAudioFallback calls enqueueAudio)
+                // AUDIO_STARTED will be sent by playAudioWithPhonemes when audio actually starts
                 console.log('[Unity] ✅ Playing audio via HTML5 fallback...');
                 try {
                   playHtmlAudioFallback(audioData, audioId);
-                  // Notify React that audio started successfully
-                  window.parent.postMessage({
-                    type: 'AUDIO_STARTED',
-                    payload: { id: audioId }
-                  }, trustedParentOrigin);
                 } catch (err) {
                   console.error('[Unity] ❌ Audio playback failed:', err);
                   window.parent.postMessage({
@@ -565,9 +773,9 @@
               } else if (!audioUnlocked) {
                 console.warn('[Unity] ❌ Audio not unlocked yet - queuing for later');
                 
-                // 🎵 QUEUE AUDIO: Store for playback after unlock
-                pendingAudio = { audioData: audioData, audioId: audioId };
-                console.log('[Unity] 📦 Audio queued - will play after unlock');
+                // 🎵 QUEUE AUDIO: Add to pending array (FIFO order preserved)
+                pendingAudioQueue.push({ audioData: audioData, audioId: audioId, phonemes: [] });
+                console.log('[Unity] 📦 Audio queued - total pending:', pendingAudioQueue.length);
                 
                 // Show unlock button
                 if (unlockBtn) unlockBtn.style.display = 'block';
@@ -587,57 +795,24 @@
               break;
 
             case 'PLAY_TTS_WITH_PHONEMES':
-              // 🎯 NEW: Phoneme-based lip sync with audio
+              // 🎯 Phoneme-based lip sync with QUEUED audio (prevents skipping!)
               var audioData = event.data.payload.audioData || '';
               var phonemes = event.data.payload.phonemes || [];
               var audioId = event.data.payload.id || 'tts-phoneme-' + Date.now();
               
-              console.log('[Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - Phonemes:', phonemes.length, 'Audio unlocked:', audioUnlocked);
-              console.log('[Unity] 🔍 DEBUG - First 3 phonemes:', JSON.stringify(phonemes.slice(0, 3)));
+              console.log('[Unity] 🎵 PLAY_TTS_WITH_PHONEMES received - ID:', audioId, '| Phonemes:', phonemes.length, '| Unlocked:', audioUnlocked);
               
-              if (audioUnlocked && audioData && phonemes.length > 0) {
-                console.log('[Unity] ✅ Playing audio + sending phonemes to Unity...');
-                console.log('[Unity] 🔍 DEBUG - Unity instance exists:', !!unityInstance);
-                try {
-                  // 1. Play audio via HTML5
-                  playHtmlAudioFallback(audioData, audioId);
-                  
-                  // 2. Send phoneme sequence to Unity for blendshape animation
-                  var phonemeJson = JSON.stringify({ phonemes: phonemes });
-                  console.log('[Unity] 📤 Sending phonemes to AvatarController - Count:', phonemes.length);
-                  console.log('[Unity] 📦 Phoneme JSON length:', phonemeJson.length, 'chars');
-                  
-                  try {
-                    console.log('[Unity] 🚀 CALLING PlayPhonemeSequence NOW...');
-                    unityInstance.SendMessage(
-                      'AvatarController',
-                      'PlayPhonemeSequence',
-                      phonemeJson
-                    );
-                    console.log('[Unity] ✅✅✅ PlayPhonemeSequence SUCCESSFULLY CALLED! ✅✅✅');
-                  } catch (e) {
-                    console.error('[Unity] ❌❌❌ SendMessage FAILED:', e.toString());
-                    console.error('[Unity] ❌ Error stack:', e.stack);
-                  }
-                  
-                  // Notify React that audio+phonemes started
-                  window.parent.postMessage({
-                    type: 'AUDIO_STARTED',
-                    payload: { id: audioId }
-                  }, trustedParentOrigin);
-                } catch (err) {
-                  console.error('[Unity] ❌ Phoneme playback failed:', err);
-                  window.parent.postMessage({
-                    type: 'AUDIO_FAILED',
-                    payload: { id: audioId, error: err.message }
-                  }, trustedParentOrigin);
-                }
+              if (audioUnlocked && audioData) {
+                // 🎯 Use queue system to prevent audio replacement/skipping
+                // AUDIO_STARTED will be sent by playAudioWithPhonemes when audio actually starts
+                console.log('[Unity] ✅ Enqueuing audio + phonemes (queue system)...');
+                enqueueAudio(audioData, audioId, phonemes);
               } else if (!audioUnlocked) {
-                console.warn('[Unity] ❌ Audio not unlocked - queuing phoneme audio');
+                console.warn('[Unity] ❌ Audio not unlocked - queuing for later');
                 
-                // Queue audio with phonemes
-                pendingAudio = { audioData: audioData, audioId: audioId, phonemes: phonemes };
-                console.log('[Unity] 📦 Audio+phonemes queued for playback after unlock');
+                // 🎵 QUEUE AUDIO: Add to pending array (FIFO order preserved)
+                pendingAudioQueue.push({ audioData: audioData, audioId: audioId, phonemes: phonemes });
+                console.log('[Unity] 📦 Audio+phonemes queued - total pending:', pendingAudioQueue.length);
                 
                 if (unlockBtn) unlockBtn.style.display = 'block';
                 
@@ -647,6 +822,10 @@
                 }, trustedParentOrigin);
               } else {
                 console.error('[Unity] ❌ Missing data - Audio:', !!audioData, 'Phonemes:', phonemes.length);
+                window.parent.postMessage({
+                  type: 'AUDIO_FAILED',
+                  payload: { id: audioId, error: 'Missing audio data' }
+                }, trustedParentOrigin);
               }
               break;
 
@@ -681,18 +860,14 @@
               break;
 
             case 'STOP_AUDIO':
-              // Stop HTML5 audio playback
-              if (audioElement && !audioElement.paused) {
-                audioElement.pause();
-                audioElement.currentTime = 0;
-              }
-              stopAmplitudeMeter();
+              // 🎯 Clear audio queue AND stop current playback
+              clearAudioQueue();
               
-              // Also stop Unity audio (if applicable)
+              // Also stop Unity audio/lip-sync (if applicable)
               if (unityInstance) {
                 unityInstance.SendMessage('AvatarController', 'StopAudio', '');
               }
-              console.log('[Unity] Audio stopped (HTML5 + Unity)');
+              console.log('[Unity] Audio stopped + queue cleared');
               break;
 
             default:

@@ -39,6 +39,20 @@ Preferred communication style: Simple, everyday language (Hindi/English/Hinglish
 - **Fallback**: If user has no subjects set or no matching AI mentor subjects, all 4 core subjects are shown.
 - **UI Adaptation**: Grid layout adapts responsively based on number of filtered subjects (2, 3, or 4 subjects).
 
+### TTS Audio Queue Fix (Dec 2025)
+- **Problem**: TTS chunks were being skipped during large AI responses because Unity's single global Audio element was being replaced instead of queued.
+- **Solution**: Implemented proper audio queue system in Unity HTML:
+  - `audioQueue` array stores pending audio items
+  - `pendingAudioQueue` array preserves pre-unlock chunks in FIFO order
+  - Fresh Audio element created per chunk to avoid handler bleed-through
+  - `isAnalyserConnected` flag ensures analyser→destination connected only once (prevents Safari/Firefox errors)
+  - Retry logic keeps `isPlayingAudio=true` during retry (blocks queue)
+  - AUDIO_STARTED only fires on actual playback (audioElement.onplay)
+  - AUDIO_ENDED fires on audioElement.onended
+  - AUDIO_FAILED fires after max retries with correct chunk id
+- **React Bridge Fix**: useUnityBridge.ts now forwards chunk id in AUDIO_FAILED events
+- **Flow**: PLAY_TTS_WITH_PHONEMES → enqueueAudio → processAudioQueue → playAudioWithPhonemes → onplay/AUDIO_STARTED → onended/AUDIO_ENDED → next chunk
+
 ## External Dependencies
 
 ### Third-Party APIs
