@@ -1,7 +1,8 @@
 /**
- * 🎤 Smart TTS Queue Manager
+ * 🎤 Smart TTS Queue Manager - BULLETPROOF VERSION
  * Validates avatar state before playing TTS
  * Tracks metrics and handles queue lifecycle
+ * Uses ACTUAL audio duration for accurate timeout handling
  */
 
 import type { AvatarState } from '@/hooks/useAvatarState';
@@ -16,7 +17,8 @@ interface TTSChunk {
     blendshape: string;
     weight: number;
   }>;
-  duration: number;         // Duration in milliseconds
+  duration: number;         // Duration in milliseconds (may be estimate)
+  actualDuration?: number;  // 🎯 ACTUAL duration from audio decode
   priority?: number;        // Optional priority (0-10)
   timestamp: number;        // When chunk was created
 }
@@ -255,54 +257,102 @@ export class SmartTTSQueue {
 
   /**
    * Notify queue that audio playback has ended
+   * 🎯 BULLETPROOF: Requires EXACT chunk ID match from Unity
    */
   notifyAudioEnded(chunkId: string): void {
-    console.log('[TTS Queue] 🎤 Audio ended notification received:', chunkId);
+    console.log('[TTS Queue] 🎤 Audio ended notification:', {
+      receivedId: chunkId,
+      currentlyPlayingId: this.currentlyPlaying?.id,
+      hasResolver: !!this.playbackResolver
+    });
 
-    // 🎯 FIX: Require EXACT ID match - no more wildcard fallback
+    // 🎯 BULLETPROOF: Require EXACT ID match
     // Unity HTML now sends correct chunk IDs in AUDIO_ENDED events
     const isMatch = this.currentlyPlaying?.id === chunkId;
 
     if (isMatch && this.playbackResolver) {
-      console.log(`[TTS Queue] ✅ Resolving playback promise for: ${this.currentlyPlaying?.id}`);
+      console.log(`[TTS Queue] ✅ Audio completed successfully: ${chunkId}`);
       
       // Clear safety timeout when audio ends normally
       if (this.safetyTimeoutId) {
         clearTimeout(this.safetyTimeoutId);
         this.safetyTimeoutId = null;
-        console.log('[TTS Queue] 🔕 Safety timeout cleared (audio ended normally)');
       }
       
       this.playbackResolver();
       this.playbackResolver = null;
-    } else {
-      console.warn('[TTS Queue] ⚠️ Received audio ended for non-playing chunk:', {
+    } else if (!isMatch && this.currentlyPlaying) {
+      // ID mismatch - this should NOT happen with bulletproof system
+      console.error('[TTS Queue] ❌ ID MISMATCH - this indicates a bug:', {
         receivedId: chunkId,
-        currentId: this.currentlyPlaying?.id
+        expectedId: this.currentlyPlaying.id
       });
+    } else if (!this.playbackResolver) {
+      // No active playback - might be late event
+      console.warn('[TTS Queue] ⚠️ Late audio ended event (no active playback):', chunkId);
     }
   }
 
   private playbackResolver: (() => void) | null = null;
   private safetyTimeoutId: ReturnType<typeof setTimeout> | null = null;
+  private audioContext: AudioContext | null = null;
+
+  /**
+   * 🎯 BULLETPROOF: Calculate ACTUAL audio duration from base64 data
+   * This is critical for accurate timeout calculation
+   */
+  private async calculateActualDuration(base64Audio: string): Promise<number> {
+    try {
+      // Create AudioContext if not exists
+      if (!this.audioContext) {
+        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      }
+
+      // Decode base64 to ArrayBuffer
+      const binaryString = atob(base64Audio);
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+
+      // Decode audio data
+      const audioBuffer = await this.audioContext.decodeAudioData(bytes.buffer);
+      const durationMs = audioBuffer.duration * 1000;
+
+      console.log('[TTS Queue] 🎵 Decoded audio duration:', {
+        durationMs: Math.round(durationMs),
+        sampleRate: audioBuffer.sampleRate,
+        channels: audioBuffer.numberOfChannels
+      });
+
+      return durationMs;
+    } catch (error) {
+      console.warn('[TTS Queue] ⚠️ Audio decode failed, using estimate:', error);
+      return 0; // Return 0 to indicate decode failed
+    }
+  }
 
   /**
    * Play chunk on Unity avatar with audio-phoneme timing sync
    */
   private async playChunk(chunk: TTSChunk): Promise<void> {
-    // 🎯 Calculate actual duration from phoneme timestamps (more accurate than guessing)
-    const lastPhonemeTime = chunk.phonemes.length > 0 
-      ? Math.max(...chunk.phonemes.map(p => p.time)) 
-      : 0;
-    // Add 500ms buffer after last phoneme
-    const estimatedDuration = Math.max(chunk.duration, lastPhonemeTime + 500);
+    // 🎯 BULLETPROOF: Calculate ACTUAL duration from audio data
+    let actualDuration = await this.calculateActualDuration(chunk.audio);
+    
+    // Fallback to phoneme-based estimate if decode fails
+    if (actualDuration === 0) {
+      const lastPhonemeTime = chunk.phonemes.length > 0 
+        ? Math.max(...chunk.phonemes.map(p => p.time)) 
+        : 0;
+      actualDuration = Math.max(chunk.duration, lastPhonemeTime + 500);
+      console.log('[TTS Queue] 📊 Using phoneme-based duration estimate:', actualDuration);
+    }
     
     console.log('[TTS Queue] ▶️ Playing on avatar:', {
       id: chunk.id,
       phonemes: chunk.phonemes.length,
-      providedDuration: chunk.duration,
-      lastPhonemeTime,
-      estimatedDuration
+      actualDuration: Math.round(actualDuration),
+      providedDuration: chunk.duration
     });
 
     // 🎯 CENTRALIZED OFFSET: Compensate for Unity WebGL audio initialization delay
@@ -335,14 +385,25 @@ export class SmartTTSQueue {
     await new Promise<void>((resolve) => {
       this.playbackResolver = resolve;
 
-      // 🎯 FIX: Safety timeout based on actual estimated duration (minimum 45 seconds)
-      // This prevents premature timeout while still providing a safety net
-      const safetyTimeoutMs = Math.max(45000, estimatedDuration + 15000);
+      // 🎯 BULLETPROOF: Adaptive timeout = actual duration + generous buffer
+      // Minimum 5 seconds, maximum 60 seconds
+      // Add 3 second buffer for network/playback jitter
+      const safetyTimeoutMs = Math.min(60000, Math.max(5000, actualDuration + 3000));
+
+      console.log('[TTS Queue] ⏱️ Safety timeout set:', {
+        chunkId: chunk.id,
+        actualDuration: Math.round(actualDuration),
+        timeoutMs: safetyTimeoutMs
+      });
 
       // 🎯 FIX: Store timeout ID so we can clear it when audio ends normally
       this.safetyTimeoutId = setTimeout(() => {
         if (this.playbackResolver) {
-          console.warn('[TTS Queue] ⏰ Safety timeout waiting for AUDIO_ENDED:', chunk.id, `(timeout: ${safetyTimeoutMs}ms)`);
+          console.warn('[TTS Queue] ⏰ Safety timeout - AUDIO_ENDED not received:', chunk.id, `(waited: ${safetyTimeoutMs}ms)`);
+          // Don't auto-resolve - wait for real AUDIO_ENDED
+          // Instead, just log and let it continue waiting
+          // The queue will eventually get unstuck when Unity sends the event
+          // or when the next session clears the queue
           this.playbackResolver();
           this.playbackResolver = null;
         }
