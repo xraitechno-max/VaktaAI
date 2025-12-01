@@ -1467,14 +1467,30 @@ optimizedTutorRouter.post('/session/tts-with-phonemes', async (req, res) => {
         audioBuffer = result.audio;
         
         if (result.visemes.length > 0) {
-          // Azure visemes are already in Unity format: {time, type, value}
-          // Convert to Unity blendshape format for lip-sync
-          phonemes = result.visemes.map(v => ({
-            time: v.time,
-            blendshape: `viseme_${v.value}`, // viseme_0 to viseme_21
-            weight: 1.0
-          }));
-          console.log(`[TTS+PHONEMES SSML] ✅ Generated ${phonemes.length} phonemes from Azure visemes`);
+          // Azure viseme to Unity blendshape mapping (same as visemeMapping.ts)
+          const AZURE_TO_UNITY: Record<number, string> = {
+            0: 'sil', 1: 'Ah', 2: 'Ah', 3: 'Oh', 4: 'AE', 5: 'Er', 6: 'IH',
+            7: 'W_OO', 8: 'Oh', 9: 'Ah', 10: 'Oh', 11: 'Ah', 12: 'K_G_H_NG',
+            13: 'R', 14: 'T_L_D_N', 15: 'S_Z', 16: 'Ch_J', 17: 'TH', 18: 'F_V',
+            19: 'T_L_D_N', 20: 'K_G_H_NG', 21: 'B_M_P'
+          };
+          
+          // result.visemes already has time in milliseconds from voiceService
+          phonemes = result.visemes.map(v => {
+            const visemeId = typeof v.value === 'string' ? parseInt(v.value, 10) : v.value;
+            const blendshape = AZURE_TO_UNITY[visemeId] || 'sil';
+            
+            // Weight based on blendshape type
+            let weight = 0.45;
+            if (['Ah', 'Oh', 'AE', 'IH', 'W_OO', 'EE'].includes(blendshape)) weight = 0.65;
+            if (['B_M_P', 'F_V', 'TH', 'T_L_D_N'].includes(blendshape)) weight = 0.55;
+            if (blendshape === 'sil') weight = 0;
+            
+            return { time: v.time, blendshape, weight };
+          });
+          
+          console.log(`[TTS+PHONEMES SSML] ✅ Mapped ${phonemes.length} Azure visemes → Unity phonemes`);
+          console.log(`[TTS+PHONEMES SSML] 🔍 First 3 phonemes:`, JSON.stringify(phonemes.slice(0, 3)));
         } else {
           console.warn('[TTS+PHONEMES SSML] ⚠️  No visemes from Azure TTS');
         }
