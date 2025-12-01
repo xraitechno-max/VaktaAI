@@ -11,7 +11,39 @@ interface ExtendedContext extends TeachingModeContext {
   learningVelocity?: 'fast' | 'steady' | 'slow';
   lastSessionGap?: number;
   preferredStyle?: TeachingMode;
+  subject?: string;
+  classLevel?: number;
+  examTarget?: 'JEE' | 'JEE_Advanced' | 'NEET' | 'Boards' | 'Foundation';
 }
+
+const SUBJECT_STRATEGY_PREFERENCES: Record<string, TeachingMode[]> = {
+  physics: ['worked_example', 'analogical', 'case_study', 'elaborative'],
+  chemistry: ['worked_example', 'analogical', 'direct', 'spaced_retrieval'],
+  math: ['worked_example', 'scaffolded_direct', 'socratic', 'elaborative'],
+  biology: ['elaborative', 'spaced_retrieval', 'case_study', 'analogical'],
+  english: ['elaborative', 'case_study', 'socratic', 'direct'],
+  hindi: ['elaborative', 'direct', 'socratic', 'case_study'],
+  history: ['case_study', 'elaborative', 'spaced_retrieval', 'analogical'],
+  geography: ['case_study', 'analogical', 'elaborative', 'direct'],
+  economics: ['case_study', 'worked_example', 'analogical', 'elaborative'],
+  computer: ['worked_example', 'direct', 'case_study', 'scaffolded_direct'],
+};
+
+const EXAM_STRATEGY_PREFERENCES: Record<string, TeachingMode[]> = {
+  JEE: ['worked_example', 'case_study', 'elaborative', 'spaced_retrieval'],
+  JEE_Advanced: ['elaborative', 'socratic', 'worked_example', 'case_study'],
+  NEET: ['worked_example', 'spaced_retrieval', 'case_study', 'direct'],
+  Boards: ['revision_mode', 'direct', 'worked_example', 'spaced_retrieval'],
+  Foundation: ['scaffolded_direct', 'analogical', 'worked_example', 'socratic'],
+};
+
+const CLASS_STRATEGY_ADJUSTMENTS: Record<string, TeachingMode[]> = {
+  foundation: ['analogical', 'scaffolded_direct', 'worked_example', 'socratic'],
+  bridge: ['worked_example', 'scaffolded_direct', 'socratic', 'analogical'],
+  board: ['revision_mode', 'worked_example', 'direct', 'spaced_retrieval'],
+  competitive: ['elaborative', 'case_study', 'worked_example', 'socratic'],
+  dropper: ['spaced_retrieval', 'revision_mode', 'worked_example', 'elaborative'],
+};
 
 interface StrategyMetadata {
   name: string;
@@ -117,8 +149,10 @@ const STRATEGY_METADATA: Record<TeachingMode, StrategyMetadata> = {
 };
 
 export class TeachingModeEngine {
+  private preferenceCache = new Map<string, Map<TeachingMode, number>>();
+
   decide(context: TeachingModeContext): TeachingModeDecision {
-    const mode = this.determineMode(context);
+    const { mode, isHardRule } = this.determineModeWithRuleType(context);
     const toneMod = this.selectToneModifier(context);
     const nextHintLevel = this.getNextHintLevel(mode, context.lastHintLevel);
     const rationale = this.generateRationale(mode, context);
@@ -132,7 +166,21 @@ export class TeachingModeEngine {
   }
 
   decideWithExtendedContext(context: ExtendedContext): TeachingModeDecision {
-    const baseDecision = this.decide(context);
+    const { mode: baseMode, isHardRule } = this.determineModeWithRuleType(context);
+    const toneMod = this.selectToneModifier(context);
+    const nextHintLevel = this.getNextHintLevel(baseMode, context.lastHintLevel);
+    const baseRationale = this.generateRationale(baseMode, context);
+    
+    const baseDecision: TeachingModeDecision = {
+      mode: baseMode,
+      rationale: baseRationale,
+      nextHintLevel,
+      toneMod,
+    };
+    
+    if (isHardRule) {
+      return baseDecision;
+    }
     
     if (context.preferredStyle && this.isStyleSuitable(context.preferredStyle, context)) {
       return {
@@ -160,7 +208,222 @@ export class TeachingModeEngine {
       };
     }
 
+    const suitableStrategies = this.getSuitableStrategies(context);
+    if (suitableStrategies.length > 1 && (context.subject || context.examTarget || context.classLevel)) {
+      const result = this.selectWithWeightedPreferences(
+        suitableStrategies,
+        baseMode,
+        context.subject,
+        context.examTarget,
+        this.getClassCategory(context.classLevel)
+      );
+      
+      if (result && result.mode !== baseMode && result.hasPreferenceData) {
+        return {
+          ...baseDecision,
+          mode: result.mode,
+          rationale: this.generatePreferenceRationale(result.mode, context),
+        };
+      }
+    }
+
     return baseDecision;
+  }
+
+  private determineModeWithRuleType(context: TeachingModeContext): { mode: TeachingMode; isHardRule: boolean } {
+    const {
+      requestType,
+      timePressure,
+      frustrationCount,
+      emotion,
+      recentAttempts,
+      prerequisiteStatus,
+      masteryScore,
+    } = context;
+
+    if (requestType === 'revision' || timePressure === true) {
+      return { mode: 'revision_mode', isHardRule: true };
+    }
+
+    if (frustrationCount >= 3 && emotion === 'frustrated') {
+      return { mode: 'metacognitive', isHardRule: true };
+    }
+
+    if (frustrationCount >= 2 && emotion === 'frustrated') {
+      return { mode: 'scaffolded_direct', isHardRule: true };
+    }
+
+    if (recentAttempts >= 4) {
+      return { mode: 'worked_example', isHardRule: true };
+    }
+
+    if (recentAttempts >= 3) {
+      return { mode: 'scaffolded_direct', isHardRule: true };
+    }
+
+    if (prerequisiteStatus === 'missing') {
+      return { mode: 'scaffolded_direct', isHardRule: true };
+    }
+
+    if (masteryScore < 0.3 && emotion === 'confused') {
+      return { mode: 'analogical', isHardRule: false };
+    }
+
+    if (masteryScore > 0.75) {
+      if (emotion === 'bored') {
+        return { mode: 'case_study', isHardRule: false };
+      }
+      return { mode: 'direct', isHardRule: false };
+    }
+
+    if (requestType === 'practice') {
+      return { mode: 'worked_example', isHardRule: false };
+    }
+
+    if (masteryScore >= 0.6 && masteryScore <= 0.85 && emotion === 'confident') {
+      return { mode: 'elaborative', isHardRule: false };
+    }
+
+    if (masteryScore >= 0.4 && masteryScore <= 0.75 && emotion !== 'frustrated') {
+      return { mode: 'socratic', isHardRule: false };
+    }
+
+    if (emotion === 'bored' && masteryScore >= 0.5) {
+      return { mode: 'case_study', isHardRule: false };
+    }
+
+    return { mode: 'direct', isHardRule: false };
+  }
+
+  private selectWithWeightedPreferences(
+    suitableStrategies: TeachingMode[],
+    baseMode: TeachingMode,
+    subject?: string,
+    examTarget?: string,
+    classCategory?: string
+  ): { mode: TeachingMode; hasPreferenceData: boolean } | null {
+    const cacheKey = `${subject || ''}_${examTarget || ''}_${classCategory || ''}`;
+    
+    let scores = this.preferenceCache.get(cacheKey);
+    if (!scores) {
+      scores = this.computePreferenceScores(subject, examTarget, classCategory);
+      this.preferenceCache.set(cacheKey, scores);
+    }
+
+    const hasPreferenceData = Array.from(scores.values()).some(score => score > 0);
+    
+    if (!hasPreferenceData) {
+      return null;
+    }
+
+    const baseScore = scores.get(baseMode) || 0;
+    
+    let bestMode = baseMode;
+    let bestScore = baseScore;
+    
+    for (const mode of suitableStrategies) {
+      const modeScore = scores.get(mode) || 0;
+      if (modeScore > bestScore) {
+        bestMode = mode;
+        bestScore = modeScore;
+      }
+    }
+
+    return { mode: bestMode, hasPreferenceData };
+  }
+
+  private computePreferenceScores(
+    subject?: string,
+    examTarget?: string,
+    classCategory?: string
+  ): Map<TeachingMode, number> {
+    const scores = new Map<TeachingMode, number>();
+    const allModes: TeachingMode[] = Object.keys(STRATEGY_METADATA) as TeachingMode[];
+    
+    allModes.forEach(mode => scores.set(mode, 0));
+
+    if (subject) {
+      const normalizedSubject = subject.toLowerCase();
+      const subjectPrefs = SUBJECT_STRATEGY_PREFERENCES[normalizedSubject];
+      if (subjectPrefs) {
+        subjectPrefs.forEach((mode, index) => {
+          const weight = (subjectPrefs.length - index) * 3;
+          scores.set(mode, (scores.get(mode) || 0) + weight);
+        });
+      }
+    }
+
+    if (examTarget) {
+      const examPrefs = EXAM_STRATEGY_PREFERENCES[examTarget];
+      if (examPrefs) {
+        examPrefs.forEach((mode, index) => {
+          const weight = (examPrefs.length - index) * 2;
+          scores.set(mode, (scores.get(mode) || 0) + weight);
+        });
+      }
+    }
+
+    if (classCategory) {
+      const classPrefs = CLASS_STRATEGY_ADJUSTMENTS[classCategory];
+      if (classPrefs) {
+        classPrefs.forEach((mode, index) => {
+          const weight = (classPrefs.length - index) * 1;
+          scores.set(mode, (scores.get(mode) || 0) + weight);
+        });
+      }
+    }
+
+    return scores;
+  }
+
+  private getClassCategory(classLevel?: number): string | undefined {
+    if (!classLevel) return undefined;
+    
+    if (classLevel <= 7) return 'foundation';
+    if (classLevel <= 9) return 'bridge';
+    if (classLevel === 10 || classLevel === 12) return 'board';
+    if (classLevel === 11) return 'competitive';
+    if (classLevel >= 13) return 'dropper';
+    
+    return undefined;
+  }
+
+  private generatePreferenceRationale(mode: TeachingMode, context: ExtendedContext): string {
+    const metadata = STRATEGY_METADATA[mode];
+    const modeName = metadata?.name || mode;
+    
+    const factors: string[] = [];
+    
+    if (context.subject) {
+      const subjectPrefs = SUBJECT_STRATEGY_PREFERENCES[context.subject.toLowerCase()];
+      if (subjectPrefs?.includes(mode)) {
+        factors.push(`optimal for ${context.subject}`);
+      }
+    }
+    
+    if (context.examTarget) {
+      const examPrefs = EXAM_STRATEGY_PREFERENCES[context.examTarget];
+      if (examPrefs?.includes(mode)) {
+        factors.push(`recommended for ${context.examTarget} preparation`);
+      }
+    }
+    
+    if (context.classLevel) {
+      const classCategory = this.getClassCategory(context.classLevel);
+      if (classCategory) {
+        factors.push(`suited for Class ${context.classLevel}`);
+      }
+    }
+    
+    if (factors.length > 0) {
+      return `${modeName}: ${factors.join(', ')}`;
+    }
+    
+    return `${modeName} selected based on learning context`;
+  }
+
+  clearPreferenceCache(): void {
+    this.preferenceCache.clear();
   }
 
   private isStyleSuitable(style: TeachingMode, context: TeachingModeContext): boolean {
@@ -177,71 +440,6 @@ export class TeachingModeEngine {
     }
 
     return true;
-  }
-
-  private determineMode(context: TeachingModeContext): TeachingMode {
-    const {
-      requestType,
-      timePressure,
-      frustrationCount,
-      emotion,
-      recentAttempts,
-      prerequisiteStatus,
-      masteryScore,
-    } = context;
-
-    if (requestType === 'revision' || timePressure === true) {
-      return 'revision_mode';
-    }
-
-    if (frustrationCount >= 3 && emotion === 'frustrated') {
-      return 'metacognitive';
-    }
-
-    if (frustrationCount >= 2 && emotion === 'frustrated') {
-      return 'scaffolded_direct';
-    }
-
-    if (recentAttempts >= 4) {
-      return 'worked_example';
-    }
-
-    if (recentAttempts >= 3) {
-      return 'scaffolded_direct';
-    }
-
-    if (prerequisiteStatus === 'missing') {
-      return 'scaffolded_direct';
-    }
-
-    if (masteryScore < 0.3 && emotion === 'confused') {
-      return 'analogical';
-    }
-
-    if (masteryScore > 0.75) {
-      if (emotion === 'bored') {
-        return 'case_study';
-      }
-      return 'direct';
-    }
-
-    if (requestType === 'practice') {
-      return 'worked_example';
-    }
-
-    if (masteryScore >= 0.6 && masteryScore <= 0.85 && emotion === 'confident') {
-      return 'elaborative';
-    }
-
-    if (masteryScore >= 0.4 && masteryScore <= 0.75 && emotion !== 'frustrated') {
-      return 'socratic';
-    }
-
-    if (emotion === 'bored' && masteryScore >= 0.5) {
-      return 'case_study';
-    }
-
-    return 'direct';
   }
 
   private getNextHintLevel(mode: TeachingMode, currentLevel: HintLevel): HintLevel {
