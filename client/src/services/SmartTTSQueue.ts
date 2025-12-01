@@ -295,17 +295,27 @@ export class SmartTTSQueue {
 
   private playbackResolver: (() => void) | null = null;
   private safetyTimeoutId: ReturnType<typeof setTimeout> | null = null;
-  private audioContext: AudioContext | null = null;
 
   /**
    * 🎯 BULLETPROOF: Calculate ACTUAL audio duration from base64 data
-   * This is critical for accurate timeout calculation
+   * Uses fresh AudioContext per decode to avoid suspended state issues
+   * Falls back gracefully if AudioContext unavailable (SSR/iframe)
    */
   private async calculateActualDuration(base64Audio: string): Promise<number> {
     try {
-      // Create AudioContext if not exists
-      if (!this.audioContext) {
-        this.audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+      // 🛡️ Feature detection for SSR/iframe safety
+      const AudioContextClass = (window as any).AudioContext || (window as any).webkitAudioContext;
+      if (!AudioContextClass) {
+        console.log('[TTS Queue] ⚠️ AudioContext not available, using estimate');
+        return 0;
+      }
+
+      // 🎯 Create FRESH AudioContext per decode to avoid suspended state issues
+      const audioContext = new AudioContextClass();
+      
+      // Resume if suspended (required for some browsers)
+      if (audioContext.state === 'suspended') {
+        await audioContext.resume();
       }
 
       // Decode base64 to ArrayBuffer
@@ -316,8 +326,11 @@ export class SmartTTSQueue {
       }
 
       // Decode audio data
-      const audioBuffer = await this.audioContext.decodeAudioData(bytes.buffer);
+      const audioBuffer = await audioContext.decodeAudioData(bytes.buffer.slice(0));
       const durationMs = audioBuffer.duration * 1000;
+
+      // 🧹 Clean up - close the context to free resources
+      await audioContext.close();
 
       console.log('[TTS Queue] 🎵 Decoded audio duration:', {
         durationMs: Math.round(durationMs),
@@ -327,7 +340,7 @@ export class SmartTTSQueue {
 
       return durationMs;
     } catch (error) {
-      console.warn('[TTS Queue] ⚠️ Audio decode failed, using estimate:', error);
+      console.warn('[TTS Queue] ⚠️ Audio decode failed, using estimate:', (error as Error).message);
       return 0; // Return 0 to indicate decode failed
     }
   }
@@ -385,25 +398,27 @@ export class SmartTTSQueue {
     await new Promise<void>((resolve) => {
       this.playbackResolver = resolve;
 
-      // 🎯 BULLETPROOF: Adaptive timeout = actual duration + generous buffer
-      // Minimum 5 seconds, maximum 60 seconds
-      // Add 3 second buffer for network/playback jitter
-      const safetyTimeoutMs = Math.min(60000, Math.max(5000, actualDuration + 3000));
+      // 🎯 BULLETPROOF: Adaptive timeout with safety floor
+      // Formula: max(actualDuration + 5s, 45s) - ensures minimum 45s for long audio protection
+      // Cap at 120s to prevent infinite waits
+      const SAFETY_FLOOR_MS = 45000;  // 45 second minimum
+      const BUFFER_MS = 5000;         // 5 second buffer after audio ends
+      const MAX_TIMEOUT_MS = 120000;  // 2 minute maximum
+      
+      const safetyTimeoutMs = Math.min(MAX_TIMEOUT_MS, Math.max(SAFETY_FLOOR_MS, actualDuration + BUFFER_MS));
 
       console.log('[TTS Queue] ⏱️ Safety timeout set:', {
         chunkId: chunk.id,
         actualDuration: Math.round(actualDuration),
-        timeoutMs: safetyTimeoutMs
+        timeoutMs: safetyTimeoutMs,
+        usedFloor: safetyTimeoutMs === SAFETY_FLOOR_MS
       });
 
-      // 🎯 FIX: Store timeout ID so we can clear it when audio ends normally
+      // 🎯 Store timeout ID so we can clear it when audio ends normally
       this.safetyTimeoutId = setTimeout(() => {
         if (this.playbackResolver) {
           console.warn('[TTS Queue] ⏰ Safety timeout - AUDIO_ENDED not received:', chunk.id, `(waited: ${safetyTimeoutMs}ms)`);
-          // Don't auto-resolve - wait for real AUDIO_ENDED
-          // Instead, just log and let it continue waiting
-          // The queue will eventually get unstuck when Unity sends the event
-          // or when the next session clears the queue
+          // Resolve to continue queue processing - prevents permanent stall
           this.playbackResolver();
           this.playbackResolver = null;
         }
