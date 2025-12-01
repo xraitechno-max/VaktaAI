@@ -43,7 +43,7 @@ app.use(helmet({
   contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "'wasm-unsafe-eval'"], // Unity WebGL WASM requires eval
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "'wasm-unsafe-eval'", "https://*.s3.ap-south-1.amazonaws.com", "https://*.s3.amazonaws.com"], // Unity WebGL WASM + S3 assets
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // Tailwind + Google Fonts
       imgSrc: ["'self'", "data:", "https:", "blob:"],
       connectSrc: ["'self'", "https:", "wss:", "ws://localhost:*", "ws://127.0.0.1:*", "blob:", "data:"], // Unity WebGL + WebSockets

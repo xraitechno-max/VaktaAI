@@ -1,0 +1,238 @@
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+VaktaAI:1 The source list for the Content Security Policy directive 'default-src' contains an invalid source: ''unsafe-dynamic''. It will be ignored.
+VaktaAI:1 The Content-Security-Policy directive 'default-src' contains 'report-uri' as a source expression. Did you want to add it as a directive and forget a semicolon?
+VaktaAI:1 The source list for Content Security Policy directive 'default-src' contains a source with an invalid path: '/api/4509669501698048/security/?sentry_key=7eb3d90eb4660416caf507087367e67e'. The query component, including the '?', will be ignored.
+VM1608:8 [Coframe] Replit Enterprise watcher loaded
+8f11bd40799c7e7b.js:2 
+      /////////////////////
+   ///////////////////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////        Curious and driven?
+  ///////////////@@@@@@@///////        Work with us!
+  ///////////////@@@@@@@///////
+  ///////////////@@@@@@@///////        https://join.replit.com/hack.with.us
+  ////////@@@@@@@//////////////
+  ////////@@@@@@@//////////////
+  ////////@@@@@@#//////////////
+   ///////////////////////////
+      /////////////////////
+      
+8f11bd40799c7e7b.js:2 Download the Apollo DevTools for a better development experience: https://chrome.google.com/webstore/detail/apollo-client-developer-t/jdkknkkbebbapilgoeccciglkfbmbnfm
+8f11bd40799c7e7b.js:2 [LaunchDarkly] LaunchDarkly client initialized
+VaktaAI:1 Banner not shown: beforeinstallpromptevent.preventDefault() called. The page must call beforeinstallpromptevent.prompt() to show the banner.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+Error while parsing the 'sandbox' attribute: 'allow-downloads-without-user-activation' is an invalid sandbox flag.
+ed1e693c96a75807.js:2 Unrecognized feature: 'ambient-light-sensor'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'battery'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'execution-while-not-rendered'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'execution-while-out-of-viewport'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'layout-animations'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'legacy-image-formats'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'navigation-override'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'oversized-images'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'publickey-credentials'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'speaker-selection'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'unoptimized-images'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'unsized-media'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Unrecognized feature: 'pointer-lock'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Allow attribute will take precedence over 'allowfullscreen'.
+z @ ed1e693c96a75807.js:2
+ed1e693c96a75807.js:2 Allow attribute will take precedence over 'allowpaymentrequest'.
+z @ ed1e693c96a75807.js:2
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Unrecognized feature: 'ambient-light-sensor'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Unrecognized feature: 'battery'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Unrecognized feature: 'execution-while-not-rendered'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Unrecognized feature: 'execution-while-out-of-viewport'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Unrecognized feature: 'layout-animations'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Unrecognized feature: 'legacy-image-formats'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Unrecognized feature: 'navigation-override'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Unrecognized feature: 'oversized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Unrecognized feature: 'publickey-credentials'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Unrecognized feature: 'speaker-selection'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Unrecognized feature: 'unoptimized-images'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Unrecognized feature: 'unsized-media'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Allow attribute will take precedence over 'allowfullscreen'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:32 Allow attribute will take precedence over 'allowpaymentrequest'.
+workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:142 Loading the script 'https://replit.com/public/js/beacon.js' violates the following Content Security Policy directive: "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.
+onIframeLoad @ workspace_iframe.html?initialPath=%2F&id=%3Argb%3A:142
+injected.js:37 [SUBJECT FILTER DEBUG] Object
+injected.js:37 [SUBJECT FILTER] Filtered subjects: Array(4)
+injected.js:37 [ONBOARDING DEBUG] Object
+injected.js:37 [TTS Queue] 🔄 State updated: Object
+injected.js:37 [Voice Tutor] 🔄 Avatar state synced to TTS Queue: CLOSED
+injected.js:37 [TTS Queue] 🧹 Clearing queue: Object
+injected.js:37 [Smart TTS Queue] 🧹 Queue cleared - Avatar closed
+injected.js:37 [Smart TTS Queue] 📊 Final metrics: Object
+injected.js:37 [TutorSession] 🚀 Connecting WebSocket for chat: ebc78e43-cc2e-4694-8dca-13d765e2d9d3
+injected.js:37 [Avatar State] ✅ Transition: Object
+injected.js:37 [Avatar State] ⚠️ WebSocket not available for state sync (may be reconnecting)
+(anonymous) @ injected.js:37
+injected.js:37 [TTS] 🧹 Chat changed, clearing lastPlayedRef
+injected.js:37 [TTS Queue] 🔄 State updated: Object
+injected.js:37 [Voice Tutor] 🔄 Avatar state synced to TTS Queue: LOADING
+injected.js:37 [Unity Bridge] Starting handshake...
+injected.js:37 [Unity Bridge] Starting handshake...
+injected.js:37 [Unity] 📡 Fetching S3 presigned URLs...
+injected.js:37 [Unity Bridge] Rejected message before handshake: forward-log
+(anonymous) @ injected.js:37
+injected.js:37 [Unity Bridge] Rejected message before handshake: forward-network-request
+(anonymous) @ injected.js:37
+injected.js:37 [Unity] ✅ S3 URLs fetched successfully
+injected.js:37 [Unity Bridge] Rejected message before handshake: forward-log
+(anonymous) @ injected.js:37
+injected.js:37 [Unity Bridge] Starting handshake...
+injected.js:37 [Unity] Handshake complete with origin: https://5a3a7f44-70d9-445c-87d4-e07528283f3d-00-1d51jnsl0kosj.riker.replit.dev
+injected.js:37 [Unity] Console forwarding enabled ✅
+injected.js:37 [Unity Bridge] Rejected message before handshake: forward-log
+(anonymous) @ injected.js:37
+injected.js:37 [Unity Bridge] Rejected message before handshake: forward-log
+(anonymous) @ injected.js:37
+injected.js:37 [Unity Bridge] Rejected message before handshake: forward-log
+(anonymous) @ injected.js:37
+injected.js:37 [Unity Bridge] Rejected message before handshake: UNITY_LOG
+(anonymous) @ injected.js:37
+injected.js:37 [Unity Bridge] Trusted origin established: https://5a3a7f44-70d9-445c-87d4-e07528283f3d-00-1d51jnsl0kosj.riker.replit.dev
+injected.js:37 [Unity Bridge] Handshake complete ✅
+injected.js:37 [VOICE] WebSocket connected
+injected.js:37 [VOICE] ✅ Global __wsService set for avatar state sync
+injected.js:37 [Voice Tutor] 📤 Sent initial AVATAR_STATE to server: LOADING
+injected.js:37 [AVATAR STATE ACK] 📬 Received from server - State: READY, CanAcceptTTS: true
+injected.js:37 [TTS Queue] 🎭 Avatar state updated from server: Object
+injected.js:37 [AVATAR STATE ACK] ✅ Updated SmartTTSQueue - State: READY, CanAccept: true
+Build.loader.js:1 Loading the script 'https://doc-sathi.s3.ap-south-1.amazonaws.com/unity-assets/Build.framework.js.gz?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAXJWVZWH23Q7F3MP3%2F20251201%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20251201T101752Z&X-Amz-Expires=86400&X-Amz-Signature=6476863eeef8a75a267d0ec3cc6a5dc9d77a07a1be1f57fc2128d93792646121&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject' violates the following Content Security Policy directive: "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'wasm-unsafe-eval'". Note that 'script-src-elem' was not explicitly set, so 'script-src' is used as a fallback. The action has been blocked.
+T.n @ Build.loader.js:1
+injected.js:37 [UnityCache] 'https://doc-sathi.s3.ap-south-1.amazonaws.com/unity-assets/Build.data.gz?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAXJWVZWH23Q7F3MP3%2F20251201%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20251201T101752Z&X-Amz-Expires=86400&X-Amz-Signature=0accca9647178b173f48c93518d3e95e4cc0f6941e3f049cc3ddc80a53ab2b4c&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject' successfully revalidated and served from the indexedDB cache
+injected.js:37 [Unity] [UnityCache] 'https://doc-sathi.s3.ap-south-1.amazonaws.com/unity-assets/Build.data.gz?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Content-Sha256=UNSIGNED-PAYLOAD&X-Amz-Credential=AKIAXJWVZWH23Q7F3MP3%2F20251201%2Fap-south-1%2Fs3%2Faws4_request&X-Amz-Date=20251201T101752Z&X-Amz-Expires=86400&X-Amz-Signature=0accca9647178b173f48c93518d3e95e4cc0f6941e3f049cc3ddc80a53ab2b4c&X-Amz-SignedHeaders=host&x-amz-checksum-mode=ENABLED&x-id=GetObject' successfully revalidated and served from the indexedDB cache
+injected.js:37 [AVATAR STATE ACK] 📬 Received from server - State: LOADING, CanAcceptTTS: false
+injected.js:37 [TTS Queue] 🎭 Avatar state updated from server: Object
+injected.js:37 [AVATAR STATE ACK] ✅ Updated SmartTTSQueue - State: LOADING, CanAccept: false
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
+injected.js:37 [Unity Bridge] Already initialized, skipping handshake
