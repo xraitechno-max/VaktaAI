@@ -1,3 +1,4 @@
+<!-- Cache bust: 20251201-102000 -->
 <!DOCTYPE html>
 <html lang="en-us">
   <head>
@@ -719,26 +720,51 @@
         updateBannerVisibility();
       }
 
-      // 🚀 Unity S3 CDN Configuration via Server Proxy
+      // 🚀 Unity S3 CDN Configuration - IMMEDIATE LOADING
       var buildUrl = "Build";
       var loaderUrl = buildUrl + "/Build.loader.js"; // Loader always local (small file)
       
-      // Use server proxy endpoints for Unity files (bypasses CORS issues)
-      console.log('[Unity] 📡 Using server proxy for Unity files...');
-      
-      var config = {
-        dataUrl: '/api/unity-assets/file/Build.data.gz',
-        frameworkUrl: '/api/unity-assets/file/Build.framework.js.gz',
-        codeUrl: '/api/unity-assets/file/Build.wasm.gz',
-        streamingAssetsUrl: "StreamingAssets",
-        companyName: "VaktaAI",
-        productName: "AI Tutor Avatar",
-        productVersion: "1.0",
-        showBanner: unityShowBanner,
-      };
-      
-      console.log('[Unity] ✅ Using proxy URLs:', config.dataUrl);
-      loadUnityWithConfig(config);
+      // 📡 Start Unity loading IMMEDIATELY (handshake happens in parallel)
+      console.log('[Unity] 📡 Fetching S3 presigned URLs...');
+      fetch('/api/unity-assets/urls')
+        .then(res => res.json())
+        .then(data => {
+          if (!data.success || !data.urls) {
+            throw new Error('Failed to fetch Unity S3 URLs');
+          }
+          
+          console.log('[Unity] ✅ S3 URLs fetched successfully');
+          
+          var config = {
+            dataUrl: data.urls['Build.data.gz'],
+            frameworkUrl: data.urls['Build.framework.js.gz'],
+            codeUrl: data.urls['Build.wasm.gz'],
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "VaktaAI",
+            productName: "AI Tutor Avatar",
+            productVersion: "1.0",
+            showBanner: unityShowBanner,
+          };
+          
+          loadUnityWithConfig(config);
+        })
+        .catch(err => {
+          console.warn('[Unity] ⚠️ S3 fetch failed, falling back to local files:', err);
+          
+          // Fallback to local files
+          var config = {
+            dataUrl: buildUrl + "/Build.data.gz",
+            frameworkUrl: buildUrl + "/Build.framework.js.gz",
+            codeUrl: buildUrl + "/Build.wasm.gz",
+            streamingAssetsUrl: "StreamingAssets",
+            companyName: "VaktaAI",
+            productName: "AI Tutor Avatar",
+            productVersion: "1.0",
+            showBanner: unityShowBanner,
+          };
+          
+          loadUnityWithConfig(config);
+        });
       
       // Extracted Unity loading function
       function loadUnityWithConfig(config) {
@@ -756,13 +782,27 @@
 
         // Show loading bar
         loadingBar.style.display = "block";
+        console.log('[Unity] 🚀 Starting Unity loader...');
 
         // Load Unity
         var script = document.createElement("script");
         script.src = loaderUrl;
         script.onload = () => {
+          console.log('[Unity] ✅ Loader script loaded, creating instance...');
+          console.log('[Unity] 📦 Config:', JSON.stringify({
+            dataUrl: config.dataUrl ? (config.dataUrl.substring(0, 50) + '...') : 'null',
+            frameworkUrl: config.frameworkUrl ? (config.frameworkUrl.substring(0, 50) + '...') : 'null',
+            codeUrl: config.codeUrl ? (config.codeUrl.substring(0, 50) + '...') : 'null'
+          }));
+          
+          var lastLoggedProgress = 0;
           createUnityInstance(canvas, config, (progress) => {
             progressBarFull.style.width = 100 * progress + "%";
+            // Log progress every 10%
+            if (Math.floor(progress * 10) > lastLoggedProgress) {
+              lastLoggedProgress = Math.floor(progress * 10);
+              console.log('[Unity] 📊 Loading progress:', Math.round(progress * 100) + '%');
+            }
           }).then((instance) => {
             unityInstance = instance;
             loadingBar.style.display = "none";

@@ -172,10 +172,11 @@ router.get('/file/:filename', async (req, res) => {
     }
     
     // Set headers for Unity WebGL
-    res.setHeader('Content-Type', response.ContentType || 'application/octet-stream');
+    // DO NOT set Content-Encoding: gzip - Unity loader expects raw gzipped data
+    res.setHeader('Content-Type', 'application/octet-stream');
     res.setHeader('Content-Length', response.ContentLength?.toString() || '0');
-    res.setHeader('Content-Encoding', 'gzip');
     res.setHeader('Cache-Control', 'public, max-age=31536000, immutable');
+    res.setHeader('Accept-Ranges', 'bytes');
     
     // Stream the file
     const stream = response.Body as Readable;

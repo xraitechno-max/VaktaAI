@@ -202,7 +202,7 @@ const UnityAvatar = forwardRef<UnityAvatarHandle, UnityAvatarProps>(
         {/* Unity WebGL iframe */}
         <iframe
           ref={iframeRef}
-          src="/unity-avatar/index.html"
+          src={`/unity-avatar/index.html?v=${Date.now()}`}
           className="w-full h-full border-0"
           style={{
             display: 'block',

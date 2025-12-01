@@ -38,26 +38,15 @@ app.use(compression({
 }));
 
 // Security headers with Helmet.js
+// Unity WebGL requires 'unsafe-eval' and 'wasm-unsafe-eval' for WASM execution
 app.use(helmet({
-  contentSecurityPolicy: process.env.NODE_ENV === 'production' ? {
+  contentSecurityPolicy: {
     directives: {
       defaultSrc: ["'self'"],
-      scriptSrc: ["'self'"],
+      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "'wasm-unsafe-eval'"], // Unity WebGL WASM requires eval
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // Tailwind + Google Fonts
       imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", "https:", "wss:"],
-      fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"], // Google Fonts
-      objectSrc: ["'self'"], // Allow PDF display via object tag
-      mediaSrc: ["'self'", "blob:"],
-      frameSrc: ["'self'", "https://www.youtube.com", "blob:"], // Allow YouTube embeds + PDF iframes
-    },
-  } : {
-    directives: {
-      defaultSrc: ["'self'"],
-      scriptSrc: ["'self'", "'unsafe-inline'", "'unsafe-eval'", "'wasm-unsafe-eval'", "https://*.s3.ap-south-1.amazonaws.com"], // Vite dev + Unity WebGL WASM + S3 CDN
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // Tailwind + Google Fonts
-      imgSrc: ["'self'", "data:", "https:", "blob:"],
-      connectSrc: ["'self'", "https:", "wss:", "ws://localhost:*", "ws://127.0.0.1:*", "blob:", "data:"], // Unity WebGL WASM loading
+      connectSrc: ["'self'", "https:", "wss:", "ws://localhost:*", "ws://127.0.0.1:*", "blob:", "data:"], // Unity WebGL + WebSockets
       fontSrc: ["'self'", "data:", "https://fonts.gstatic.com"], // Google Fonts
       objectSrc: ["'self'"], // Allow PDF display via object tag
       mediaSrc: ["'self'", "blob:", "data:"], // Unity audio/video
