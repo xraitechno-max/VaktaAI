@@ -1358,6 +1358,182 @@ export const studentTopicMastery = pgTable('student_topic_mastery', {
   index('student_mastery_next_review_idx').on(table.nextReviewDate),
 ]);
 
+// ========== FORMULA BANK FOR STEM ACCURACY ==========
+export const formulaBank = pgTable('formula_bank', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Identity
+  formulaId: varchar('formula_id').notNull().unique(),
+  
+  // Subject classification
+  subject: varchar('subject').notNull(), // 'physics', 'chemistry', 'math', 'biology'
+  classLevel: varchar('class_level').notNull(), // '6'-'12', 'jee', 'neet'
+  chapter: varchar('chapter').notNull(),
+  topic: varchar('topic').notNull(),
+  subtopic: varchar('subtopic'),
+  
+  // Formula representations
+  latex: text('latex').notNull(), // LaTeX: F = ma
+  plainText: varchar('plain_text').notNull(), // Plain: F equals m times a
+  speakableText: text('speakable_text').notNull(), // TTS: Force equals mass times acceleration
+  unicodeMath: varchar('unicode_math'), // Unicode: F = m × a
+  
+  // Variables and units
+  variables: jsonb('variables').$type<Array<{
+    symbol: string;
+    name: string;
+    unit: string;
+    siUnit?: string;
+    description?: string;
+  }>>().notNull(),
+  
+  // Units and dimensions
+  resultUnit: varchar('result_unit'),
+  dimensions: varchar('dimensions'), // e.g., [M L T^-2] for Force
+  
+  // Applicability conditions
+  applicableConditions: jsonb('applicable_conditions').$type<string[]>().default([]),
+  limitations: jsonb('limitations').$type<string[]>().default([]),
+  
+  // Derivation & proofs
+  derivationSteps: jsonb('derivation_steps').$type<Array<{
+    step: number;
+    description: string;
+    formula?: string;
+  }>>(),
+  
+  // Common mistakes & misconceptions
+  commonMistakes: jsonb('common_mistakes').$type<Array<{
+    mistake: string;
+    correction: string;
+    reason: string;
+  }>>().default([]),
+  
+  // Related formulas
+  relatedFormulas: jsonb('related_formulas').$type<string[]>().default([]),
+  prerequisiteFormulas: jsonb('prerequisite_formulas').$type<string[]>().default([]),
+  
+  // Exam weightage
+  jeeWeightage: integer('jee_weightage').default(0), // 0-10
+  neetWeightage: integer('neet_weightage').default(0), // 0-10
+  boardWeightage: integer('board_weightage').default(0), // 0-10
+  
+  // Examples
+  workedExamples: jsonb('worked_examples').$type<Array<{
+    problem: string;
+    solution: string;
+    difficulty: 'easy' | 'medium' | 'hard';
+  }>>().default([]),
+  
+  // Verification status
+  isVerified: boolean('is_verified').default(false),
+  verifiedBy: varchar('verified_by'),
+  source: varchar('source'), // 'NCERT', 'HC Verma', 'Irodov', etc.
+  
+  // Embedding for semantic search
+  embedding: vector('embedding'),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+  updatedAt: timestamp('updated_at').defaultNow(),
+}, (table) => [
+  index('formula_bank_subject_idx').on(table.subject),
+  index('formula_bank_class_idx').on(table.classLevel),
+  index('formula_bank_topic_idx').on(table.topic),
+  index('formula_bank_formula_id_idx').on(table.formulaId),
+]);
+
+// ========== MISCONCEPTION DATABASE ==========
+export const misconceptionDatabase = pgTable('misconception_database', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Identity
+  misconceptionId: varchar('misconception_id').notNull().unique(),
+  
+  // Classification
+  subject: varchar('subject').notNull(),
+  classLevel: varchar('class_level').notNull(),
+  topic: varchar('topic').notNull(),
+  
+  // Misconception details
+  misconception: text('misconception').notNull(),
+  correctUnderstanding: text('correct_understanding').notNull(),
+  
+  // Detection patterns
+  triggerPatterns: jsonb('trigger_patterns').$type<string[]>().notNull(), // Regex/keywords that indicate misconception
+  confidenceThreshold: real('confidence_threshold').default(0.7),
+  
+  // Remediation
+  remediationStrategy: text('remediation_strategy').notNull(),
+  hintsToOvercome: jsonb('hints_to_overcome').$type<string[]>().default([]),
+  relatedFormulas: jsonb('related_formulas').$type<string[]>().default([]),
+  
+  // Root cause category
+  rootCause: varchar('root_cause').$type<
+    'conceptual_confusion' | 
+    'formula_misapplication' | 
+    'unit_error' | 
+    'sign_convention' | 
+    'prerequisite_gap' |
+    'overgeneralization'
+  >().notNull(),
+  
+  // Frequency and severity
+  frequency: varchar('frequency').$type<'very_common' | 'common' | 'occasional' | 'rare'>().default('common'),
+  severity: varchar('severity').$type<'critical' | 'moderate' | 'minor'>().default('moderate'),
+  
+  // Source tracking
+  source: varchar('source'), // Where this was identified
+  isVerified: boolean('is_verified').default(false),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => [
+  index('misconception_subject_idx').on(table.subject),
+  index('misconception_topic_idx').on(table.topic),
+  index('misconception_id_idx').on(table.misconceptionId),
+]);
+
+// ========== STUDENT INTERACTION METRICS ==========
+export const studentInteractionMetrics = pgTable('student_interaction_metrics', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  userId: varchar('user_id').references(() => users.id, { onDelete: 'cascade' }).notNull(),
+  sessionId: varchar('session_id'),
+  
+  // Interaction context
+  subject: varchar('subject').notNull(),
+  topic: varchar('topic').notNull(),
+  difficultyLevel: integer('difficulty_level').default(5), // 1-10
+  
+  // Performance metrics
+  wasCorrect: boolean('was_correct'),
+  responseLatencyMs: integer('response_latency_ms'),
+  hintsUsed: integer('hints_used').default(0),
+  attemptNumber: integer('attempt_number').default(1),
+  
+  // Confidence detection
+  studentConfidence: real('student_confidence'), // 0-1 detected from language
+  
+  // Teaching context
+  teachingStrategy: varchar('teaching_strategy'), // 'socratic', 'direct', etc.
+  hintLevel: integer('hint_level'),
+  
+  // Language used
+  languageUsed: varchar('language_used'),
+  
+  // Misconception tracking
+  misconceptionDetected: varchar('misconception_detected'),
+  misconceptionRemediated: boolean('misconception_remediated'),
+  
+  // Emotion during interaction
+  detectedEmotion: varchar('detected_emotion'),
+  
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => [
+  index('interaction_user_idx').on(table.userId),
+  index('interaction_session_idx').on(table.sessionId),
+  index('interaction_topic_idx').on(table.topic),
+  index('interaction_created_idx').on(table.createdAt),
+]);
+
 // Insert schemas for new tables
 export const insertNCERTCurriculumChunkSchema = createInsertSchema(ncertCurriculumChunks).omit({
   id: true,
@@ -1376,6 +1552,23 @@ export const insertStudentTopicMasterySchema = createInsertSchema(studentTopicMa
   updatedAt: true,
 });
 
+// Insert schemas for Formula Bank and new tables
+export const insertFormulaBankSchema = createInsertSchema(formulaBank).omit({
+  id: true,
+  createdAt: true,
+  updatedAt: true,
+});
+
+export const insertMisconceptionDatabaseSchema = createInsertSchema(misconceptionDatabase).omit({
+  id: true,
+  createdAt: true,
+});
+
+export const insertStudentInteractionMetricsSchema = createInsertSchema(studentInteractionMetrics).omit({
+  id: true,
+  createdAt: true,
+});
+
 // Types for new tables
 export type InsertNCERTCurriculumChunk = typeof insertNCERTCurriculumChunkSchema._type;
 export type NCERTCurriculumChunk = typeof ncertCurriculumChunks.$inferSelect;
@@ -1383,3 +1576,9 @@ export type InsertTopicPrerequisite = typeof insertTopicPrerequisiteSchema._type
 export type TopicPrerequisite = typeof topicPrerequisites.$inferSelect;
 export type InsertStudentTopicMastery = typeof insertStudentTopicMasterySchema._type;
 export type StudentTopicMastery = typeof studentTopicMastery.$inferSelect;
+export type InsertFormulaBank = typeof insertFormulaBankSchema._type;
+export type FormulaBank = typeof formulaBank.$inferSelect;
+export type InsertMisconceptionDatabase = typeof insertMisconceptionDatabaseSchema._type;
+export type MisconceptionDatabase = typeof misconceptionDatabase.$inferSelect;
+export type InsertStudentInteractionMetrics = typeof insertStudentInteractionMetricsSchema._type;
+export type StudentInteractionMetrics = typeof studentInteractionMetrics.$inferSelect;

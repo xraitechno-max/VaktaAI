@@ -1,0 +1,1733 @@
+# VaktaAI Ultra Pro AI Tutor - Complete Architecture Upgrade Plan
+
+## Executive Summary
+
+Your current 13-step architecture is a solid MVP foundation, but to achieve "ultra pro" level tutoring that competes with world-class AI education systems, you need fundamental upgrades across 7 key dimensions:
+
+1. **Knowledge Intelligence Layer** - Curriculum-aware RAG with prerequisite tracking
+2. **Pedagogical Engine** - Multi-strategy teaching beyond basic Socratic method
+3. **Student Cognitive Model** - Real-time misconception detection & knowledge state tracking
+4. **Accuracy Assurance System** - Multi-layer fact verification for STEM subjects
+5. **Adaptive Difficulty Engine** - Zone of Proximal Development (ZPD) targeting
+6. **Smart Language Adaptation** - Intelligent language switching (not hardcoded)
+7. **Assessment & Feedback Intelligence** - Diagnostic error analysis
+
+---
+
+## Current Architecture Gaps Analysis
+
+| Area | Current State | Gap | Impact |
+|------|--------------|-----|--------|
+| Knowledge Base | No RAG, relies on LLM training data | Cannot guarantee curriculum-aligned accurate info | HIGH - Wrong answers possible |
+| Teaching Strategy | Basic Socratic + hints | No adaptive pedagogy per concept type | MEDIUM - Suboptimal learning |
+| Student Model | Simple profile (class, exam) | No cognitive state tracking | HIGH - Can't personalize effectively |
+| Accuracy | 4-layer validation (basic) | No fact-checking against authoritative sources | CRITICAL - STEM accuracy essential |
+| Difficulty | Static level field | No dynamic adjustment | MEDIUM - Frustration or boredom |
+| Language | Hardcoded preference field | Can't adapt to conversation flow | LOW - UX issue |
+
+---
+
+## PHASE 1: Knowledge Intelligence Layer (CRITICAL)
+
+### 1.1 Curriculum-Aware RAG System
+
+Your AI tutor MUST have authoritative knowledge, not just LLM training data. This is the #1 gap.
+
+**Architecture:**
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                 KNOWLEDGE INTELLIGENCE LAYER                │
+├─────────────────────────────────────────────────────────────┤
+│                                                             │
+│  ┌─────────────────┐    ┌─────────────────┐                │
+│  │ CURRICULUM DB   │    │ CONCEPT GRAPH   │                │
+│  │ (PostgreSQL +   │◄──►│ (Neo4j/pgvector)│                │
+│  │  pgvector)      │    │                 │                │
+│  │                 │    │ Prerequisites   │                │
+│  │ - NCERT Content │    │ Connections     │                │
+│  │ - JEE/NEET PYQs │    │ Difficulty Map  │                │
+│  │ - Formula Banks │    │                 │                │
+│  └────────┬────────┘    └────────┬────────┘                │
+│           │                      │                          │
+│           ▼                      ▼                          │
+│  ┌─────────────────────────────────────────────┐           │
+│  │         RETRIEVAL ORCHESTRATOR              │           │
+│  │                                             │           │
+│  │  1. Semantic Search (embeddings)            │           │
+│  │  2. Keyword Search (BM25)                   │           │
+│  │  3. Prerequisite Chain Retrieval            │           │
+│  │  4. Similar Problem Retrieval               │           │
+│  └─────────────────────────────────────────────┘           │
+│                                                             │
+└─────────────────────────────────────────────────────────────┘
+```
+
+**Implementation:**
+
+```typescript
+// server/services/KnowledgeIntelligence.ts
+
+interface CurriculumChunk {
+  id: string;
+  subject: Subject;
+  class: number;
+  chapter: string;
+  topic: string;
+  subtopic: string;
+  content: string;
+  contentType: 'definition' | 'formula' | 'derivation' | 'example' | 'solved_problem' | 'theory';
+  examRelevance: {
+    boards: number;      // 0-10 weightage
+    jee_mains: number;
+    jee_advanced: number;
+    neet: number;
+  };
+  prerequisites: string[];  // topic IDs that must be understood first
+  embedding: number[];      // 1536-dim for OpenAI, 768 for local
+  source: 'ncert' | 'hc_verma' | 'rd_sharma' | 'custom';
+  verified: boolean;
+}
+
+class KnowledgeIntelligenceService {
+  
+  async retrieveForQuery(
+    query: string,
+    context: SessionContext
+  ): Promise<RetrievalResult> {
+    
+    // 1. Get query embedding
+    const queryEmbedding = await this.embedQuery(query);
+    
+    // 2. Multi-strategy retrieval
+    const [semanticResults, keywordResults, prerequisiteChain] = await Promise.all([
+      this.semanticSearch(queryEmbedding, context),
+      this.keywordSearch(query, context),
+      this.getPrerequisiteChain(context.currentTopic)
+    ]);
+    
+    // 3. Intelligent fusion with RRF (Reciprocal Rank Fusion)
+    const fusedResults = this.reciprocalRankFusion([
+      { results: semanticResults, weight: 0.5 },
+      { results: keywordResults, weight: 0.3 },
+      { results: prerequisiteChain, weight: 0.2 }
+    ]);
+    
+    // 4. Rerank based on student's current knowledge state
+    const rerankedResults = await this.contextualRerank(
+      fusedResults,
+      context.studentKnowledgeState
+    );
+    
+    return {
+      primaryContext: rerankedResults.slice(0, 3),
+      supportingContext: rerankedResults.slice(3, 8),
+      prerequisitesNeeded: this.identifyGaps(prerequisiteChain, context),
+      formulasRelevant: this.extractFormulas(rerankedResults),
+      similarProblems: await this.findSimilarProblems(query, context)
+    };
+  }
+  
+  // Prerequisite chain is CRITICAL for proper teaching
+  async getPrerequisiteChain(topicId: string): Promise<TopicNode[]> {
+    const query = `
+      MATCH path = (t:Topic {id: $topicId})-[:REQUIRES*1..5]->(prereq:Topic)
+      RETURN path
+      ORDER BY length(path)
+    `;
+    // Returns ordered list: most fundamental → current topic
+    return this.neo4j.run(query, { topicId });
+  }
+}
+```
+
+### 1.2 Concept Knowledge Graph
+
+Every concept must be connected to its prerequisites. This enables:
+- Detecting if student is missing foundational knowledge
+- Building proper learning paths
+- Understanding why student is confused
+
+```typescript
+// Example Knowledge Graph Structure for Physics
+
+const PHYSICS_KNOWLEDGE_GRAPH = {
+  nodes: [
+    {
+      id: "newton_second_law",
+      name: "Newton's Second Law",
+      class: 11,
+      chapter: "Laws of Motion",
+      difficulty: 3,
+      conceptType: "law",
+      prerequisites: ["vectors_basics", "force_concept", "acceleration"],
+      leads_to: ["momentum", "impulse", "circular_motion"],
+      common_misconceptions: [
+        "F=ma only works when mass is constant",
+        "Net force is same as applied force",
+        "Heavier objects need more force to accelerate"
+      ],
+      teaching_approaches: ["derivation_first", "example_first", "intuition_first"]
+    },
+    // ... hundreds more nodes
+  ],
+  edges: [
+    { from: "vectors_basics", to: "newton_second_law", type: "REQUIRES", strength: "essential" },
+    { from: "newton_second_law", to: "momentum", type: "LEADS_TO", strength: "direct" },
+    // ... thousands of edges
+  ]
+};
+```
+
+### 1.3 Formula & Derivation Bank
+
+For STEM subjects, exact formulas are critical:
+
+```typescript
+interface FormulaEntry {
+  id: string;
+  latex: string;
+  plainText: string;
+  speakableText: string;  // For TTS
+  variables: {
+    symbol: string;
+    name: string;
+    unit: string;
+    description: string;
+  }[];
+  derivationSteps: string[];
+  applicableConditions: string[];
+  commonMistakes: string[];
+  relatedFormulas: string[];
+  jeeWeightage: number;
+  neetWeightage: number;
+}
+
+// Example
+const F_EQUALS_MA: FormulaEntry = {
+  id: "newton_second_law_formula",
+  latex: "\\vec{F}_{net} = m\\vec{a}",
+  plainText: "F = ma",
+  speakableText: "F net equals m times a, where F net is the net force vector, m is mass, and a is acceleration vector",
+  variables: [
+    { symbol: "F", name: "Net Force", unit: "Newton (N)", description: "Vector sum of all forces" },
+    { symbol: "m", name: "Mass", unit: "kilogram (kg)", description: "Inertial mass of object" },
+    { symbol: "a", name: "Acceleration", unit: "m/s²", description: "Rate of change of velocity" }
+  ],
+  derivationSteps: [
+    "Start with Newton's original formulation: F ∝ dp/dt",
+    "For constant mass: F ∝ m(dv/dt)",
+    "Since dv/dt = a: F ∝ ma",
+    "With proper units (SI), proportionality becomes equality: F = ma"
+  ],
+  applicableConditions: [
+    "Mass must be constant (not for rockets, etc.)",
+    "Valid in inertial reference frames only",
+    "For variable mass, use F = dp/dt"
+  ],
+  commonMistakes: [
+    "Using F as single force instead of net force",
+    "Forgetting vector nature - F and a have same direction",
+    "Applying in non-inertial frames without pseudo forces"
+  ]
+};
+```
+
+---
+
+## PHASE 2: Pedagogical Intelligence Engine
+
+### 2.1 Multi-Strategy Teaching System
+
+One teaching strategy doesn't fit all concepts or students. Implement adaptive pedagogy:
+
+```typescript
+// server/services/PedagogicalEngine.ts
+
+enum TeachingStrategy {
+  SOCRATIC_GUIDED = 'socratic_guided',      // Questions leading to discovery
+  DIRECT_INSTRUCTION = 'direct_instruction', // Clear explanation first
+  EXAMPLE_FIRST = 'example_first',           // Concrete example → abstract principle
+  ANALOGY_BASED = 'analogy_based',           // Real-world analogies
+  VISUALIZATION = 'visualization',            // Diagrams, mental models
+  PROBLEM_BASED = 'problem_based',           // Learn through solving
+  SCAFFOLDED = 'scaffolded',                 // Step-by-step building
+  COMPARE_CONTRAST = 'compare_contrast',     // Similar concepts comparison
+  ERROR_ANALYSIS = 'error_analysis',         // Learn from mistakes
+  DERIVATION_BASED = 'derivation_based'      // Mathematical proof first
+}
+
+interface StrategySelection {
+  primary: TeachingStrategy;
+  secondary: TeachingStrategy;
+  reasoning: string;
+}
+
+class PedagogicalEngine {
+  
+  selectStrategy(
+    concept: ConceptNode,
+    student: StudentCognitiveModel,
+    context: SessionContext
+  ): StrategySelection {
+    
+    // Factor 1: Concept Type
+    const conceptStrategyMap: Record<string, TeachingStrategy[]> = {
+      'definition': [TeachingStrategy.DIRECT_INSTRUCTION, TeachingStrategy.EXAMPLE_FIRST],
+      'formula': [TeachingStrategy.DERIVATION_BASED, TeachingStrategy.PROBLEM_BASED],
+      'theorem': [TeachingStrategy.SOCRATIC_GUIDED, TeachingStrategy.VISUALIZATION],
+      'process': [TeachingStrategy.SCAFFOLDED, TeachingStrategy.EXAMPLE_FIRST],
+      'comparison': [TeachingStrategy.COMPARE_CONTRAST, TeachingStrategy.ANALOGY_BASED]
+    };
+    
+    // Factor 2: Student's Current State
+    if (student.emotionalState === 'frustrated') {
+      // Don't use Socratic when frustrated - give direct help
+      return {
+        primary: TeachingStrategy.DIRECT_INSTRUCTION,
+        secondary: TeachingStrategy.SCAFFOLDED,
+        reasoning: "Student frustrated - providing clear, direct guidance"
+      };
+    }
+    
+    if (student.emotionalState === 'confused' && student.confusionCount > 2) {
+      // Multiple confusions - try different approach
+      return {
+        primary: TeachingStrategy.ANALOGY_BASED,
+        secondary: TeachingStrategy.VISUALIZATION,
+        reasoning: "Repeated confusion - using analogies to build intuition"
+      };
+    }
+    
+    // Factor 3: Time Pressure (exam proximity)
+    if (context.examDaysAway < 30 && context.examType === 'competitive') {
+      // Near exam - focus on problem-solving efficiency
+      return {
+        primary: TeachingStrategy.PROBLEM_BASED,
+        secondary: TeachingStrategy.DIRECT_INSTRUCTION,
+        reasoning: "Exam approaching - focusing on problem-solving patterns"
+      };
+    }
+    
+    // Factor 4: Student's Learning History
+    const pastEffectiveness = student.strategyEffectiveness;
+    const bestStrategy = this.getMostEffectiveStrategy(pastEffectiveness);
+    
+    // Factor 5: Concept Difficulty vs Student Level
+    const difficultyGap = concept.difficulty - student.currentLevel;
+    if (difficultyGap > 2) {
+      // Concept too advanced - need heavy scaffolding
+      return {
+        primary: TeachingStrategy.SCAFFOLDED,
+        secondary: TeachingStrategy.ANALOGY_BASED,
+        reasoning: "Concept significantly above current level - using scaffolding"
+      };
+    }
+    
+    // Default: Use concept-appropriate strategy
+    const conceptStrategies = conceptStrategyMap[concept.type] || 
+      [TeachingStrategy.SOCRATIC_GUIDED, TeachingStrategy.EXAMPLE_FIRST];
+    
+    return {
+      primary: conceptStrategies[0],
+      secondary: conceptStrategies[1],
+      reasoning: `Using ${conceptStrategies[0]} as optimal for ${concept.type} concepts`
+    };
+  }
+  
+  // Generate strategy-specific prompts
+  generateStrategyPrompt(strategy: TeachingStrategy, context: StrategyContext): string {
+    const strategyPrompts: Record<TeachingStrategy, string> = {
+      
+      [TeachingStrategy.SOCRATIC_GUIDED]: `
+        Use Socratic questioning to guide discovery:
+        1. Start with what student already knows
+        2. Ask a thought-provoking question that reveals the next step
+        3. Build on their answer (or guide if wrong) with follow-up question
+        4. Continue until they discover the concept themselves
+        5. Summarize what they learned through their own reasoning
+        
+        DO NOT: Give away the answer directly
+        DO: Celebrate their discoveries
+      `,
+      
+      [TeachingStrategy.DIRECT_INSTRUCTION]: `
+        Provide clear, structured explanation:
+        1. State the concept/principle clearly upfront
+        2. Explain WHY it works or is important
+        3. Show the key formula/definition
+        4. Give one clear example
+        5. Highlight common mistakes to avoid
+        
+        Be concise and clear. Student needs direct help, not discovery.
+      `,
+      
+      [TeachingStrategy.EXAMPLE_FIRST]: `
+        Start with concrete example before abstract:
+        1. Present a relatable, concrete scenario
+        2. Walk through solving it step-by-step
+        3. THEN introduce the general principle
+        4. Show how the principle applies to the example
+        5. Give another example to solidify
+        
+        Ground abstract concepts in tangible reality.
+      `,
+      
+      [TeachingStrategy.ANALOGY_BASED]: `
+        Use powerful analogies for intuition:
+        1. Find analogy from student's known world (cricket, movies, daily life)
+        2. Explain the analogy vividly
+        3. Map analogy parts to concept parts explicitly
+        4. Clarify where analogy breaks down (important!)
+        5. Now explain the actual concept
+        
+        Indian context analogies preferred for relatability.
+      `,
+      
+      [TeachingStrategy.SCAFFOLDED]: `
+        Build understanding step-by-step:
+        1. Identify prerequisite the student knows
+        2. Add ONE new piece of information
+        3. Verify understanding before proceeding
+        4. Add next piece
+        5. Connect all pieces at the end
+        
+        Never skip steps. Check understanding at each stage.
+      `,
+      
+      // ... other strategies
+    };
+    
+    return strategyPrompts[strategy];
+  }
+}
+```
+
+### 2.2 Hint Ladder System (Enhanced)
+
+Your current 6-level hint system is good. Here's an enhanced version:
+
+```typescript
+interface HintLadder {
+  level: number;
+  name: string;
+  prompt: string;
+  preservesLearning: boolean;  // Does student still learn if given this hint?
+}
+
+const ENHANCED_HINT_LADDER: HintLadder[] = [
+  {
+    level: 0,
+    name: "No Hint",
+    prompt: "Encourage student to try on their own first",
+    preservesLearning: true
+  },
+  {
+    level: 1,
+    name: "Metacognitive Prompt",
+    prompt: `Ask student to think about their thinking:
+      - "What concept do you think this problem tests?"
+      - "What similar problems have you solved before?"
+      - "What's the first thing you usually identify in such problems?"`,
+    preservesLearning: true
+  },
+  {
+    level: 2,
+    name: "Direction Pointer",
+    prompt: `Point to relevant concept without solving:
+      - "This involves [concept name]. What do you know about it?"
+      - "Think about the relationship between [X] and [Y]"`,
+    preservesLearning: true
+  },
+  {
+    level: 3,
+    name: "Setup Hint",
+    prompt: `Help with problem setup:
+      - Identify given quantities and what's asked
+      - Draw/describe the situation
+      - "Let's set up what we know..."`,
+    preservesLearning: true
+  },
+  {
+    level: 4,
+    name: "Formula/Approach Hint",
+    prompt: `Reveal the relevant formula or approach:
+      - "You'll need [formula] here"
+      - "The approach is to [method]"
+      But don't substitute values yet`,
+    preservesLearning: true
+  },
+  {
+    level: 5,
+    name: "First Step",
+    prompt: `Show the first step of solution:
+      - Substitute initial values
+      - Show first simplification
+      "Try to continue from here"`,
+    preservesLearning: false  // Learning diminished but not zero
+  },
+  {
+    level: 6,
+    name: "Partial Solution",
+    prompt: `Show solution up to a key point:
+      - Leave final calculation/simplification to student
+      - "Can you finish this?"`,
+    preservesLearning: false
+  },
+  {
+    level: 7,
+    name: "Full Solution + Explanation",
+    prompt: `Provide complete solution with detailed explanation:
+      - Full step-by-step
+      - Explain reasoning at each step
+      - Highlight key insights
+      - Discuss how to recognize similar problems`,
+    preservesLearning: false  // But student learns for next time
+  }
+];
+```
+
+---
+
+## PHASE 3: Student Cognitive Model
+
+### 3.1 Knowledge State Tracking (Knowledge Tracing)
+
+Track what the student knows, not just their profile:
+
+```typescript
+// server/services/StudentCognitiveModel.ts
+
+interface KnowledgeState {
+  // Bayesian Knowledge Tracing per concept
+  conceptMastery: Map<string, ConceptMastery>;
+  
+  // Current session state
+  workingMemoryLoad: number;  // 0-1, how much cognitive load
+  attentionLevel: number;     // Detected from response patterns
+  frustrationLevel: number;
+  
+  // Historical patterns
+  commonMistakePatterns: MistakePattern[];
+  strongAreas: string[];
+  weakAreas: string[];
+  preferredExplanationStyle: string;
+  
+  // Learning velocity
+  acquisitionRate: number;    // How fast they learn new concepts
+  retentionRate: number;      // How well they retain
+}
+
+interface ConceptMastery {
+  conceptId: string;
+  probability: number;        // P(knows concept) 0-1
+  lastAssessed: Date;
+  assessmentCount: number;
+  mistakeHistory: Mistake[];
+  
+  // BKT parameters (Bayesian Knowledge Tracing)
+  pLearn: number;    // Probability of learning after instruction
+  pGuess: number;    // Probability of guessing correct answer
+  pSlip: number;     // Probability of making mistake despite knowing
+  pForget: number;   // Probability of forgetting over time
+}
+
+class StudentCognitiveModelService {
+  
+  // Update knowledge state after each interaction
+  async updateAfterResponse(
+    studentId: string,
+    conceptId: string,
+    wasCorrect: boolean,
+    responseQuality: ResponseQuality
+  ): Promise<void> {
+    
+    const mastery = await this.getConceptMastery(studentId, conceptId);
+    
+    // Bayesian update using BKT
+    const pKnowsPrior = mastery.probability;
+    
+    if (wasCorrect) {
+      // P(knows | correct) using Bayes' theorem
+      const pCorrectIfKnows = 1 - mastery.pSlip;
+      const pCorrectIfNotKnows = mastery.pGuess;
+      const pCorrect = pKnowsPrior * pCorrectIfKnows + (1 - pKnowsPrior) * pCorrectIfNotKnows;
+      
+      mastery.probability = (pKnowsPrior * pCorrectIfKnows) / pCorrect;
+    } else {
+      // P(knows | incorrect) using Bayes' theorem
+      const pIncorrectIfKnows = mastery.pSlip;
+      const pIncorrectIfNotKnows = 1 - mastery.pGuess;
+      const pIncorrect = pKnowsPrior * pIncorrectIfKnows + (1 - pKnowsPrior) * pIncorrectIfNotKnows;
+      
+      mastery.probability = (pKnowsPrior * pIncorrectIfKnows) / pIncorrect;
+    }
+    
+    // Apply learning effect if instruction was given
+    if (responseQuality.hadInstruction) {
+      mastery.probability = mastery.probability + (1 - mastery.probability) * mastery.pLearn;
+    }
+    
+    await this.saveMastery(studentId, conceptId, mastery);
+  }
+  
+  // Detect prerequisite gaps
+  async identifyKnowledgeGaps(
+    studentId: string,
+    targetConceptId: string
+  ): Promise<KnowledgeGap[]> {
+    
+    const prerequisites = await this.knowledgeGraph.getPrerequisites(targetConceptId);
+    const gaps: KnowledgeGap[] = [];
+    
+    for (const prereq of prerequisites) {
+      const mastery = await this.getConceptMastery(studentId, prereq.id);
+      
+      if (mastery.probability < 0.7) {  // Threshold for "knows"
+        gaps.push({
+          conceptId: prereq.id,
+          conceptName: prereq.name,
+          currentMastery: mastery.probability,
+          importance: prereq.importance,  // How critical for target concept
+          suggestedReview: this.getReviewMaterial(prereq.id)
+        });
+      }
+    }
+    
+    return gaps.sort((a, b) => b.importance - a.importance);
+  }
+}
+```
+
+### 3.2 Misconception Detection
+
+Proactively detect common misconceptions:
+
+```typescript
+// server/services/MisconceptionDetector.ts
+
+interface Misconception {
+  id: string;
+  concept: string;
+  description: string;
+  detectPatterns: string[];        // Regex or semantic patterns
+  correctUnderstanding: string;
+  remediation: string;
+}
+
+const PHYSICS_MISCONCEPTIONS: Misconception[] = [
+  {
+    id: "force_motion_misconception",
+    concept: "Newton's Laws",
+    description: "Belief that force is needed to maintain motion",
+    detectPatterns: [
+      "force.*keep.*moving",
+      "need.*force.*continue",
+      "no force.*stops"
+    ],
+    correctUnderstanding: "Force causes CHANGE in motion, not motion itself. An object in motion stays in motion without force (First Law).",
+    remediation: "Use hockey puck on ice analogy - minimal friction means it keeps moving without pushing"
+  },
+  {
+    id: "heavier_falls_faster",
+    concept: "Free Fall",
+    description: "Belief that heavier objects fall faster",
+    detectPatterns: [
+      "heavier.*falls.*faster",
+      "more mass.*quick.*fall",
+      "light.*slow.*fall"
+    ],
+    correctUnderstanding: "In absence of air resistance, all objects fall at same rate (g). Mass doesn't affect free fall acceleration.",
+    remediation: "Galileo's Pisa experiment + astronaut hammer-feather demo on Moon"
+  },
+  // ... many more per subject
+];
+
+class MisconceptionDetector {
+  
+  async detectInResponse(
+    studentResponse: string,
+    currentTopic: string
+  ): Promise<DetectedMisconception | null> {
+    
+    // Get relevant misconceptions for topic
+    const relevantMisconceptions = PHYSICS_MISCONCEPTIONS.filter(
+      m => m.concept === currentTopic || this.isRelated(m.concept, currentTopic)
+    );
+    
+    // Pattern matching
+    for (const misconception of relevantMisconceptions) {
+      for (const pattern of misconception.detectPatterns) {
+        if (new RegExp(pattern, 'i').test(studentResponse)) {
+          return {
+            misconception,
+            confidence: 0.8,
+            detectedPhrase: studentResponse.match(new RegExp(pattern, 'i'))?.[0]
+          };
+        }
+      }
+    }
+    
+    // Semantic detection using embeddings for subtle misconceptions
+    const embedding = await this.embed(studentResponse);
+    const semanticMatch = await this.semanticMisconceptionSearch(
+      embedding,
+      relevantMisconceptions
+    );
+    
+    if (semanticMatch && semanticMatch.similarity > 0.85) {
+      return {
+        misconception: semanticMatch.misconception,
+        confidence: semanticMatch.similarity,
+        detectedPhrase: studentResponse
+      };
+    }
+    
+    return null;
+  }
+  
+  // Generate remediation prompt
+  generateRemediationPrompt(misconception: Misconception): string {
+    return `
+      IMPORTANT: Student has misconception detected.
+      
+      Misconception: ${misconception.description}
+      
+      DO NOT: Simply tell them they're wrong
+      
+      DO:
+      1. Acknowledge their thinking ("I see what you're thinking...")
+      2. Gently introduce contradiction or counterexample
+      3. Explain correct understanding: ${misconception.correctUnderstanding}
+      4. Use this remediation approach: ${misconception.remediation}
+      5. Verify they understand the correction
+    `;
+  }
+}
+```
+
+---
+
+## PHASE 4: Accuracy Assurance System (CRITICAL FOR STEM)
+
+### 4.1 Multi-Layer Fact Verification
+
+For STEM subjects, wrong information is worse than no information:
+
+```typescript
+// server/services/AccuracyAssurance.ts
+
+interface VerificationResult {
+  isAccurate: boolean;
+  confidence: number;
+  issues: AccuracyIssue[];
+  suggestedCorrections: Correction[];
+}
+
+class AccuracyAssuranceService {
+  
+  async verifyResponse(
+    response: string,
+    context: SessionContext,
+    retrievedKnowledge: RetrievalResult
+  ): Promise<VerificationResult> {
+    
+    const issues: AccuracyIssue[] = [];
+    
+    // Layer 1: Formula Verification
+    const formulaIssues = await this.verifyFormulas(response, context.subject);
+    issues.push(...formulaIssues);
+    
+    // Layer 2: Numerical Accuracy
+    const numericalIssues = await this.verifyNumericalClaims(response);
+    issues.push(...numericalIssues);
+    
+    // Layer 3: Conceptual Accuracy (check against RAG)
+    const conceptualIssues = await this.verifyAgainstKnowledgeBase(
+      response, 
+      retrievedKnowledge
+    );
+    issues.push(...conceptualIssues);
+    
+    // Layer 4: Cross-reference Check
+    const crossRefIssues = await this.crossReferenceCheck(response, context);
+    issues.push(...crossRefIssues);
+    
+    // Layer 5: Unit Consistency
+    const unitIssues = this.verifyUnitConsistency(response);
+    issues.push(...unitIssues);
+    
+    return {
+      isAccurate: issues.filter(i => i.severity === 'critical').length === 0,
+      confidence: this.calculateConfidence(issues),
+      issues,
+      suggestedCorrections: this.generateCorrections(issues)
+    };
+  }
+  
+  // Formula verification against known formula bank
+  async verifyFormulas(response: string, subject: string): Promise<AccuracyIssue[]> {
+    const issues: AccuracyIssue[] = [];
+    
+    // Extract formulas from response using regex
+    const formulaMatches = response.match(/[A-Za-z][\s]*=[\s]*[^.]+/g) || [];
+    
+    for (const formula of formulaMatches) {
+      const normalized = this.normalizeFormula(formula);
+      const knownFormula = await this.formulaBank.findMatch(normalized, subject);
+      
+      if (knownFormula) {
+        if (!this.formulasEquivalent(normalized, knownFormula.formula)) {
+          issues.push({
+            type: 'formula_error',
+            severity: 'critical',
+            location: formula,
+            expected: knownFormula.formula,
+            found: normalized,
+            correction: `Correct formula: ${knownFormula.latex}`
+          });
+        }
+      }
+    }
+    
+    return issues;
+  }
+  
+  // Verify numbers/constants
+  async verifyNumericalClaims(response: string): Promise<AccuracyIssue[]> {
+    const issues: AccuracyIssue[] = [];
+    
+    // Known physical constants
+    const constants: Record<string, { value: number; tolerance: number }> = {
+      'speed of light': { value: 3e8, tolerance: 0.01 },
+      'gravitational constant': { value: 6.674e-11, tolerance: 0.001 },
+      'planck constant': { value: 6.626e-34, tolerance: 0.001 },
+      'avogadro': { value: 6.022e23, tolerance: 0.001 },
+      'g acceleration': { value: 9.8, tolerance: 0.05 },
+      // ... more constants
+    };
+    
+    for (const [name, data] of Object.entries(constants)) {
+      const pattern = new RegExp(`${name}[^0-9]*([0-9.eE+-]+)`, 'i');
+      const match = response.match(pattern);
+      
+      if (match) {
+        const found = parseFloat(match[1]);
+        const error = Math.abs(found - data.value) / data.value;
+        
+        if (error > data.tolerance) {
+          issues.push({
+            type: 'numerical_error',
+            severity: error > 0.1 ? 'critical' : 'warning',
+            location: match[0],
+            expected: data.value.toString(),
+            found: found.toString()
+          });
+        }
+      }
+    }
+    
+    return issues;
+  }
+}
+```
+
+### 4.2 Response Regeneration on Accuracy Failure
+
+```typescript
+// Integrate into main response flow
+
+async generateVerifiedResponse(
+  context: SessionContext,
+  userMessage: string
+): Promise<TutorResponse> {
+  
+  let attempts = 0;
+  const maxAttempts = 3;
+  
+  while (attempts < maxAttempts) {
+    // Generate response
+    const response = await this.llm.generate(context, userMessage);
+    
+    // Verify accuracy
+    const verification = await this.accuracyService.verifyResponse(
+      response.content,
+      context,
+      response.retrievedKnowledge
+    );
+    
+    if (verification.isAccurate) {
+      return response;
+    }
+    
+    // Add corrections to context and regenerate
+    context.systemPrompt += `
+      ACCURACY ALERT: Previous response had errors:
+      ${verification.issues.map(i => `- ${i.type}: ${i.correction}`).join('\n')}
+      
+      Please regenerate with correct information.
+    `;
+    
+    attempts++;
+  }
+  
+  // After max attempts, return with uncertainty flagged
+  return {
+    ...response,
+    uncertaintyFlag: true,
+    message: "I want to be careful here - let me explain what I'm confident about..."
+  };
+}
+```
+
+---
+
+## PHASE 5: Smart Language Adaptation
+
+### 5.1 Dynamic Language Detection (NOT Hardcoded)
+
+Remove the hardcoded `preferredLanguage` field. Detect dynamically:
+
+```typescript
+// server/services/LanguageAdaptation.ts
+
+interface LanguageState {
+  detectedLanguage: 'english' | 'hindi' | 'hinglish';
+  confidence: number;
+  recentMessages: { lang: string; confidence: number }[];
+  switchThreshold: number;  // How many messages before switching
+}
+
+class LanguageAdaptationService {
+  
+  private languageState: Map<string, LanguageState> = new Map();
+  
+  async detectAndAdapt(
+    sessionId: string,
+    userMessage: string
+  ): Promise<{ language: string; shouldSwitch: boolean; prompt: string }> {
+    
+    // Detect language of current message
+    const detection = await this.detectLanguage(userMessage);
+    
+    // Get or create session state
+    let state = this.languageState.get(sessionId);
+    if (!state) {
+      state = {
+        detectedLanguage: 'english',  // Default
+        confidence: 1.0,
+        recentMessages: [],
+        switchThreshold: 3  // Switch after 3 consistent messages in different language
+      };
+    }
+    
+    // Add to recent messages
+    state.recentMessages.push(detection);
+    if (state.recentMessages.length > 5) {
+      state.recentMessages.shift();  // Keep last 5
+    }
+    
+    // Check if should switch language
+    const shouldSwitch = this.shouldSwitchLanguage(state, detection);
+    
+    if (shouldSwitch) {
+      state.detectedLanguage = detection.lang;
+      state.confidence = detection.confidence;
+    }
+    
+    this.languageState.set(sessionId, state);
+    
+    return {
+      language: state.detectedLanguage,
+      shouldSwitch,
+      prompt: this.getLanguagePrompt(state.detectedLanguage)
+    };
+  }
+  
+  private async detectLanguage(text: string): Promise<{ lang: string; confidence: number }> {
+    // Count Hindi vs English characters
+    const hindiChars = (text.match(/[\u0900-\u097F]/g) || []).length;
+    const englishChars = (text.match(/[a-zA-Z]/g) || []).length;
+    const totalChars = hindiChars + englishChars;
+    
+    if (totalChars === 0) return { lang: 'english', confidence: 0.5 };
+    
+    const hindiRatio = hindiChars / totalChars;
+    
+    if (hindiRatio > 0.5) {
+      return { lang: 'hindi', confidence: hindiRatio };
+    } else if (hindiRatio > 0.1) {
+      // Mixed script - Hinglish
+      return { lang: 'hinglish', confidence: 0.7 };
+    } else {
+      // Check for romanized Hindi patterns
+      const hinglishPatterns = [
+        /\b(hai|hain|ho|tha|thi|the|kya|kaise|kyun|kab|kahan|kaun)\b/gi,
+        /\b(mujhe|tumhe|usse|isse|jisse|kisse)\b/gi,
+        /\b(kar|karo|karna|karenge|karoge)\b/gi,
+        /\b(nahi|mat|sirf|bahut|thoda|zyada)\b/gi,
+        /\b(acha|theek|sahi|galat)\b/gi
+      ];
+      
+      let hinglishScore = 0;
+      for (const pattern of hinglishPatterns) {
+        if (pattern.test(text)) hinglishScore++;
+      }
+      
+      if (hinglishScore >= 2) {
+        return { lang: 'hinglish', confidence: 0.6 + (hinglishScore * 0.1) };
+      }
+      
+      return { lang: 'english', confidence: 1 - hindiRatio };
+    }
+  }
+  
+  private shouldSwitchLanguage(
+    state: LanguageState, 
+    current: { lang: string; confidence: number }
+  ): boolean {
+    
+    // Don't switch on single message
+    if (state.recentMessages.length < state.switchThreshold) {
+      return false;
+    }
+    
+    // Check if recent messages consistently in different language
+    const recentSameLang = state.recentMessages
+      .slice(-state.switchThreshold)
+      .filter(m => m.lang === current.lang && m.confidence > 0.6);
+    
+    return recentSameLang.length >= state.switchThreshold;
+  }
+  
+  private getLanguagePrompt(language: string): string {
+    const prompts = {
+      'english': `
+        Respond in clear, natural English.
+        Use simple vocabulary appropriate for Indian students.
+        Avoid overly complex sentence structures.
+      `,
+      'hindi': `
+        Respond in Hindi (Devanagari script).
+        Use शुद्ध हिंदी with appropriate technical terms.
+        Keep explanations clear and simple.
+      `,
+      'hinglish': `
+        Respond in natural Hinglish (Hindi-English mix in Roman script).
+        Mix Hindi and English naturally like Indian students speak.
+        Technical terms in English, explanations in mixed style.
+        Example style: "Toh basically, Newton ka first law kehta hai ki..."
+        Use relatable Indian examples and context.
+      `
+    };
+    
+    return prompts[language] || prompts['english'];
+  }
+}
+```
+
+---
+
+## PHASE 6: Adaptive Difficulty Engine (Zone of Proximal Development)
+
+### 6.1 Real-time Difficulty Adjustment
+
+```typescript
+// server/services/AdaptiveDifficultyEngine.ts
+
+interface DifficultyState {
+  currentLevel: number;           // 1-10 scale
+  consecutiveCorrect: number;
+  consecutiveIncorrect: number;
+  responseLatencyTrend: number;   // Getting slower = too hard
+  hintUsageTrend: number;         // Using more hints = too hard
+  confidenceScores: number[];     // From student's language
+}
+
+class AdaptiveDifficultyEngine {
+  
+  async adjustDifficulty(
+    sessionId: string,
+    interaction: InteractionResult
+  ): Promise<DifficultyAdjustment> {
+    
+    const state = await this.getDifficultyState(sessionId);
+    
+    // Signal 1: Correctness Pattern
+    if (interaction.wasCorrect) {
+      state.consecutiveCorrect++;
+      state.consecutiveIncorrect = 0;
+    } else {
+      state.consecutiveIncorrect++;
+      state.consecutiveCorrect = 0;
+    }
+    
+    // Signal 2: Response Latency
+    const expectedLatency = this.getExpectedLatency(state.currentLevel);
+    const latencyRatio = interaction.responseTime / expectedLatency;
+    
+    // Signal 3: Hint Usage
+    const hintPenalty = interaction.hintsUsed * 0.5;
+    
+    // Signal 4: Confidence Detection (from language patterns)
+    const confidence = await this.detectConfidenceFromResponse(
+      interaction.studentResponse
+    );
+    state.confidenceScores.push(confidence);
+    
+    // Calculate adjustment
+    let adjustment = 0;
+    
+    // Zone of Proximal Development targeting: ~70% success rate is optimal
+    if (state.consecutiveCorrect >= 3 && confidence > 0.7) {
+      // Too easy - increase difficulty
+      adjustment = 0.5;
+    } else if (state.consecutiveIncorrect >= 2 || state.consecutiveCorrect === 0 && interaction.hintsUsed > 2) {
+      // Too hard - decrease difficulty
+      adjustment = -0.5;
+    } else if (latencyRatio > 2.0) {
+      // Taking too long - slightly easier
+      adjustment = -0.25;
+    }
+    
+    // Apply adjustment with bounds
+    const newLevel = Math.max(1, Math.min(10, state.currentLevel + adjustment));
+    state.currentLevel = newLevel;
+    
+    await this.saveDifficultyState(sessionId, state);
+    
+    return {
+      previousLevel: state.currentLevel - adjustment,
+      newLevel: state.currentLevel,
+      adjustment,
+      reasoning: this.getAdjustmentReasoning(adjustment, state),
+      nextQuestionGuidelines: this.getDifficultyGuidelines(state.currentLevel)
+    };
+  }
+  
+  private async detectConfidenceFromResponse(response: string): Promise<number> {
+    // Patterns indicating low confidence
+    const lowConfidencePatterns = [
+      /i think|maybe|not sure|i guess|possibly|might be/gi,
+      /\?{2,}/g,  // Multiple question marks
+      /kya.*sahi|theek hai kya|correct hai/gi  // Hindi uncertainty
+    ];
+    
+    // Patterns indicating high confidence
+    const highConfidencePatterns = [
+      /definitely|certainly|the answer is|it's clear/gi,
+      /bilkul|pakka|definitely|100%/gi
+    ];
+    
+    let confidenceScore = 0.5;  // Start neutral
+    
+    for (const pattern of lowConfidencePatterns) {
+      if (pattern.test(response)) confidenceScore -= 0.1;
+    }
+    
+    for (const pattern of highConfidencePatterns) {
+      if (pattern.test(response)) confidenceScore += 0.1;
+    }
+    
+    return Math.max(0, Math.min(1, confidenceScore));
+  }
+  
+  private getDifficultyGuidelines(level: number): string {
+    const guidelines: Record<number, string> = {
+      1: "Basic recall questions. Direct formula application. Single-step problems.",
+      2: "Simple application. Two-step problems. Clear given information.",
+      3: "Standard textbook problems. Multi-step but straightforward.",
+      4: "Moderate complexity. Some conceptual understanding needed.",
+      5: "NCERT Exemplar level. Requires connecting multiple concepts.",
+      6: "Board exam difficult questions. Multi-concept integration.",
+      7: "JEE Mains easier questions. Requires problem-solving insight.",
+      8: "JEE Mains moderate. Multiple valid approaches.",
+      9: "JEE Mains difficult / JEE Advanced easier.",
+      10: "JEE Advanced level. Novel problem types, deep understanding needed."
+    };
+    
+    return guidelines[Math.round(level)] || guidelines[5];
+  }
+}
+```
+
+---
+
+## PHASE 7: Enhanced Dynamic Prompt Engine
+
+### 7.1 Complete Prompt Generation System
+
+```typescript
+// server/services/EnhancedDynamicPromptEngine.ts
+
+class EnhancedDynamicPromptEngine {
+  
+  async generateSystemPrompt(
+    context: EnhancedSessionContext
+  ): Promise<GeneratedPrompt> {
+    
+    const components: PromptComponent[] = [];
+    
+    // 1. BASE IDENTITY
+    components.push({
+      name: 'identity',
+      content: `You are an expert AI tutor for VaktaAI, specializing in ${context.subject} education for Indian students preparing for ${context.examType} exams.`,
+      priority: 100
+    });
+    
+    // 2. LANGUAGE ADAPTATION (Dynamic, not hardcoded)
+    const languagePrompt = await this.languageService.getLanguagePrompt(
+      context.sessionId,
+      context.lastUserMessage
+    );
+    components.push({
+      name: 'language',
+      content: languagePrompt,
+      priority: 95
+    });
+    
+    // 3. TEACHING STRATEGY
+    const strategy = await this.pedagogicalEngine.selectStrategy(
+      context.currentConcept,
+      context.studentModel,
+      context
+    );
+    components.push({
+      name: 'teaching_strategy',
+      content: this.pedagogicalEngine.generateStrategyPrompt(strategy.primary, context),
+      priority: 90
+    });
+    
+    // 4. KNOWLEDGE CONTEXT (RAG Results)
+    if (context.retrievedKnowledge) {
+      components.push({
+        name: 'knowledge_context',
+        content: this.formatKnowledgeContext(context.retrievedKnowledge),
+        priority: 85
+      });
+    }
+    
+    // 5. STUDENT COGNITIVE STATE
+    components.push({
+      name: 'student_state',
+      content: this.formatStudentState(context.studentModel),
+      priority: 80
+    });
+    
+    // 6. EMOTION-BASED ADAPTATION
+    if (context.detectedEmotion !== 'neutral') {
+      components.push({
+        name: 'emotion_adaptation',
+        content: this.getEmotionAdaptation(context.detectedEmotion),
+        priority: 75
+      });
+    }
+    
+    // 7. MISCONCEPTION ALERT (if detected)
+    if (context.detectedMisconception) {
+      components.push({
+        name: 'misconception_remediation',
+        content: this.misconceptionService.generateRemediationPrompt(
+          context.detectedMisconception
+        ),
+        priority: 95  // High priority - must address misconception
+      });
+    }
+    
+    // 8. PREREQUISITE GAPS (if found)
+    if (context.knowledgeGaps && context.knowledgeGaps.length > 0) {
+      components.push({
+        name: 'prerequisite_gaps',
+        content: this.formatPrerequisiteGaps(context.knowledgeGaps),
+        priority: 85
+      });
+    }
+    
+    // 9. DIFFICULTY CALIBRATION
+    const difficultyGuidelines = this.difficultyEngine.getDifficultyGuidelines(
+      context.currentDifficultyLevel
+    );
+    components.push({
+      name: 'difficulty',
+      content: `Difficulty Level: ${context.currentDifficultyLevel}/10\nGuidelines: ${difficultyGuidelines}`,
+      priority: 70
+    });
+    
+    // 10. HINT LEVEL (if applicable)
+    if (context.currentHintLevel > 0) {
+      components.push({
+        name: 'hint_instruction',
+        content: ENHANCED_HINT_LADDER[context.currentHintLevel].prompt,
+        priority: 90
+      });
+    }
+    
+    // 11. OUTPUT FORMAT REQUIREMENTS
+    components.push({
+      name: 'output_format',
+      content: this.getOutputFormatInstructions(context),
+      priority: 60
+    });
+    
+    // 12. SAFETY & QUALITY GUIDELINES
+    components.push({
+      name: 'safety_quality',
+      content: this.getSafetyQualityGuidelines(),
+      priority: 50
+    });
+    
+    // Assemble prompt by priority
+    components.sort((a, b) => b.priority - a.priority);
+    
+    const systemPrompt = components
+      .map(c => `## ${c.name.toUpperCase()}\n${c.content}`)
+      .join('\n\n');
+    
+    return {
+      systemPrompt,
+      components,
+      metadata: {
+        strategy: strategy.primary,
+        language: languagePrompt.language,
+        difficulty: context.currentDifficultyLevel,
+        hintLevel: context.currentHintLevel
+      }
+    };
+  }
+  
+  private formatKnowledgeContext(knowledge: RetrievalResult): string {
+    return `
+## AUTHORITATIVE KNOWLEDGE CONTEXT
+
+Use this verified information for your response. Do NOT hallucinate facts.
+
+### Primary Context (MUST use):
+${knowledge.primaryContext.map(c => `
+- Topic: ${c.topic}
+- Content: ${c.content}
+- Source: ${c.source}
+`).join('\n')}
+
+### Relevant Formulas:
+${knowledge.formulasRelevant.map(f => `
+- ${f.plainText}
+  Speak as: "${f.speakableText}"
+  Conditions: ${f.applicableConditions.join('; ')}
+`).join('\n')}
+
+### Prerequisites student might need:
+${knowledge.prerequisitesNeeded.map(p => `- ${p.name}: ${p.briefExplanation}`).join('\n')}
+    `;
+  }
+  
+  private formatStudentState(student: StudentCognitiveModel): string {
+    return `
+## STUDENT COGNITIVE STATE
+
+Current understanding level: ${student.currentLevel}/10
+Knowledge gaps detected: ${student.weakAreas.join(', ') || 'None identified'}
+Strong areas: ${student.strongAreas.join(', ') || 'Still assessing'}
+Preferred explanation style: ${student.preferredExplanationStyle}
+Common mistake patterns: ${student.commonMistakePatterns.slice(0, 3).join(', ')}
+
+Adapt your explanation to their level and learning style.
+    `;
+  }
+  
+  private getEmotionAdaptation(emotion: string): string {
+    const adaptations: Record<string, string> = {
+      'frustrated': `
+        IMPORTANT: Student is showing frustration.
+        - Be extra patient and encouraging
+        - Use simpler language and smaller steps
+        - Acknowledge difficulty: "This is a tricky concept..."
+        - Provide quick wins to rebuild confidence
+        - Avoid asking too many questions - give more direct help
+      `,
+      'confused': `
+        Student is confused.
+        - Go slower and check understanding frequently
+        - Use analogies and visual descriptions
+        - Break down into smaller pieces
+        - Ask: "Which part specifically is unclear?"
+      `,
+      'anxious': `
+        Student seems anxious (possibly exam stress).
+        - Be reassuring: "You've got this!"
+        - Focus on what they DO know
+        - Provide structured approach to reduce overwhelm
+        - Remind them practice builds confidence
+      `,
+      'bored': `
+        Student might be disengaged.
+        - Increase challenge level slightly
+        - Use interesting real-world applications
+        - Add interactive elements
+        - Connect to their interests if known
+      `,
+      'curious': `
+        Student is engaged and curious!
+        - Encourage deeper exploration
+        - Offer advanced insights
+        - Ask thought-provoking questions
+        - This is the ideal learning state - capitalize on it
+      `
+    };
+    
+    return adaptations[emotion] || '';
+  }
+  
+  private formatPrerequisiteGaps(gaps: KnowledgeGap[]): string {
+    if (gaps.length === 0) return '';
+    
+    return `
+## PREREQUISITE GAPS DETECTED
+
+Student may be missing foundational knowledge:
+${gaps.map(g => `
+- ${g.conceptName}: Current mastery ${Math.round(g.currentMastery * 100)}%
+  Importance for current topic: ${g.importance}/10
+  Quick review: ${g.suggestedReview}
+`).join('\n')}
+
+Consider briefly reviewing these concepts before proceeding with main explanation.
+    `;
+  }
+}
+```
+
+---
+
+## PHASE 8: Enhanced Response Flow
+
+### 8.1 Complete Ultra Pro Flow
+
+```typescript
+// server/routes/ultraProTutor.ts
+
+router.post('/session/ask', async (req, res) => {
+  const { sessionId, message } = req.body;
+  
+  try {
+    // STEP 1: Load session context
+    const session = await sessionService.getSession(sessionId);
+    
+    // STEP 2: Language detection (DYNAMIC, not from profile)
+    const languageResult = await languageService.detectAndAdapt(sessionId, message);
+    
+    // STEP 3: Intent + Emotion Detection (parallel, fast)
+    const [intent, emotion] = await Promise.all([
+      intentClassifier.classify(message, session),
+      emotionDetector.detect(message, session)
+    ]);
+    
+    // STEP 4: Knowledge Retrieval (RAG)
+    const retrievedKnowledge = await knowledgeIntelligence.retrieveForQuery(
+      message,
+      session.context
+    );
+    
+    // STEP 5: Student Cognitive Model Update
+    const studentModel = await cognitiveModelService.getAndUpdate(
+      session.userId,
+      { message, intent, emotion }
+    );
+    
+    // STEP 6: Misconception Detection
+    const misconception = await misconceptionDetector.detectInResponse(
+      message,
+      session.currentTopic
+    );
+    
+    // STEP 7: Knowledge Gap Analysis
+    const knowledgeGaps = await cognitiveModelService.identifyKnowledgeGaps(
+      session.userId,
+      session.currentTopicId
+    );
+    
+    // STEP 8: Difficulty Adjustment
+    const difficultyResult = await difficultyEngine.getCurrentState(sessionId);
+    
+    // STEP 9: Teaching Strategy Selection
+    const strategy = await pedagogicalEngine.selectStrategy(
+      session.currentConcept,
+      studentModel,
+      session.context
+    );
+    
+    // STEP 10: Dynamic Prompt Generation
+    const enhancedContext = {
+      ...session.context,
+      retrievedKnowledge,
+      studentModel,
+      detectedEmotion: emotion,
+      detectedMisconception: misconception,
+      knowledgeGaps,
+      currentDifficultyLevel: difficultyResult.currentLevel,
+      languageResult
+    };
+    
+    const { systemPrompt } = await promptEngine.generateSystemPrompt(enhancedContext);
+    
+    // STEP 11: LLM Generation with Streaming
+    const stream = await llmRouter.streamGenerate({
+      systemPrompt,
+      messages: session.messages,
+      userMessage: message,
+      preferredModel: strategy.primary === 'direct_instruction' ? 'gpt-4o-mini' : 'gpt-4o'
+    });
+    
+    // STEP 12: Stream Processing with Accuracy Checks
+    const responseBuilder = new ResponseBuilder();
+    
+    for await (const chunk of stream) {
+      responseBuilder.addChunk(chunk);
+      
+      // Send sentence when complete
+      if (responseBuilder.hasSentence()) {
+        const sentence = responseBuilder.extractSentence();
+        
+        // Quick accuracy check on factual sentences
+        if (await accuracyService.isFactualClaim(sentence)) {
+          const quickCheck = await accuracyService.quickVerify(
+            sentence, 
+            retrievedKnowledge
+          );
+          
+          if (!quickCheck.isAccurate) {
+            // Flag for regeneration
+            responseBuilder.flagForRegeneration(sentence);
+            continue;
+          }
+        }
+        
+        // Send to client
+        ws.send(JSON.stringify({
+          type: 'AI_SENTENCE',
+          sentence,
+          metadata: { strategy: strategy.primary }
+        }));
+      }
+    }
+    
+    // STEP 13: Full Response Validation
+    const fullResponse = responseBuilder.getFullResponse();
+    const validation = await accuracyService.verifyResponse(
+      fullResponse,
+      enhancedContext,
+      retrievedKnowledge
+    );
+    
+    if (!validation.isAccurate) {
+      // Regenerate problematic parts
+      const correctedResponse = await this.regenerateWithCorrections(
+        fullResponse,
+        validation.issues,
+        enhancedContext
+      );
+      // Send correction
+      ws.send(JSON.stringify({
+        type: 'RESPONSE_CORRECTION',
+        corrections: validation.issues,
+        correctedContent: correctedResponse
+      }));
+    }
+    
+    // STEP 14: Dual Output (Chat + TTS)
+    const dualOutput = await dualOutputService.generate(fullResponse, enhancedContext);
+    
+    // STEP 15: TTS with Visemes
+    const ttsResult = await ttsRouter.generateWithVisemes(
+      dualOutput.speak_ssml,
+      languageResult.language
+    );
+    
+    // STEP 16: Send TTS chunks
+    for (const chunk of ttsResult.chunks) {
+      ws.send(JSON.stringify({
+        type: 'PHONEME_TTS_CHUNK',
+        chunkIndex: chunk.index,
+        audioBase64: chunk.audio,
+        phonemes: chunk.visemes
+      }));
+    }
+    
+    // STEP 17: Update session state
+    await sessionService.updateAfterInteraction(sessionId, {
+      message,
+      response: fullResponse,
+      intent,
+      emotion,
+      strategy: strategy.primary,
+      language: languageResult.language
+    });
+    
+    // STEP 18: Update cognitive model
+    await cognitiveModelService.updateAfterResponse(
+      session.userId,
+      session.currentTopicId,
+      { wasCorrect: intent !== 'express_confusion', responseQuality: validation }
+    );
+    
+    ws.send(JSON.stringify({ type: 'AI_RESPONSE_COMPLETE' }));
+    
+  } catch (error) {
+    // Error handling with graceful degradation
+    ws.send(JSON.stringify({
+      type: 'ERROR',
+      message: 'Something went wrong. Let me try again...',
+      fallback: true
+    }));
+  }
+});
+```
+
+---
+
+## Implementation Priority & Timeline
+
+### Week 1-2: Foundation (CRITICAL)
+1. ✅ Set up Curriculum RAG database schema
+2. ✅ Import NCERT content for Class 11-12 Physics
+3. ✅ Build Knowledge Graph for Physics
+4. ✅ Implement basic retrieval with pgvector
+
+### Week 3-4: Accuracy System
+1. ✅ Build Formula Bank for Physics
+2. ✅ Implement Formula Verification
+3. ✅ Set up Accuracy Assurance pipeline
+4. ✅ Integrate verification into response flow
+
+### Week 5-6: Pedagogical Intelligence  
+1. ✅ Implement Multi-Strategy Teaching
+2. ✅ Build Enhanced Hint Ladder
+3. ✅ Create Strategy Selection Engine
+4. ✅ Dynamic Prompt Engine upgrade
+
+### Week 7-8: Student Modeling
+1. ✅ Implement Knowledge State Tracking
+2. ✅ Build Misconception Detector
+3. ✅ Create Adaptive Difficulty Engine
+4. ✅ Knowledge Gap Analysis
+
+### Week 9-10: Language & Polish
+1. ✅ Implement Dynamic Language Adaptation
+2. ✅ Remove hardcoded language preferences
+3. ✅ End-to-end testing
+4. ✅ Performance optimization
+
+---
+
+## Database Schema Additions
+
+```sql
+-- Curriculum chunks for RAG
+CREATE TABLE curriculum_chunks (
+  id UUID PRIMARY KEY,
+  subject VARCHAR(50),
+  class INTEGER,
+  chapter VARCHAR(200),
+  topic VARCHAR(200),
+  subtopic VARCHAR(200),
+  content TEXT,
+  content_type VARCHAR(50),
+  exam_relevance JSONB,
+  prerequisites TEXT[],
+  source VARCHAR(100),
+  verified BOOLEAN DEFAULT false,
+  embedding vector(1536),
+  created_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE INDEX idx_curriculum_embedding ON curriculum_chunks 
+USING ivfflat (embedding vector_cosine_ops);
+
+-- Formula bank
+CREATE TABLE formulas (
+  id UUID PRIMARY KEY,
+  subject VARCHAR(50),
+  topic VARCHAR(200),
+  latex TEXT,
+  plain_text VARCHAR(500),
+  speakable_text TEXT,
+  variables JSONB,
+  derivation_steps TEXT[],
+  applicable_conditions TEXT[],
+  common_mistakes TEXT[],
+  jee_weightage INTEGER,
+  neet_weightage INTEGER
+);
+
+-- Student knowledge state (BKT)
+CREATE TABLE student_concept_mastery (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  concept_id VARCHAR(200),
+  probability FLOAT,
+  p_learn FLOAT DEFAULT 0.3,
+  p_guess FLOAT DEFAULT 0.2,
+  p_slip FLOAT DEFAULT 0.1,
+  p_forget FLOAT DEFAULT 0.05,
+  assessment_count INTEGER DEFAULT 0,
+  last_assessed TIMESTAMP,
+  mistake_history JSONB DEFAULT '[]'
+);
+
+-- Misconception tracking
+CREATE TABLE detected_misconceptions (
+  id UUID PRIMARY KEY,
+  user_id UUID REFERENCES users(id),
+  session_id UUID,
+  misconception_id VARCHAR(200),
+  detected_text TEXT,
+  confidence FLOAT,
+  remediated BOOLEAN DEFAULT false,
+  created_at TIMESTAMP DEFAULT NOW()
+);
+```
+
+---
+
+## Key Metrics to Track
+
+1. **Learning Effectiveness**
+   - Concept mastery improvement over sessions
+   - Prerequisite gap closure rate
+   - Misconception remediation success rate
+
+2. **Accuracy**
+   - Factual error rate in responses
+   - Formula accuracy rate
+   - Knowledge retrieval relevance score
+
+3. **Engagement**
+   - Session duration
+   - Questions per session
+   - Return rate
+
+4. **Adaptive System Performance**
+   - Language switch accuracy
+   - Difficulty calibration (target 70% success rate)
+   - Strategy effectiveness per student type
+
+---
+
+## Summary
+
+Your current system is a good MVP but lacks:
+
+1. **Knowledge Foundation** - No RAG means relying on LLM training data (risky for STEM)
+2. **Pedagogical Depth** - Basic Socratic isn't enough for all concepts/students
+3. **Student Understanding** - No real-time knowledge state tracking
+4. **Accuracy Guarantees** - No verification against authoritative sources
+5. **Adaptive Intelligence** - Static difficulty, hardcoded language
+
+The Ultra Pro system adds:
+- Curriculum-aware RAG with prerequisite chains
+- Multi-strategy adaptive teaching
+- Bayesian knowledge tracing per concept
+- Multi-layer accuracy verification
+- Dynamic language detection
+- Zone of Proximal Development targeting
+
+This will make VaktaAI a truly intelligent tutor, not just a chatbot wrapper around an LLM.

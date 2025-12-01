@@ -21,6 +21,7 @@ import { AI_MENTOR_PERSONALITY, getRandomPhrase } from '../config/aiMentorPerson
 import { getAdaptation, getLanguagePromptModifier, getExamFocusPromptModifier } from '../config/classLevelAdaptations';
 import { getStrategy, getExamSpecificApproach, getSubjectPromptAdditions } from '../config/subjectStrategies';
 import { getHintTemplate, buildHintLadderPromptGuidance, HINT_LADDER_CONFIG } from '../config/hintLadderConfig';
+import type { RetrievedKnowledge } from './curriculum/KnowledgeIntelligenceService';
 
 export interface PromptContext {
   detectedLanguage: DetectedLanguage;
@@ -72,6 +73,20 @@ export interface EnhancedPromptContext extends PromptContext {
   timePressure?: boolean;
   
   hintsGiven?: Array<{ level: HintLevel; content: string }>;
+  
+  retrievedKnowledge?: RetrievedKnowledge;
+  knowledgeGaps?: Array<{
+    conceptName: string;
+    currentMastery: number;
+    importance: number;
+    suggestedReview: string;
+  }>;
+  detectedMisconception?: {
+    misconceptionId: string;
+    misconception: string;
+    correctUnderstanding: string;
+    remediationStrategy: string;
+  };
 }
 
 export interface GeneratedPrompt {
@@ -565,6 +580,25 @@ export class EnhancedPromptEngine extends DynamicPromptEngine {
       promptSections.push(this.buildNCERTContextSection(context.ncertChunks));
       ncertCitationsIncluded = context.ncertChunks.length;
       adaptations.push(`NCERT context: ${context.ncertChunks.length} chunks`);
+    }
+
+    if (context.retrievedKnowledge) {
+      const knowledgeSection = this.buildKnowledgeIntelligenceSection(context.retrievedKnowledge);
+      if (knowledgeSection) {
+        promptSections.push(knowledgeSection);
+        ncertCitationsIncluded += context.retrievedKnowledge.primaryContext.length;
+        adaptations.push(`Knowledge Intelligence: ${context.retrievedKnowledge.primaryContext.length} chunks, ${context.retrievedKnowledge.formulas.length} formulas`);
+      }
+    }
+
+    if (context.knowledgeGaps && context.knowledgeGaps.length > 0) {
+      promptSections.push(this.buildKnowledgeGapsSection(context.knowledgeGaps));
+      adaptations.push(`Knowledge gaps detected: ${context.knowledgeGaps.length}`);
+    }
+
+    if (context.detectedMisconception) {
+      promptSections.push(this.buildMisconceptionAlertSection(context.detectedMisconception));
+      adaptations.push(`Misconception alert: ${context.detectedMisconception.misconceptionId}`);
     }
 
     if (context.curriculumContext) {
@@ -1163,6 +1197,99 @@ ${modifiers.encouragement}`;
 
   getRandomExamTip(): string {
     return getRandomPhrase('examTips');
+  }
+
+  private buildKnowledgeIntelligenceSection(knowledge: RetrievedKnowledge): string {
+    const sections: string[] = [];
+
+    sections.push('# AUTHORITATIVE KNOWLEDGE CONTEXT\n');
+    sections.push('**IMPORTANT**: Use this verified information for your response. Do NOT hallucinate facts.\n');
+
+    if (knowledge.primaryContext.length > 0) {
+      sections.push('## Primary Context (MUST use):');
+      for (const ctx of knowledge.primaryContext.slice(0, 5)) {
+        sections.push(`\n### ${ctx.topic}`);
+        sections.push(`${ctx.content.substring(0, 600)}${ctx.content.length > 600 ? '...' : ''}`);
+        sections.push(`*Source: ${ctx.citation}*`);
+      }
+    }
+
+    if (knowledge.formulas.length > 0) {
+      sections.push('\n\n## Relevant Formulas (for accuracy):');
+      for (const f of knowledge.formulas) {
+        sections.push(`\n- **${f.plainText}**`);
+        sections.push(`  - Speak as: "${f.speakableText}"`);
+        if (f.applicableConditions.length > 0) {
+          sections.push(`  - Applicable when: ${f.applicableConditions.join('; ')}`);
+        }
+        if (f.commonMistakes.length > 0) {
+          sections.push(`  - Common mistakes to address:`);
+          for (const m of f.commonMistakes.slice(0, 2)) {
+            sections.push(`    - Mistake: "${m.mistake}" -> Correct: "${m.correction}"`);
+          }
+        }
+      }
+    }
+
+    if (knowledge.prerequisites.filter(p => p.masteryStatus !== 'solid').length > 0) {
+      sections.push('\n\n## Prerequisites Student May Need:');
+      for (const p of knowledge.prerequisites.filter(pr => pr.masteryStatus !== 'solid')) {
+        const statusEmoji = p.masteryStatus === 'missing' ? 'NOT mastered' : 'Partially understood';
+        sections.push(`- **${p.topicName}**: ${statusEmoji} (${p.importance} importance)`);
+      }
+      sections.push('\nConsider briefly reviewing these before deep-diving into current topic.');
+    }
+
+    if (knowledge.possibleMisconceptions.length > 0) {
+      sections.push('\n\n## Watch For These Misconceptions:');
+      for (const m of knowledge.possibleMisconceptions) {
+        sections.push(`\n### ${m.severity === 'critical' ? 'CRITICAL' : 'Common'} Misconception:`);
+        sections.push(`- Wrong belief: "${m.misconception}"`);
+        sections.push(`- Correct understanding: ${m.correctUnderstanding}`);
+        if (m.severity === 'critical') {
+          sections.push(`- **ADDRESS THIS IF DETECTED!**`);
+        }
+      }
+    }
+
+    return sections.join('\n');
+  }
+
+  private buildKnowledgeGapsSection(gaps: EnhancedPromptContext['knowledgeGaps']): string {
+    if (!gaps || gaps.length === 0) return '';
+
+    const sections = ['# KNOWLEDGE GAPS DETECTED\n'];
+    sections.push('The student may be missing foundational knowledge:\n');
+
+    for (const gap of gaps) {
+      sections.push(`- **${gap.conceptName}**: Current mastery ${Math.round(gap.currentMastery * 100)}%`);
+      sections.push(`  - Importance for current topic: ${gap.importance}/10`);
+      sections.push(`  - ${gap.suggestedReview}`);
+    }
+
+    sections.push('\nConsider briefly reviewing these concepts before proceeding with main explanation.');
+
+    return sections.join('\n');
+  }
+
+  private buildMisconceptionAlertSection(misconception: EnhancedPromptContext['detectedMisconception']): string {
+    if (!misconception) return '';
+
+    return `# MISCONCEPTION ALERT - HIGH PRIORITY
+
+## Detected Misconception: ${misconception.misconceptionId}
+
+**What the student believes (WRONG)**:
+"${misconception.misconception}"
+
+**Correct Understanding**:
+${misconception.correctUnderstanding}
+
+## Remediation Strategy
+${misconception.remediationStrategy}
+
+**IMPORTANT**: Address this misconception before proceeding with new content.
+Use Socratic questions to help the student discover the error themselves.`;
   }
 }
 
