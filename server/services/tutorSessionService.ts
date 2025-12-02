@@ -247,7 +247,9 @@ export class TutorSessionService {
           currentClass: session.profileSnapshot?.currentClass,
           examTarget: session.profileSnapshot?.examTarget
         };
-        return getGreetingTemplate(timeOfDay, language as 'english' | 'hinglish', userProfile);
+        // Pass topic to get topic-aware greeting when topic is selected
+        // If topic is provided, greeting will acknowledge it instead of asking "what to learn"
+        return getGreetingTemplate(timeOfDay, language as 'english' | 'hinglish', userProfile, session.topic);
 
       case 'rapport':
         const examTarget = session.profileSnapshot?.examTarget || 'JEE';
