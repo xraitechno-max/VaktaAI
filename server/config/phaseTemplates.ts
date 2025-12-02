@@ -124,6 +124,112 @@ Aaj kya seekhna chahte ho?`,
   ]
 };
 
+// Topic-aware Greeting Templates (when student has already selected a topic)
+// These are used instead of regular greetings when topic is provided
+export const TOPIC_GREETING_TEMPLATES: PhaseTemplate = {
+  phase: 'greeting',
+  duration: '0-15 seconds',
+  goal: 'Welcome and acknowledge selected topic, ready to teach',
+  variants: [
+    // English - Classes 6-8 (Foundation) - With Topic
+    {
+      language: 'english',
+      context: 'foundation',
+      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {subject}.
+
+Great choice! Today we'll learn about {topic} together. I'll explain it step-by-step so you understand it clearly.
+
+Ready to start? Feel free to ask any questions as we go!`,
+      emotion: 'enthusiastic',
+      requiresResponse: false
+    },
+    // Hinglish - Classes 6-8 (Foundation) - With Topic
+    {
+      language: 'hinglish',
+      context: 'foundation',
+      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {subject} ke liye.
+
+Bahut accha topic choose kiya! Aaj hum {topic} ke baare mein seekhenge. Step-by-step samjhaunga taaki tumhe clearly samajh aaye.
+
+Shuru karte hain? Beech mein koi bhi sawal ho toh zaroor poocho!`,
+      emotion: 'enthusiastic',
+      requiresResponse: false
+    },
+    // English - Classes 9-10 (Board Prep) - With Topic
+    {
+      language: 'english',
+      context: 'board_prep',
+      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {subject}.
+
+Let's dive into {topic} today! This is an important topic for your boards. I'll break it down step-by-step.
+
+Let's begin! Ask me anything if something isn't clear.`,
+      emotion: 'enthusiastic',
+      requiresResponse: false
+    },
+    // Hinglish - Classes 9-10 (Board Prep) - With Topic
+    {
+      language: 'hinglish',
+      context: 'board_prep',
+      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {subject} ke liye.
+
+Chalo aaj {topic} pe kaam karte hain! Boards ke liye ye important topic hai. Step-by-step samjhaunga.
+
+Shuru karte hain! Kuch samajh na aaye toh bilkul poocho.`,
+      emotion: 'enthusiastic',
+      requiresResponse: false
+    },
+    // English - Classes 11-12 (Competitive) - With Topic
+    {
+      language: 'english',
+      context: 'competitive',
+      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {subject}.
+
+Excellent! Let's master {topic} for {examTarget}. This topic is frequently tested, so we'll cover concepts, formulas, and problem-solving strategies.
+
+Let's start! Feel free to stop me anytime for questions.`,
+      emotion: 'enthusiastic',
+      requiresResponse: false
+    },
+    // Hinglish - Classes 11-12 (Competitive) - With Topic
+    {
+      language: 'hinglish',
+      context: 'competitive',
+      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {subject} ke liye.
+
+Bahut sahi! Aaj {topic} ko {examTarget} ke liye master karte hain. Ye frequently tested topic hai - concepts, formulas, aur problem-solving sab cover karenge.
+
+Chalo shuru karte hain! Beech mein kuch bhi poocho.`,
+      emotion: 'enthusiastic',
+      requiresResponse: false
+    },
+    // English - Dropper (Comeback) - With Topic
+    {
+      language: 'english',
+      context: 'dropper',
+      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {subject}. This is YOUR year!
+
+Let's conquer {topic} today. I'll help you build rock-solid understanding for {examTarget}.
+
+Ready to dive in? Ask anything as we go!`,
+      emotion: 'encouraging',
+      requiresResponse: false
+    },
+    // Hinglish - Dropper (Comeback) - With Topic
+    {
+      language: 'hinglish',
+      context: 'dropper',
+      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {subject} ke liye. Ye TUMHARA saal hai!
+
+Aaj {topic} ko conquer karte hain. {examTarget} ke liye rock-solid understanding banayenge.
+
+Chalo shuru karte hain! Kuch bhi poocho beech mein.`,
+      emotion: 'encouraging',
+      requiresResponse: false
+    }
+  ]
+};
+
 // Phase 2: Rapport Building (30-60 seconds)
 export const RAPPORT_TEMPLATES: PhaseTemplate = {
   phase: 'rapport',
