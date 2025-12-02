@@ -171,6 +171,13 @@ export interface AIResponseCompleteMessage extends VoiceWebSocketMessage {
   phase?: TutorPhase;
   phaseStep?: number;
   language?: 'hi' | 'en';
+  accuracyAudit?: {
+    passed: boolean;
+    calculationsVerified: number;
+    unitsValidated: number;
+    formulasChecked: number;
+    totalIssues: number;
+  };
 }
 
 // Error message

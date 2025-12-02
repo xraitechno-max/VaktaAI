@@ -1675,6 +1675,32 @@ ${voiceDemotivationCheck.needsIntervention ? `STUDENT SUPPORT NEEDED: ${voiceDem
         };
       }
 
+      // 🔬 ACCURACY ASSURANCE - Verify math/science accuracy for text queries
+      let textQueryAccuracyAudit: AccuracyAuditResult | null = null;
+      const chatSubject = chat.subject?.toLowerCase() || '';
+      if (['physics', 'chemistry', 'math', 'maths', 'biology'].includes(chatSubject)) {
+        const startAccuracy = Date.now();
+        try {
+          textQueryAccuracyAudit = await accuracyAssuranceService.validateFinalResponse(
+            fullResponse,
+            chatSubject,
+            chat.topic || undefined,
+            user.examTarget || undefined
+          );
+          const accuracyTime = Date.now() - startAccuracy;
+          console.log(`[TEXT QUERY] 🔬 Accuracy Audit: ${textQueryAccuracyAudit.passed ? 'PASSED' : 'ISSUES FOUND'} - Calcs: ${textQueryAccuracyAudit.calculationsVerified}, Units: ${textQueryAccuracyAudit.unitsValidated}, Formulas: ${textQueryAccuracyAudit.formulasChecked} (${accuracyTime}ms)`);
+          
+          if (!textQueryAccuracyAudit.passed && textQueryAccuracyAudit.issues.length > 0) {
+            const criticalIssues = textQueryAccuracyAudit.issues.filter(i => i.severity === 'critical' || i.severity === 'error');
+            if (criticalIssues.length > 0) {
+              console.warn(`[TEXT QUERY] ⚠️ ${criticalIssues.length} accuracy issues detected:`, criticalIssues.map(i => i.issue).join('; '));
+            }
+          }
+        } catch (accuracyError) {
+          console.error('[TEXT QUERY] Accuracy audit error (non-blocking):', accuracyError);
+        }
+      }
+
       // Send completion message with chatId for frontend refetch
       const completeMsg: VoiceMessage = {
         type: 'AI_RESPONSE_COMPLETE',
@@ -1686,7 +1712,14 @@ ${voiceDemotivationCheck.needsIntervention ? `STUDENT SUPPORT NEEDED: ${voiceDem
         personaId: session.personaId,
         phase: session.currentPhase as any,
         phaseStep: session.phaseStep || 0,
-        language
+        language,
+        accuracyAudit: textQueryAccuracyAudit ? {
+          passed: textQueryAccuracyAudit.passed,
+          calculationsVerified: textQueryAccuracyAudit.calculationsVerified,
+          unitsValidated: textQueryAccuracyAudit.unitsValidated,
+          formulasChecked: textQueryAccuracyAudit.formulasChecked,
+          totalIssues: textQueryAccuracyAudit.issues.length
+        } : undefined
       };
       ws.send(JSON.stringify(completeMsg));
 
@@ -1703,7 +1736,14 @@ ${voiceDemotivationCheck.needsIntervention ? `STUDENT SUPPORT NEEDED: ${voiceDem
           personaId: session.personaId,
           phase: session.currentPhase,
           source: `text_websocket_${dualOutputSource}`,
-          avatarTTS: avatarStateService.canGenerateTTS(ws.sessionId || '')
+          avatarTTS: avatarStateService.canGenerateTTS(ws.sessionId || ''),
+          accuracyAudit: textQueryAccuracyAudit ? {
+            passed: textQueryAccuracyAudit.passed,
+            calculationsVerified: textQueryAccuracyAudit.calculationsVerified,
+            unitsValidated: textQueryAccuracyAudit.unitsValidated,
+            formulasChecked: textQueryAccuracyAudit.formulasChecked,
+            issueCount: textQueryAccuracyAudit.issues.length
+          } : undefined
         } as any
       });
 
