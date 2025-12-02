@@ -23,6 +23,8 @@ import { mapPollyVisemesToUnityPhonemes, mapAzureVisemesToUnityPhonemes } from '
 import { avatarStateService } from './avatarStateService';
 import { TTSTextProcessor } from '../utils/tts-text-processor';
 import { ttsRouter } from './tts';
+import { accuracyAssuranceService, type AccuracyAuditResult } from './curriculum/AccuracyAssuranceService';
+import { adaptiveDifficultyEngine } from './curriculum/AdaptiveDifficultyEngine';
 
 // Initialize AI Tutor services
 const languageDetector = new LanguageDetectionEngine();
@@ -1185,6 +1187,31 @@ export class VoiceStreamService {
       const validationTime = Date.now() - startValidation;
       console.log(`[VOICE TUTOR] Validation: ${(validation.overallScore * 100).toFixed(1)}% - Valid: ${validation.isValid} (${validationTime}ms)`);
 
+      // 🔬 STEP 9.1: ACCURACY ASSURANCE - Verify math/science accuracy (Phase 3)
+      let accuracyAudit: AccuracyAuditResult | null = null;
+      if (session.subject && ['physics', 'chemistry', 'math', 'maths', 'biology'].includes(session.subject.toLowerCase())) {
+        const startAccuracy = Date.now();
+        try {
+          accuracyAudit = await accuracyAssuranceService.validateFinalResponse(
+            fullResponse,
+            session.subject,
+            session.topic || undefined,
+            session.profileSnapshot?.examTarget || undefined
+          );
+          const accuracyTime = Date.now() - startAccuracy;
+          console.log(`[VOICE TUTOR] 🔬 Accuracy Audit: ${accuracyAudit.passed ? 'PASSED' : 'ISSUES FOUND'} - Calcs: ${accuracyAudit.calculationsVerified}, Units: ${accuracyAudit.unitsValidated}, Formulas: ${accuracyAudit.formulasChecked} (${accuracyTime}ms)`);
+          
+          if (!accuracyAudit.passed && accuracyAudit.issues.length > 0) {
+            const criticalIssues = accuracyAudit.issues.filter(i => i.severity === 'critical' || i.severity === 'error');
+            if (criticalIssues.length > 0) {
+              console.warn(`[VOICE TUTOR] ⚠️ ${criticalIssues.length} accuracy issues detected:`, criticalIssues.map(i => i.issue).join('; '));
+            }
+          }
+        } catch (accuracyError) {
+          console.error('[VOICE TUTOR] Accuracy audit error (non-blocking):', accuracyError);
+        }
+      }
+
       // 🎯 STEP 9.5: Generate proper SSML using dual output (for speaker button replay)
       console.log(`[VOICE TUTOR] 🔄 Generating proper SSML for voice response using dual output...`);
 
@@ -1266,6 +1293,20 @@ export class VoiceStreamService {
             qualityScore: validation.layers.educationalQuality.score,
             safetyScore: validation.layers.safety.score
           },
+          accuracyAudit: accuracyAudit ? {
+            passed: accuracyAudit.passed,
+            severity: accuracyAudit.overallSeverity,
+            calculationsVerified: accuracyAudit.calculationsVerified,
+            unitsValidated: accuracyAudit.unitsValidated,
+            formulasChecked: accuracyAudit.formulasChecked,
+            issueCount: accuracyAudit.issues.length,
+            issues: accuracyAudit.issues.slice(0, 5).map(i => ({
+              type: i.type,
+              severity: i.severity,
+              issue: i.issue,
+              autoFix: i.autoFix
+            }))
+          } : null,
           timings: {
             languageDetection: langDetectionTime,
             aiGeneration: aiGenerationTime,
