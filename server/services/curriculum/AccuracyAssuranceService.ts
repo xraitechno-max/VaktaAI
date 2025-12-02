@@ -42,6 +42,604 @@ interface ParsedExpression {
   error?: string;
 }
 
+interface CompoundUnitConversion {
+  from: string;
+  to: string;
+  factor: number;
+  dimension: string;
+  aliases?: string[];
+}
+
+interface MathPattern {
+  name: string;
+  pattern: RegExp;
+  validator: (match: RegExpMatchArray) => { expected: number; stated: number; tolerance: number } | null;
+  description: string;
+}
+
+const COMPOUND_UNIT_CONVERSIONS: CompoundUnitConversion[] = [
+  { from: 'm/s', to: 'km/h', factor: 3.6, dimension: 'velocity', aliases: ['m/sec', 'ms^-1'] },
+  { from: 'km/h', to: 'm/s', factor: 1/3.6, dimension: 'velocity', aliases: ['kmph', 'km/hr', 'kmh^-1'] },
+  { from: 'cm/s', to: 'm/s', factor: 0.01, dimension: 'velocity' },
+  { from: 'ft/s', to: 'm/s', factor: 0.3048, dimension: 'velocity' },
+  
+  { from: 'm/s2', to: 'cm/s2', factor: 100, dimension: 'acceleration', aliases: ['m/s^2', 'ms^-2'] },
+  { from: 'cm/s2', to: 'm/s2', factor: 0.01, dimension: 'acceleration', aliases: ['cm/s^2', 'cms^-2'] },
+  { from: 'g', to: 'm/s2', factor: 9.8, dimension: 'acceleration' },
+  { from: 'ft/s2', to: 'm/s2', factor: 0.3048, dimension: 'acceleration' },
+  
+  { from: 'kg/m3', to: 'g/cm3', factor: 0.001, dimension: 'density', aliases: ['kg/m^3', 'kgm^-3'] },
+  { from: 'g/cm3', to: 'kg/m3', factor: 1000, dimension: 'density', aliases: ['g/cc', 'gcm^-3'] },
+  { from: 'g/mL', to: 'kg/m3', factor: 1000, dimension: 'density' },
+  { from: 'kg/L', to: 'kg/m3', factor: 1000, dimension: 'density' },
+  
+  { from: 'mol/L', to: 'mM', factor: 1000, dimension: 'concentration', aliases: ['M', 'molar'] },
+  { from: 'mM', to: 'mol/L', factor: 0.001, dimension: 'concentration', aliases: ['millimolar'] },
+  { from: 'mol/L', to: 'mmol/L', factor: 1000, dimension: 'concentration' },
+  { from: 'g/L', to: 'mg/mL', factor: 1, dimension: 'concentration' },
+  { from: 'ppm', to: 'mg/L', factor: 1, dimension: 'concentration' },
+  { from: 'ppm', to: 'mg/kg', factor: 1, dimension: 'concentration' },
+  { from: 'ppb', to: 'ug/L', factor: 1, dimension: 'concentration', aliases: ['μg/L'] },
+  { from: '%w/v', to: 'g/100mL', factor: 1, dimension: 'concentration' },
+  { from: '%w/w', to: 'g/100g', factor: 1, dimension: 'concentration' },
+  
+  { from: 'J/(mol.K)', to: 'cal/(mol.K)', factor: 0.239, dimension: 'molar_heat_capacity', aliases: ['J/mol.K', 'J/(mol·K)'] },
+  { from: 'cal/(mol.K)', to: 'J/(mol.K)', factor: 4.184, dimension: 'molar_heat_capacity' },
+  { from: 'J/(g.K)', to: 'cal/(g.K)', factor: 0.239, dimension: 'specific_heat', aliases: ['J/g.K', 'J/(g·K)'] },
+  { from: 'cal/(g.K)', to: 'J/(g.K)', factor: 4.184, dimension: 'specific_heat' },
+  { from: 'J/(kg.K)', to: 'J/(g.K)', factor: 0.001, dimension: 'specific_heat' },
+  
+  { from: 'Pa.s', to: 'P', factor: 10, dimension: 'dynamic_viscosity', aliases: ['Pa·s', 'Pas'] },
+  { from: 'P', to: 'Pa.s', factor: 0.1, dimension: 'dynamic_viscosity', aliases: ['poise'] },
+  { from: 'cP', to: 'Pa.s', factor: 0.001, dimension: 'dynamic_viscosity', aliases: ['centipoise'] },
+  { from: 'm2/s', to: 'St', factor: 1e4, dimension: 'kinematic_viscosity', aliases: ['m^2/s'] },
+  { from: 'St', to: 'm2/s', factor: 1e-4, dimension: 'kinematic_viscosity', aliases: ['stokes'] },
+  { from: 'cSt', to: 'm2/s', factor: 1e-6, dimension: 'kinematic_viscosity', aliases: ['centistokes'] },
+  
+  { from: 'W/(m.K)', to: 'cal/(cm.s.C)', factor: 0.00239, dimension: 'thermal_conductivity', aliases: ['W/m.K', 'W/(m·K)'] },
+  { from: 'cal/(cm.s.C)', to: 'W/(m.K)', factor: 418.4, dimension: 'thermal_conductivity' },
+  
+  { from: 'V/m', to: 'N/C', factor: 1, dimension: 'electric_field', aliases: ['V/m', 'Vm^-1'] },
+  { from: 'kV/m', to: 'V/m', factor: 1000, dimension: 'electric_field' },
+  { from: 'V/cm', to: 'V/m', factor: 100, dimension: 'electric_field' },
+  
+  { from: 'T', to: 'G', factor: 1e4, dimension: 'magnetic_field', aliases: ['tesla'] },
+  { from: 'G', to: 'T', factor: 1e-4, dimension: 'magnetic_field', aliases: ['gauss'] },
+  { from: 'mT', to: 'T', factor: 0.001, dimension: 'magnetic_field' },
+  { from: 'Wb/m2', to: 'T', factor: 1, dimension: 'magnetic_field', aliases: ['Wb/m^2'] },
+  
+  { from: 'N/m2', to: 'Pa', factor: 1, dimension: 'pressure', aliases: ['N/m^2', 'Nm^-2'] },
+  { from: 'kPa', to: 'Pa', factor: 1000, dimension: 'pressure' },
+  { from: 'MPa', to: 'Pa', factor: 1e6, dimension: 'pressure' },
+  { from: 'bar', to: 'Pa', factor: 1e5, dimension: 'pressure' },
+  { from: 'atm', to: 'Pa', factor: 101325, dimension: 'pressure' },
+  { from: 'atm', to: 'bar', factor: 1.01325, dimension: 'pressure' },
+  { from: 'mmHg', to: 'Pa', factor: 133.322, dimension: 'pressure', aliases: ['torr'] },
+  { from: 'atm', to: 'mmHg', factor: 760, dimension: 'pressure' },
+  
+  { from: 'N.m', to: 'J', factor: 1, dimension: 'energy', aliases: ['N·m', 'Nm'] },
+  { from: 'kJ', to: 'J', factor: 1000, dimension: 'energy' },
+  { from: 'MJ', to: 'J', factor: 1e6, dimension: 'energy' },
+  { from: 'kJ/mol', to: 'J/mol', factor: 1000, dimension: 'molar_energy' },
+  { from: 'kcal/mol', to: 'kJ/mol', factor: 4.184, dimension: 'molar_energy' },
+  { from: 'eV', to: 'J', factor: 1.602e-19, dimension: 'energy' },
+  { from: 'MeV', to: 'J', factor: 1.602e-13, dimension: 'energy' },
+  { from: 'erg', to: 'J', factor: 1e-7, dimension: 'energy' },
+  
+  { from: 'kg.m/s', to: 'N.s', factor: 1, dimension: 'momentum', aliases: ['kg·m/s', 'kgm/s'] },
+  { from: 'g.cm/s', to: 'kg.m/s', factor: 1e-5, dimension: 'momentum' },
+  
+  { from: 'J/s', to: 'W', factor: 1, dimension: 'power' },
+  { from: 'kW', to: 'W', factor: 1000, dimension: 'power' },
+  { from: 'MW', to: 'W', factor: 1e6, dimension: 'power' },
+  { from: 'hp', to: 'W', factor: 745.7, dimension: 'power', aliases: ['horsepower'] },
+  
+  { from: 'C/s', to: 'A', factor: 1, dimension: 'current' },
+  { from: 'mA', to: 'A', factor: 0.001, dimension: 'current' },
+  { from: 'uA', to: 'A', factor: 1e-6, dimension: 'current', aliases: ['μA'] },
+  
+  { from: 'J/C', to: 'V', factor: 1, dimension: 'voltage' },
+  { from: 'mV', to: 'V', factor: 0.001, dimension: 'voltage' },
+  { from: 'kV', to: 'V', factor: 1000, dimension: 'voltage' },
+  
+  { from: 'V/A', to: 'ohm', factor: 1, dimension: 'resistance', aliases: ['Ω'] },
+  { from: 'kohm', to: 'ohm', factor: 1000, dimension: 'resistance', aliases: ['kΩ'] },
+  { from: 'Mohm', to: 'ohm', factor: 1e6, dimension: 'resistance', aliases: ['MΩ'] },
+  
+  { from: 'C/V', to: 'F', factor: 1, dimension: 'capacitance' },
+  { from: 'uF', to: 'F', factor: 1e-6, dimension: 'capacitance', aliases: ['μF'] },
+  { from: 'nF', to: 'F', factor: 1e-9, dimension: 'capacitance' },
+  { from: 'pF', to: 'F', factor: 1e-12, dimension: 'capacitance' },
+  
+  { from: 'Wb/A', to: 'H', factor: 1, dimension: 'inductance' },
+  { from: 'mH', to: 'H', factor: 0.001, dimension: 'inductance' },
+  { from: 'uH', to: 'H', factor: 1e-6, dimension: 'inductance', aliases: ['μH'] },
+  
+  { from: 'mol/kg', to: 'molal', factor: 1, dimension: 'molality', aliases: ['m'] },
+  { from: 'eq/L', to: 'N', factor: 1, dimension: 'normality', aliases: ['normal'] },
+  
+  { from: 'L.atm/(mol.K)', to: 'J/(mol.K)', factor: 101.325, dimension: 'gas_constant' },
+  { from: 'cal/(mol.K)', to: 'L.atm/(mol.K)', factor: 0.0413, dimension: 'gas_constant' },
+  
+  { from: 'rad/s', to: 'rpm', factor: 9.5493, dimension: 'angular_velocity' },
+  { from: 'rpm', to: 'rad/s', factor: 0.10472, dimension: 'angular_velocity' },
+  { from: 'deg/s', to: 'rad/s', factor: 0.01745, dimension: 'angular_velocity' },
+  
+  { from: 'kg.m2', to: 'g.cm2', factor: 1e7, dimension: 'moment_of_inertia', aliases: ['kg·m²', 'kg.m^2'] },
+  { from: 'g.cm2', to: 'kg.m2', factor: 1e-7, dimension: 'moment_of_inertia', aliases: ['g·cm²', 'g.cm^2'] },
+  
+  { from: 'N/m', to: 'dyne/cm', factor: 1000, dimension: 'surface_tension' },
+  { from: 'mN/m', to: 'N/m', factor: 0.001, dimension: 'surface_tension' },
+];
+
+const JEE_NEET_MATH_PATTERNS: MathPattern[] = [
+  {
+    name: 'quadratic_discriminant',
+    pattern: /(?:discriminant|D)\s*=\s*b²\s*-\s*4ac\s*=\s*\(?(\d+(?:\.\d+)?)\)?²\s*-\s*4\s*[×\*]?\s*\(?(\d+(?:\.\d+)?)\)?\s*[×\*]?\s*\(?(-?\d+(?:\.\d+)?)\)?\s*=\s*(-?\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const b = parseFloat(m[1]), a = parseFloat(m[2]), c = parseFloat(m[3]), stated = parseFloat(m[4]);
+      return { expected: b*b - 4*a*c, stated, tolerance: 0.01 };
+    },
+    description: 'Quadratic discriminant D = b² - 4ac'
+  },
+  {
+    name: 'quadratic_roots',
+    pattern: /x\s*=\s*\(-?(\d+(?:\.\d+)?)\s*[±]\s*√(\d+(?:\.\d+)?)\)\s*\/\s*\(?2\s*[×\*]?\s*(\d+(?:\.\d+)?)\)?\s*=\s*(-?\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const negB = parseFloat(m[1]), sqrtD = parseFloat(m[2]), twoA = 2 * parseFloat(m[3]), stated = parseFloat(m[4]);
+      const expected1 = (-negB + Math.sqrt(sqrtD)) / twoA;
+      const expected2 = (-negB - Math.sqrt(sqrtD)) / twoA;
+      const closest = Math.abs(expected1 - stated) < Math.abs(expected2 - stated) ? expected1 : expected2;
+      return { expected: closest, stated, tolerance: 0.01 };
+    },
+    description: 'Quadratic formula roots'
+  },
+  {
+    name: 'logarithm_base10',
+    pattern: /log\s*\(?(\d+(?:\.\d+)?)\)?\s*=\s*(-?\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const num = parseFloat(m[1]), stated = parseFloat(m[2]);
+      return { expected: Math.log10(num), stated, tolerance: 0.01 };
+    },
+    description: 'Logarithm base 10'
+  },
+  {
+    name: 'natural_log',
+    pattern: /ln\s*\(?(\d+(?:\.\d+)?)\)?\s*=\s*(-?\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const num = parseFloat(m[1]), stated = parseFloat(m[2]);
+      return { expected: Math.log(num), stated, tolerance: 0.01 };
+    },
+    description: 'Natural logarithm'
+  },
+  {
+    name: 'log_with_base',
+    pattern: /log[_₂₃₄₅₆₇₈₉]?(\d+)\s*\(?(\d+(?:\.\d+)?)\)?\s*=\s*(-?\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const base = parseFloat(m[1]), num = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: Math.log(num) / Math.log(base), stated, tolerance: 0.01 };
+    },
+    description: 'Logarithm with custom base'
+  },
+  {
+    name: 'sine_degrees',
+    pattern: /sin\s*\(?(\d+(?:\.\d+)?)\s*°\)?\s*=\s*(-?\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const deg = parseFloat(m[1]), stated = parseFloat(m[2]);
+      return { expected: Math.sin(deg * Math.PI / 180), stated, tolerance: 0.001 };
+    },
+    description: 'Sine in degrees'
+  },
+  {
+    name: 'cosine_degrees',
+    pattern: /cos\s*\(?(\d+(?:\.\d+)?)\s*°\)?\s*=\s*(-?\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const deg = parseFloat(m[1]), stated = parseFloat(m[2]);
+      return { expected: Math.cos(deg * Math.PI / 180), stated, tolerance: 0.001 };
+    },
+    description: 'Cosine in degrees'
+  },
+  {
+    name: 'tangent_degrees',
+    pattern: /tan\s*\(?(\d+(?:\.\d+)?)\s*°\)?\s*=\s*(-?\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const deg = parseFloat(m[1]), stated = parseFloat(m[2]);
+      if (deg === 90 || deg === 270) return null;
+      return { expected: Math.tan(deg * Math.PI / 180), stated, tolerance: 0.001 };
+    },
+    description: 'Tangent in degrees'
+  },
+  {
+    name: 'sine_radians',
+    pattern: /sin\s*\(?(\d+(?:\.\d+)?)\s*(?:rad)?\)?\s*=\s*(-?\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const rad = parseFloat(m[1]), stated = parseFloat(m[2]);
+      if (m[0].includes('°')) return null;
+      return { expected: Math.sin(rad), stated, tolerance: 0.001 };
+    },
+    description: 'Sine in radians'
+  },
+  {
+    name: 'cosine_radians',
+    pattern: /cos\s*\(?(\d+(?:\.\d+)?)\s*(?:rad)?\)?\s*=\s*(-?\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const rad = parseFloat(m[1]), stated = parseFloat(m[2]);
+      if (m[0].includes('°')) return null;
+      return { expected: Math.cos(rad), stated, tolerance: 0.001 };
+    },
+    description: 'Cosine in radians'
+  },
+  {
+    name: 'exponential',
+    pattern: /e\s*\^\s*\(?(-?\d+(?:\.\d+)?)\)?\s*=\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)/gi,
+    validator: (m) => {
+      const exp = parseFloat(m[1]), stated = parseFloat(m[2]);
+      return { expected: Math.exp(exp), stated, tolerance: Math.abs(Math.exp(exp)) * 0.01 };
+    },
+    description: 'Exponential e^x'
+  },
+  {
+    name: 'power_10',
+    pattern: /10\s*\^\s*\(?(-?\d+(?:\.\d+)?)\)?\s*=\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)/gi,
+    validator: (m) => {
+      const exp = parseFloat(m[1]), stated = parseFloat(m[2]);
+      return { expected: Math.pow(10, exp), stated, tolerance: Math.abs(Math.pow(10, exp)) * 0.01 };
+    },
+    description: 'Power of 10'
+  },
+  {
+    name: 'factorial',
+    pattern: /(\d+)!\s*=\s*(\d+)/g,
+    validator: (m) => {
+      const n = parseInt(m[1]), stated = parseInt(m[2]);
+      let factorial = 1;
+      for (let i = 2; i <= n; i++) factorial *= i;
+      return { expected: factorial, stated, tolerance: 0 };
+    },
+    description: 'Factorial'
+  },
+  {
+    name: 'combination',
+    pattern: /(?:C|nCr|C_?)(\d+)[_,](\d+)\s*=\s*(\d+)/gi,
+    validator: (m) => {
+      const n = parseInt(m[1]), r = parseInt(m[2]), stated = parseInt(m[3]);
+      const factorial = (x: number) => { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; };
+      const expected = factorial(n) / (factorial(r) * factorial(n - r));
+      return { expected, stated, tolerance: 0 };
+    },
+    description: 'Combination nCr'
+  },
+  {
+    name: 'permutation',
+    pattern: /(?:P|nPr|P_?)(\d+)[_,](\d+)\s*=\s*(\d+)/gi,
+    validator: (m) => {
+      const n = parseInt(m[1]), r = parseInt(m[2]), stated = parseInt(m[3]);
+      const factorial = (x: number) => { let f = 1; for (let i = 2; i <= x; i++) f *= i; return f; };
+      const expected = factorial(n) / factorial(n - r);
+      return { expected, stated, tolerance: 0 };
+    },
+    description: 'Permutation nPr'
+  },
+  {
+    name: 'percentage',
+    pattern: /(\d+(?:\.\d+)?)\s*%\s*(?:of)?\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const percent = parseFloat(m[1]), total = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: (percent / 100) * total, stated, tolerance: 0.01 };
+    },
+    description: 'Percentage calculation'
+  },
+  {
+    name: 'ratio_proportion',
+    pattern: /(\d+(?:\.\d+)?)\s*:\s*(\d+(?:\.\d+)?)\s*(?:=|::)\s*(\d+(?:\.\d+)?)\s*:\s*(\d+(?:\.\d+)?)/g,
+    validator: (m) => {
+      const a = parseFloat(m[1]), b = parseFloat(m[2]), c = parseFloat(m[3]), d = parseFloat(m[4]);
+      return { expected: a/b, stated: c/d, tolerance: 0.01 };
+    },
+    description: 'Ratio proportion check'
+  },
+  {
+    name: 'arithmetic_progression_nth',
+    pattern: /a[_n]?\s*=\s*(\d+(?:\.\d+)?)\s*\+\s*\((\d+)\s*-\s*1\)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const a = parseFloat(m[1]), n = parseInt(m[2]), d = parseFloat(m[3]), stated = parseFloat(m[4]);
+      return { expected: a + (n - 1) * d, stated, tolerance: 0.01 };
+    },
+    description: 'AP nth term'
+  },
+  {
+    name: 'geometric_progression_nth',
+    pattern: /a[_n]?\s*=\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*\^\s*\((\d+)\s*-\s*1\)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const a = parseFloat(m[1]), r = parseFloat(m[2]), n = parseInt(m[3]), stated = parseFloat(m[4]);
+      return { expected: a * Math.pow(r, n - 1), stated, tolerance: Math.abs(a * Math.pow(r, n - 1)) * 0.01 };
+    },
+    description: 'GP nth term'
+  },
+  {
+    name: 'sum_ap',
+    pattern: /S[_n]?\s*=\s*\(?(\d+)\s*\/\s*2\)?\s*[×\*]?\s*\(2\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*\+\s*\((\d+)\s*-\s*1\)\s*[×\*]?\s*(\d+(?:\.\d+)?)\)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const n = parseInt(m[1]), a = parseFloat(m[2]), n2 = parseInt(m[3]), d = parseFloat(m[4]), stated = parseFloat(m[5]);
+      return { expected: (n / 2) * (2 * a + (n - 1) * d), stated, tolerance: 0.01 };
+    },
+    description: 'Sum of AP'
+  },
+  {
+    name: 'binomial_coefficient',
+    pattern: /\((\d+)\s*\+\s*(\d+)\)\s*\^\s*(\d+)\s*.*?=\s*(\d+)/gi,
+    validator: (m) => {
+      const a = parseInt(m[1]), b = parseInt(m[2]), n = parseInt(m[3]), stated = parseInt(m[4]);
+      return { expected: Math.pow(a + b, n), stated, tolerance: 0 };
+    },
+    description: 'Binomial expansion result'
+  },
+  {
+    name: 'pythagorean',
+    pattern: /√\s*\((\d+(?:\.\d+)?)\s*²\s*\+\s*(\d+(?:\.\d+)?)\s*²\)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const a = parseFloat(m[1]), b = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: Math.sqrt(a*a + b*b), stated, tolerance: 0.01 };
+    },
+    description: 'Pythagorean theorem'
+  },
+  {
+    name: 'distance_formula',
+    pattern: /√\s*\[\s*\((-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)\)\s*²\s*\+\s*\((-?\d+(?:\.\d+)?)\s*-\s*(-?\d+(?:\.\d+)?)\)\s*²\s*\]\s*=\s*(\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const x1 = parseFloat(m[1]), x2 = parseFloat(m[2]), y1 = parseFloat(m[3]), y2 = parseFloat(m[4]), stated = parseFloat(m[5]);
+      return { expected: Math.sqrt(Math.pow(x1 - x2, 2) + Math.pow(y1 - y2, 2)), stated, tolerance: 0.01 };
+    },
+    description: 'Distance formula'
+  },
+  {
+    name: 'area_triangle_base_height',
+    pattern: /(?:area|A)\s*=\s*(?:1\/2|0\.5)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const base = parseFloat(m[1]), height = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: 0.5 * base * height, stated, tolerance: 0.01 };
+    },
+    description: 'Area of triangle (base × height / 2)'
+  },
+  {
+    name: 'area_circle',
+    pattern: /(?:area|A)\s*=\s*π\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*²\s*=\s*(\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const r = parseFloat(m[1]), stated = parseFloat(m[2]);
+      return { expected: Math.PI * r * r, stated, tolerance: 0.01 };
+    },
+    description: 'Area of circle πr²'
+  },
+  {
+    name: 'circumference',
+    pattern: /(?:circumference|C)\s*=\s*2\s*[×\*]?\s*π\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const r = parseFloat(m[1]), stated = parseFloat(m[2]);
+      return { expected: 2 * Math.PI * r, stated, tolerance: 0.01 };
+    },
+    description: 'Circumference 2πr'
+  },
+  {
+    name: 'volume_sphere',
+    pattern: /(?:volume|V)\s*=\s*\(4\/3\)\s*[×\*]?\s*π\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*³\s*=\s*(\d+(?:\.\d+)?)/gi,
+    validator: (m) => {
+      const r = parseFloat(m[1]), stated = parseFloat(m[2]);
+      return { expected: (4/3) * Math.PI * Math.pow(r, 3), stated, tolerance: 0.01 };
+    },
+    description: 'Volume of sphere (4/3)πr³'
+  },
+  {
+    name: 'derivative_power',
+    pattern: /d\/dx\s*\[?\s*x\s*\^\s*(\d+)\s*\]?\s*=\s*(\d+)\s*x\s*\^\s*(\d+)/gi,
+    validator: (m) => {
+      const n = parseInt(m[1]), coeff = parseInt(m[2]), newPow = parseInt(m[3]);
+      if (coeff === n && newPow === n - 1) return null;
+      return { expected: n, stated: coeff, tolerance: 0 };
+    },
+    description: 'Power rule derivative d/dx[x^n] = nx^(n-1)'
+  },
+  {
+    name: 'integral_power',
+    pattern: /∫\s*x\s*\^\s*(\d+)\s*dx\s*=\s*x\s*\^\s*(\d+)\s*\/\s*(\d+)/gi,
+    validator: (m) => {
+      const n = parseInt(m[1]), newPow = parseInt(m[2]), denom = parseInt(m[3]);
+      if (newPow === n + 1 && denom === n + 1) return null;
+      return { expected: n + 1, stated: newPow, tolerance: 0 };
+    },
+    description: 'Power rule integral ∫x^n dx = x^(n+1)/(n+1)'
+  },
+];
+
+const PHYSICS_FORMULAS: { pattern: RegExp; formula: string; validator: (m: RegExpMatchArray) => { expected: number; stated: number; tolerance: number } | null }[] = [
+  {
+    pattern: /v\s*=\s*u\s*\+\s*a\s*t\s*=\s*(\d+(?:\.\d+)?)\s*\+\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'v = u + at',
+    validator: (m) => {
+      const u = parseFloat(m[1]), a = parseFloat(m[2]), t = parseFloat(m[3]), stated = parseFloat(m[4]);
+      return { expected: u + a * t, stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /s\s*=\s*u\s*t\s*\+\s*(?:1\/2|0\.5)\s*a\s*t\s*²\s*=\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*\+\s*(?:1\/2|0\.5)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*²?\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 's = ut + ½at²',
+    validator: (m) => {
+      const u = parseFloat(m[1]), t1 = parseFloat(m[2]), a = parseFloat(m[3]), t2 = parseFloat(m[4]), stated = parseFloat(m[5]);
+      return { expected: u * t1 + 0.5 * a * t2 * t2, stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /v\s*²\s*=\s*u\s*²\s*\+\s*2\s*a\s*s\s*=\s*(\d+(?:\.\d+)?)\s*²\s*\+\s*2\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'v² = u² + 2as',
+    validator: (m) => {
+      const u = parseFloat(m[1]), a = parseFloat(m[2]), s = parseFloat(m[3]), stated = parseFloat(m[4]);
+      return { expected: u * u + 2 * a * s, stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /F\s*=\s*m\s*a\s*=\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'F = ma',
+    validator: (m) => {
+      const mass = parseFloat(m[1]), acc = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: mass * acc, stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /p\s*=\s*m\s*v\s*=\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'p = mv (momentum)',
+    validator: (m) => {
+      const mass = parseFloat(m[1]), vel = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: mass * vel, stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /KE\s*=\s*(?:1\/2|0\.5)\s*m\s*v\s*²\s*=\s*(?:1\/2|0\.5)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*²\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'KE = ½mv²',
+    validator: (m) => {
+      const mass = parseFloat(m[1]), vel = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: 0.5 * mass * vel * vel, stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /PE\s*=\s*m\s*g\s*h\s*=\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'PE = mgh',
+    validator: (m) => {
+      const mass = parseFloat(m[1]), g = parseFloat(m[2]), h = parseFloat(m[3]), stated = parseFloat(m[4]);
+      return { expected: mass * g * h, stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /W\s*=\s*F\s*[×\*·]?\s*d\s*=\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'W = Fd (work)',
+    validator: (m) => {
+      const force = parseFloat(m[1]), dist = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: force * dist, stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /P\s*=\s*W\s*\/\s*t\s*=\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'P = W/t (power)',
+    validator: (m) => {
+      const work = parseFloat(m[1]), time = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: work / time, stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /T\s*=\s*2\s*π\s*√\s*\(?\s*l\s*\/\s*g\s*\)?\s*=\s*2\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*√\s*\(?\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*\)?\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'T = 2π√(l/g) (pendulum)',
+    validator: (m) => {
+      const pi = parseFloat(m[1]), l = parseFloat(m[2]), g = parseFloat(m[3]), stated = parseFloat(m[4]);
+      return { expected: 2 * pi * Math.sqrt(l / g), stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /V\s*=\s*I\s*R\s*=\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'V = IR (Ohm\'s law)',
+    validator: (m) => {
+      const I = parseFloat(m[1]), R = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: I * R, stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /P\s*=\s*I\s*²\s*R\s*=\s*(\d+(?:\.\d+)?)\s*²\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'P = I²R',
+    validator: (m) => {
+      const I = parseFloat(m[1]), R = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: I * I * R, stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /E\s*=\s*k\s*[×\*]?\s*q\s*\/\s*r\s*²\s*=\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*²\s*=\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)/gi,
+    formula: 'E = kq/r² (electric field)',
+    validator: (m) => {
+      const k = parseFloat(m[1]), q = parseFloat(m[2]), r = parseFloat(m[3]), stated = parseFloat(m[4]);
+      return { expected: k * q / (r * r), stated, tolerance: Math.abs(k * q / (r * r)) * 0.02 };
+    }
+  },
+  {
+    pattern: /F\s*=\s*G\s*[×\*]?\s*m1\s*[×\*]?\s*m2\s*\/\s*r\s*²\s*=\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*\/\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*²\s*=\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)/gi,
+    formula: 'F = Gm₁m₂/r² (gravitation)',
+    validator: (m) => {
+      const G = parseFloat(m[1]), m1 = parseFloat(m[2]), m2 = parseFloat(m[3]), r = parseFloat(m[4]), stated = parseFloat(m[5]);
+      return { expected: G * m1 * m2 / (r * r), stated, tolerance: Math.abs(G * m1 * m2 / (r * r)) * 0.02 };
+    }
+  },
+];
+
+const CHEMISTRY_FORMULAS: { pattern: RegExp; formula: string; validator: (m: RegExpMatchArray) => { expected: number; stated: number; tolerance: number } | null }[] = [
+  {
+    pattern: /PV\s*=\s*nRT\s*.*?(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'PV = nRT (ideal gas)',
+    validator: (m) => {
+      const P = parseFloat(m[1]), V = parseFloat(m[2]), n = parseFloat(m[3]), R = parseFloat(m[4]), T = parseFloat(m[5]);
+      return { expected: P * V, stated: n * R * T, tolerance: 0.02 };
+    }
+  },
+  {
+    pattern: /M\s*=\s*n\s*\/\s*V\s*=\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'M = n/V (molarity)',
+    validator: (m) => {
+      const n = parseFloat(m[1]), V = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: n / V, stated, tolerance: 0.001 };
+    }
+  },
+  {
+    pattern: /m\s*=\s*n\s*\/\s*W\s*=\s*(\d+(?:\.\d+)?)\s*\/\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'm = n/W (molality)',
+    validator: (m) => {
+      const n = parseFloat(m[1]), W = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: n / W, stated, tolerance: 0.001 };
+    }
+  },
+  {
+    pattern: /ΔG\s*=\s*ΔH\s*-\s*TΔS\s*=\s*(-?\d+(?:\.\d+)?)\s*-\s*(\d+(?:\.\d+)?)\s*[×\*]?\s*(-?\d+(?:\.\d+)?)\s*=\s*(-?\d+(?:\.\d+)?)/gi,
+    formula: 'ΔG = ΔH - TΔS',
+    validator: (m) => {
+      const dH = parseFloat(m[1]), T = parseFloat(m[2]), dS = parseFloat(m[3]), stated = parseFloat(m[4]);
+      return { expected: dH - T * dS, stated, tolerance: Math.abs(dH - T * dS) * 0.01 };
+    }
+  },
+  {
+    pattern: /pH\s*=\s*-log\s*\[H\+\]\s*=\s*-log\s*\(?(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\)?\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'pH = -log[H⁺]',
+    validator: (m) => {
+      const H = parseFloat(m[1]), stated = parseFloat(m[2]);
+      return { expected: -Math.log10(H), stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /pOH\s*=\s*14\s*-\s*pH\s*=\s*14\s*-\s*(\d+(?:\.\d+)?)\s*=\s*(\d+(?:\.\d+)?)/gi,
+    formula: 'pOH = 14 - pH',
+    validator: (m) => {
+      const pH = parseFloat(m[1]), stated = parseFloat(m[2]);
+      return { expected: 14 - pH, stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /E\s*°?\s*cell\s*=\s*E\s*°?\s*cathode\s*-\s*E\s*°?\s*anode\s*=\s*(-?\d+(?:\.\d+)?)\s*-\s*\(?(-?\d+(?:\.\d+)?)\)?\s*=\s*(-?\d+(?:\.\d+)?)/gi,
+    formula: 'E°cell = E°cathode - E°anode',
+    validator: (m) => {
+      const cathode = parseFloat(m[1]), anode = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: cathode - anode, stated, tolerance: 0.01 };
+    }
+  },
+  {
+    pattern: /K\s*=\s*\[products\]\s*\/\s*\[reactants\]\s*=\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*\/\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*=\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)/gi,
+    formula: 'K = [products]/[reactants]',
+    validator: (m) => {
+      const prod = parseFloat(m[1]), react = parseFloat(m[2]), stated = parseFloat(m[3]);
+      return { expected: prod / react, stated, tolerance: Math.abs(prod / react) * 0.02 };
+    }
+  },
+  {
+    pattern: /t½\s*=\s*0\.693\s*\/\s*k\s*=\s*0\.693\s*\/\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*=\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)/gi,
+    formula: 't½ = 0.693/k (half-life)',
+    validator: (m) => {
+      const k = parseFloat(m[1]), stated = parseFloat(m[2]);
+      return { expected: 0.693 / k, stated, tolerance: Math.abs(0.693 / k) * 0.01 };
+    }
+  },
+];
+
 const UNIT_CONVERSIONS: Record<string, UnitConversion[]> = {
   length: [
     { from: 'm', to: 'cm', factor: 100, dimension: 'length' },
@@ -180,10 +778,25 @@ export class AccuracyAssuranceService {
         (chunk.match(/\d+\s*[\+\-\*\/\^×÷]\s*\d+/g)?.length || 0) : 
         calcIssues.filter(i => i.severity !== 'error' && i.severity !== 'critical').length;
 
+      const jeeNeetMathIssues = this.validateJEENEETMathPatterns(chunk);
+      issues.push(...jeeNeetMathIssues);
+      calculationsVerified += jeeNeetMathIssues.filter(i => i.severity !== 'error' && i.severity !== 'critical').length;
+
+      const compoundUnitIssues = this.validateCompoundUnits(chunk);
+      issues.push(...compoundUnitIssues);
+
+      const physicsIssues = this.validatePhysicsFormulas(chunk);
+      issues.push(...physicsIssues);
+      formulasChecked += physicsIssues.length === 0 ? 1 : 0;
+
+      const chemistryIssues = this.validateChemistryFormulas(chunk);
+      issues.push(...chemistryIssues);
+      formulasChecked += chemistryIssues.length === 0 ? 1 : 0;
+
       const unitIssues = this.validateUnitConversions(chunk);
       issues.push(...unitIssues);
       unitsValidated = unitIssues.length === 0 ?
-        (chunk.match(UNIT_CONVERSION_PATTERN)?.length || 0) :
+        (chunk.match(UNIT_CONVERSION_PATTERN)?.length || 0) + compoundUnitIssues.filter(i => i.severity !== 'error').length :
         unitIssues.filter(i => i.severity !== 'error' && i.severity !== 'critical').length;
 
       if (subject && topic) {
@@ -763,6 +1376,211 @@ export class AccuracyAssuranceService {
 
   private escapeRegex(str: string): string {
     return str.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  }
+
+  private validateJEENEETMathPatterns(text: string): AccuracyIssue[] {
+    const issues: AccuracyIssue[] = [];
+
+    for (const mathPattern of JEE_NEET_MATH_PATTERNS) {
+      const pattern = new RegExp(mathPattern.pattern.source, mathPattern.pattern.flags);
+      let match;
+      
+      while ((match = pattern.exec(text)) !== null) {
+        try {
+          const result = mathPattern.validator(match);
+          if (result === null) continue;
+
+          const { expected, stated, tolerance } = result;
+          const actualTolerance = tolerance > 0 ? tolerance : Math.abs(expected) * 0.01;
+          
+          if (Math.abs(expected - stated) > actualTolerance) {
+            issues.push({
+              type: 'calculation',
+              severity: 'error',
+              originalText: match[0],
+              issue: `${mathPattern.description} error: expected ${this.formatNumber(expected)}, got ${stated}`,
+              autoFix: match[0].replace(String(stated), this.formatNumber(expected)),
+              confidence: 0.95,
+              requiresRegeneration: false,
+            });
+          }
+        } catch (e) {
+          console.error(`[AccuracyAssurance] Math pattern ${mathPattern.name} error:`, e);
+        }
+      }
+    }
+
+    return issues;
+  }
+
+  private validateCompoundUnits(text: string): AccuracyIssue[] {
+    const issues: AccuracyIssue[] = [];
+    
+    const compoundUnitPattern = /(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*([a-zA-Z]+(?:[\/·\.\(\)][a-zA-Z·\.\(\)\d\^]*)*)\s*=\s*(\d+(?:\.\d+)?(?:e[+-]?\d+)?)\s*([a-zA-Z]+(?:[\/·\.\(\)][a-zA-Z·\.\(\)\d\^]*)*)/gi;
+    
+    let match;
+    while ((match = compoundUnitPattern.exec(text)) !== null) {
+      const [fullMatch, value1Str, unit1, value2Str, unit2] = match;
+      const value1 = parseFloat(value1Str);
+      const value2 = parseFloat(value2Str);
+      
+      const normalizedUnit1 = this.normalizeCompoundUnit(unit1);
+      const normalizedUnit2 = this.normalizeCompoundUnit(unit2);
+      
+      const conversion = this.findCompoundConversion(normalizedUnit1, normalizedUnit2);
+      
+      if (conversion) {
+        const expectedValue = value1 * conversion.factor;
+        const tolerance = Math.max(Math.abs(expectedValue) * 0.02, 0.01);
+        
+        if (Math.abs(expectedValue - value2) > tolerance) {
+          issues.push({
+            type: 'unit',
+            severity: 'error',
+            originalText: fullMatch,
+            issue: `Compound unit conversion error (${conversion.dimension}): ${value1Str} ${unit1} should equal ${this.formatNumber(expectedValue)} ${unit2}, not ${value2Str}`,
+            autoFix: `${value1Str} ${unit1} = ${this.formatNumber(expectedValue)} ${unit2}`,
+            confidence: 0.92,
+            requiresRegeneration: false,
+          });
+        }
+      }
+    }
+
+    return issues;
+  }
+
+  private normalizeCompoundUnit(unit: string): string {
+    return unit
+      .replace(/·/g, '.')
+      .replace(/\^/g, '')
+      .replace(/²/g, '2')
+      .replace(/³/g, '3')
+      .replace(/\s+/g, '')
+      .toLowerCase()
+      .replace(/sec/g, 's')
+      .replace(/hr/g, 'h')
+      .replace(/hour/g, 'h')
+      .replace(/meter/g, 'm')
+      .replace(/kilogram/g, 'kg')
+      .replace(/gram/g, 'g')
+      .replace(/litre/g, 'L')
+      .replace(/liter/g, 'L')
+      .replace(/mole/g, 'mol')
+      .replace(/joule/g, 'J')
+      .replace(/watt/g, 'W')
+      .replace(/newton/g, 'N')
+      .replace(/pascal/g, 'Pa')
+      .replace(/kelvin/g, 'K')
+      .replace(/celsius/g, 'C')
+      .replace(/tesla/g, 'T')
+      .replace(/gauss/g, 'G')
+      .replace(/ohm/g, 'ohm')
+      .replace(/farad/g, 'F')
+      .replace(/henry/g, 'H')
+      .replace(/ampere/g, 'A')
+      .replace(/volt/g, 'V')
+      .replace(/coulomb/g, 'C');
+  }
+
+  private findCompoundConversion(fromUnit: string, toUnit: string): CompoundUnitConversion | null {
+    const direct = COMPOUND_UNIT_CONVERSIONS.find(c => {
+      const normalizedFrom = this.normalizeCompoundUnit(c.from);
+      const normalizedTo = this.normalizeCompoundUnit(c.to);
+      const aliasesFrom = c.aliases?.map(a => this.normalizeCompoundUnit(a)) || [];
+      const aliasesTo = c.aliases?.map(a => this.normalizeCompoundUnit(a)) || [];
+      
+      return (normalizedFrom === fromUnit || aliasesFrom.includes(fromUnit)) &&
+             (normalizedTo === toUnit || aliasesTo.includes(toUnit));
+    });
+    
+    if (direct) return direct;
+    
+    const reverse = COMPOUND_UNIT_CONVERSIONS.find(c => {
+      const normalizedFrom = this.normalizeCompoundUnit(c.from);
+      const normalizedTo = this.normalizeCompoundUnit(c.to);
+      const aliasesFrom = c.aliases?.map(a => this.normalizeCompoundUnit(a)) || [];
+      const aliasesTo = c.aliases?.map(a => this.normalizeCompoundUnit(a)) || [];
+      
+      return (normalizedTo === fromUnit || aliasesTo.includes(fromUnit)) &&
+             (normalizedFrom === toUnit || aliasesFrom.includes(toUnit));
+    });
+    
+    if (reverse) {
+      return { ...reverse, from: fromUnit, to: toUnit, factor: 1 / reverse.factor };
+    }
+    
+    return null;
+  }
+
+  private validatePhysicsFormulas(text: string): AccuracyIssue[] {
+    const issues: AccuracyIssue[] = [];
+
+    for (const formula of PHYSICS_FORMULAS) {
+      const pattern = new RegExp(formula.pattern.source, formula.pattern.flags);
+      let match;
+      
+      while ((match = pattern.exec(text)) !== null) {
+        try {
+          const result = formula.validator(match);
+          if (result === null) continue;
+
+          const { expected, stated, tolerance } = result;
+          const actualTolerance = tolerance > 0 ? tolerance : Math.abs(expected) * 0.01;
+          
+          if (Math.abs(expected - stated) > actualTolerance) {
+            issues.push({
+              type: 'formula',
+              severity: 'error',
+              originalText: match[0],
+              issue: `Physics formula error (${formula.formula}): expected ${this.formatNumber(expected)}, got ${stated}`,
+              autoFix: match[0].replace(String(stated), this.formatNumber(expected)),
+              confidence: 0.93,
+              requiresRegeneration: false,
+            });
+          }
+        } catch (e) {
+          console.error(`[AccuracyAssurance] Physics formula error:`, e);
+        }
+      }
+    }
+
+    return issues;
+  }
+
+  private validateChemistryFormulas(text: string): AccuracyIssue[] {
+    const issues: AccuracyIssue[] = [];
+
+    for (const formula of CHEMISTRY_FORMULAS) {
+      const pattern = new RegExp(formula.pattern.source, formula.pattern.flags);
+      let match;
+      
+      while ((match = pattern.exec(text)) !== null) {
+        try {
+          const result = formula.validator(match);
+          if (result === null) continue;
+
+          const { expected, stated, tolerance } = result;
+          const actualTolerance = tolerance > 0 ? tolerance : Math.abs(expected) * 0.01;
+          
+          if (Math.abs(expected - stated) > actualTolerance) {
+            issues.push({
+              type: 'formula',
+              severity: 'error',
+              originalText: match[0],
+              issue: `Chemistry formula error (${formula.formula}): expected ${this.formatNumber(expected)}, got ${stated}`,
+              autoFix: match[0].replace(String(stated), this.formatNumber(expected)),
+              confidence: 0.93,
+              requiresRegeneration: false,
+            });
+          }
+        } catch (e) {
+          console.error(`[AccuracyAssurance] Chemistry formula error:`, e);
+        }
+      }
+    }
+
+    return issues;
   }
 }
 
