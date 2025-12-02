@@ -785,17 +785,18 @@ export class VoiceStreamService {
       // 🚀 PHASE 2: Send appropriate TTS chunk message
       const finalAudioData = audioBuffer.toString('base64');
 
-      // 🔢 CRITICAL FIX: Use sentence sequence number as chunk index
-      // This ensures chunks are played in correct order even if TTS completes out of order
-      // Client buffers and plays chunks by chunkIndex, not by arrival order
-      const ttsChunkIndex = sequenceNumber;
-      
-      // Track actual count of chunks sent (increment after each successful send)
+      // 🔢 CRITICAL FIX: Use sequential sent count as chunk index (NOT sentence index)
+      // When sentences are skipped (too short), we don't want gaps in chunk indices
+      // Client expects: 0, 1, 2, 3, 4... with no gaps
+      // If we used sentence index: 0, 1, 2, 5, 7, 9 (gaps from skipped sentences) → client hangs waiting for 3, 4, 6, 8
       if (ws.ttsSentCount === undefined) {
         ws.ttsSentCount = 0;
       }
+      
+      // Use actual sent count as chunk index - this ensures no gaps
+      const ttsChunkIndex = ws.ttsSentCount;
 
-      console.log(`[TTS INDEX] Sentence ${sequenceNumber} → TTS chunk ${ttsChunkIndex} (will be chunk #${ws.ttsSentCount + 1})`);
+      console.log(`[TTS INDEX] Sentence ${sequenceNumber} → TTS chunk ${ttsChunkIndex} (sequential, no gaps)`);
 
       if (voiceOptions.enablePhonemes && phonemes) {
         // 🎤 Send PHONEME_TTS_CHUNK with audio + phoneme data
