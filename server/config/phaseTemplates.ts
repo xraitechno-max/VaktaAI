@@ -553,7 +553,8 @@ export function getGreetingTemplate(
   userProfile?: {
     currentClass?: string;
     examTarget?: string;
-  }
+  },
+  topic?: string // Optional topic - if provided, use topic-aware greeting
 ): TemplateVariant {
   // Determine context based on user profile
   let context: string | undefined;
@@ -572,19 +573,24 @@ export function getGreetingTemplate(
     }
   }
   
-  // Filter templates by time, language, and context
-  const templates = GREETING_TEMPLATES.variants.filter(
-    v => v.timeOfDay === timeOfDay && 
-         v.language === language &&
+  // If topic is provided, use topic-aware greeting templates
+  // Topic-aware greetings acknowledge the selected topic and don't ask "what to learn"
+  const templateSource = topic && topic.trim() 
+    ? TOPIC_GREETING_TEMPLATES 
+    : GREETING_TEMPLATES;
+  
+  // Filter templates by language and context (topic templates don't have timeOfDay)
+  const templates = templateSource.variants.filter(
+    v => v.language === language &&
          (!context || v.context === context)
   );
   
-  // Fallback to any matching time+language if no context match
+  // Fallback to any matching language if no context match
   if (templates.length === 0) {
-    const fallback = GREETING_TEMPLATES.variants.filter(
-      v => v.timeOfDay === timeOfDay && v.language === language
+    const fallback = templateSource.variants.filter(
+      v => v.language === language
     );
-    return fallback[0] || GREETING_TEMPLATES.variants[0];
+    return fallback[0] || templateSource.variants[0];
   }
   
   return templates[Math.floor(Math.random() * templates.length)];
