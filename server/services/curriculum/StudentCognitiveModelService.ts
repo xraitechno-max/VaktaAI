@@ -1072,15 +1072,12 @@ export class StudentCognitiveModelService {
         });
         
         for (const e of edgesData) {
-          if (e.metadata && typeof e.metadata === 'object') {
-            const meta = e.metadata as Record<string, unknown>;
-            if (meta.subject && typeof meta.subject === 'string') {
-              if (remainingTopics.includes(e.sourceTopicId) && !subjectMap.has(e.sourceTopicId)) {
-                subjectMap.set(e.sourceTopicId, normalizeSubject(meta.subject));
-              }
-              if (remainingTopics.includes(e.targetTopicId) && !subjectMap.has(e.targetTopicId)) {
-                subjectMap.set(e.targetTopicId, normalizeSubject(meta.subject));
-              }
+          if (e.subject) {
+            if (remainingTopics.includes(e.sourceTopicId) && !subjectMap.has(e.sourceTopicId)) {
+              subjectMap.set(e.sourceTopicId, normalizeSubject(e.subject));
+            }
+            if (remainingTopics.includes(e.targetTopicId) && !subjectMap.has(e.targetTopicId)) {
+              subjectMap.set(e.targetTopicId, normalizeSubject(e.subject));
             }
           }
         }
@@ -1094,10 +1091,11 @@ export class StudentCognitiveModelService {
         });
         
         for (const m of masteryData) {
-          if (!subjectMap.has(m.topicId) && m.metadata && typeof m.metadata === 'object') {
-            const meta = m.metadata as Record<string, unknown>;
-            if (meta.subject && typeof meta.subject === 'string') {
-              subjectMap.set(m.topicId, normalizeSubject(meta.subject));
+          if (!subjectMap.has(m.topicId)) {
+            const topicLower = m.topicId.toLowerCase();
+            const inferredSubject = this.inferSubjectFromTopicId(topicLower);
+            if (inferredSubject !== 'general') {
+              subjectMap.set(m.topicId, normalizeSubject(inferredSubject));
             }
           }
         }

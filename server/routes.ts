@@ -13,6 +13,7 @@ import { aiService } from "./openai";
 import { insertDocumentSchema, insertChatSchema, insertNoteSchema, insertQuizSchema, insertStudyPlanSchema } from "@shared/schema";
 import multer from "multer";
 import { optimizedTutorRouter } from "./routes/optimizedTutor";
+import { curriculumDataRouter } from "./routes/curriculumData";
 import voiceRouter from "./routes/voice";
 import testValidationRouter from "./routes/testValidation";
 import unityAssetsRouter from "./routes/unityAssets";
@@ -486,6 +487,9 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   // Optimized Tutor routes (with intelligent routing & caching)
   app.use('/api/tutor/optimized', isAuthenticated, aiLimiter, optimizedTutorRouter);
+
+  // Curriculum data routes (mastery, cognitive profile, assessment, difficulty)
+  app.use('/api/curriculum', isAuthenticated, curriculumDataRouter);
 
   // Voice routes (Sarvam AI primary, AssemblyAI/Polly fallback)
   app.use('/api/voice', isAuthenticated, voiceRouter);

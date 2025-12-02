@@ -16,6 +16,7 @@ import { ResponseValidator } from '../services/ResponseValidator';
 import { performanceOptimizer, metricsTracker } from '../services/PerformanceOptimizer';
 import type { IntentResult } from '../types/intents';
 import { TTSTextProcessor } from '../utils/tts-text-processor';
+import { accuracyAssuranceService, type AccuracyAuditResult } from '../services/curriculum/AccuracyAssuranceService';
 
 // Initialize new services
 const languageDetector = new LanguageDetectionEngine();
@@ -32,7 +33,7 @@ export const optimizedTutorRouter = express.Router();
  */
 optimizedTutorRouter.post('/ask', async (req, res) => {
   try {
-    const { chatId, userQuery, persona, language, emotion } = req.body;
+    const { chatId, userQuery, persona, language, emotion, subject, topic, examTarget } = req.body;
     
     if (!chatId || !userQuery) {
       return res.status(400).json({ error: 'chatId and userQuery required' });
@@ -64,7 +65,35 @@ optimizedTutorRouter.post('/ask', async (req, res) => {
       emotion: emotion || 'neutral'
     });
     
-    // 4. Store assistant message with dual output metadata
+    // 4. Run accuracy validation for STEM subjects
+    let accuracyAudit: AccuracyAuditResult | null = null;
+    const stemSubjects = ['physics', 'chemistry', 'math', 'maths', 'mathematics', 'biology'];
+    const normalizedSubject = (subject || '').toLowerCase();
+    
+    if (stemSubjects.includes(normalizedSubject)) {
+      try {
+        const startAccuracy = Date.now();
+        accuracyAudit = await accuracyAssuranceService.validateFinalResponse(
+          dualOutput.chat_md,
+          normalizedSubject,
+          topic || undefined,
+          examTarget || undefined
+        );
+        const accuracyTime = Date.now() - startAccuracy;
+        console.log(`[TUTOR ASK DUAL] Accuracy Audit: ${accuracyAudit.passed ? 'PASSED' : 'ISSUES FOUND'} - Calcs: ${accuracyAudit.calculationsVerified}, Units: ${accuracyAudit.unitsValidated}, Formulas: ${accuracyAudit.formulasChecked} (${accuracyTime}ms)`);
+        
+        if (!accuracyAudit.passed && accuracyAudit.issues.length > 0) {
+          const criticalIssues = accuracyAudit.issues.filter(i => i.severity === 'critical' || i.severity === 'error');
+          if (criticalIssues.length > 0) {
+            console.warn(`[TUTOR ASK DUAL] ${criticalIssues.length} accuracy issues detected:`, criticalIssues.map(i => i.issue).join('; '));
+          }
+        }
+      } catch (accuracyError) {
+        console.error('[TUTOR ASK DUAL] Accuracy audit error (non-blocking):', accuracyError);
+      }
+    }
+    
+    // 5. Store assistant message with dual output metadata and accuracy info
     const assistantMsg = await storage.addMessage({
       chatId,
       role: 'assistant',
@@ -73,13 +102,20 @@ optimizedTutorRouter.post('/ask', async (req, res) => {
       metadata: {
         speakSSML: dualOutput.speak_ssml,
         speakMeta: dualOutput.speak_meta,
-        source: (dualOutput.metadata?.source || 'ai') as string
+        source: (dualOutput.metadata?.source || 'ai') as string,
+        accuracyAudit: accuracyAudit ? {
+          passed: accuracyAudit.passed,
+          calculationsVerified: accuracyAudit.calculationsVerified,
+          unitsValidated: accuracyAudit.unitsValidated,
+          formulasChecked: accuracyAudit.formulasChecked,
+          issueCount: accuracyAudit.issues.length
+        } : undefined
       } as any
     });
     
-    console.log(`[TUTOR ASK DUAL] ✅ Generated dual output for chat ${chatId}`);
+    console.log(`[TUTOR ASK DUAL] Generated dual output for chat ${chatId}`);
     
-    // 5. Return chat markdown + speak availability
+    // 6. Return chat markdown + speak availability + accuracy info
     res.json({
       response: dualOutput.chat_md,
       messageId: assistantMsg.id,
@@ -87,7 +123,22 @@ optimizedTutorRouter.post('/ask', async (req, res) => {
       meta: {
         source: dualOutput.metadata?.source || 'ai',
         persona,
-        language
+        language,
+        accuracyAudit: accuracyAudit ? {
+          passed: accuracyAudit.passed,
+          calculationsVerified: accuracyAudit.calculationsVerified,
+          unitsValidated: accuracyAudit.unitsValidated,
+          formulasChecked: accuracyAudit.formulasChecked,
+          totalIssues: accuracyAudit.issues.length,
+          issues: accuracyAudit.issues.map(i => ({
+            type: i.type,
+            severity: i.severity,
+            issue: i.issue,
+            context: i.context,
+            expected: i.expected,
+            actual: i.actual
+          }))
+        } : undefined
       }
     });
   } catch (error) {

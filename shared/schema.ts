@@ -1544,6 +1544,33 @@ export const studentInteractionMetrics = pgTable('student_interaction_metrics', 
   index('interaction_created_idx').on(table.createdAt),
 ]);
 
+// ========== CURRICULUM EDGES (Topic Relationships Graph) ==========
+export const curriculumEdges = pgTable('curriculum_edges', {
+  id: varchar('id').primaryKey().default(sql`gen_random_uuid()`),
+  
+  // Source and target topics
+  sourceTopicId: varchar('source_topic_id').notNull(),
+  targetTopicId: varchar('target_topic_id').notNull(),
+  
+  // Relationship metadata
+  relationshipType: varchar('relationship_type').$type<
+    'prerequisite' | 'corequisite' | 'extends' | 'related' | 'applies_to'
+  >().default('prerequisite'),
+  strength: real('strength').default(1.0), // 0-1 strength of connection
+  
+  // Subject context
+  subject: varchar('subject').notNull(),
+  classLevel: varchar('class_level'),
+  
+  // Metadata
+  isVerified: boolean('is_verified').default(false),
+  createdAt: timestamp('created_at').defaultNow(),
+}, (table) => [
+  index('curriculum_edge_source_idx').on(table.sourceTopicId),
+  index('curriculum_edge_target_idx').on(table.targetTopicId),
+  index('curriculum_edge_subject_idx').on(table.subject),
+]);
+
 // Insert schemas for new tables
 export const insertNCERTCurriculumChunkSchema = createInsertSchema(ncertCurriculumChunks).omit({
   id: true,
