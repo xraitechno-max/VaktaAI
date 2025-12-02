@@ -1034,7 +1034,20 @@ ${isHinglish
 2. Use **bold** for key terms and formulas
 3. Use numbered lists for step-by-step solutions
 4. Use bullet points for multiple related points
-5. Use code blocks for formulas: \`F = ma\`
+5. Use inline code for formulas: \`KE = (1/2)mv²\` or \`F = ma\`
+
+## CRITICAL: Math Formula Format (MUST FOLLOW)
+- **NEVER use LaTeX notation** like \\frac{}, \\sqrt{}, \\[ \\], $ $, etc.
+- Write formulas in **simple inline text** that can be spoken naturally
+- For fractions: Write \`(1/2)\` or \`1/2\` NOT \\frac{1}{2}
+- For powers: Write \`v²\` or \`v^2\` NOT v^{2}
+- For square roots: Write \`sqrt(x)\` or \`√x\` NOT \\sqrt{x}
+- Examples of CORRECT format:
+  - \`KE = (1/2)mv²\` (kinetic energy)
+  - \`E = mc²\` (Einstein's equation)
+  - \`F = Gm₁m₂/r²\` (gravitational force)
+  - \`pH = -log[H⁺]\` (pH formula)
+- This is ESSENTIAL because formulas will be spoken aloud by AI voice
 
 ## NCERT Citation Format
 When referencing NCERT content: [NCERT | Class X | Subject | Ch Y | Page Z]
