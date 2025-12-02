@@ -29,11 +29,11 @@ export const GREETING_TEMPLATES: PhaseTemplate = {
     {
       language: 'english',
       context: 'foundation',
-      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {topic}.
+      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {subject}.
 
-We'll learn step-by-step together - I'll guide you with questions, not just answers.
+You can ask me anything about {subject} related to your class or exams. We'll learn step-by-step together.
 
-Quick check: Have you studied {topic} before? What do you remember?`,
+What would you like to learn today?`,
       emotion: 'enthusiastic',
       requiresResponse: true
     },
@@ -41,11 +41,11 @@ Quick check: Have you studied {topic} before? What do you remember?`,
     {
       language: 'hinglish',
       context: 'foundation',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {topic} ke liye.
+      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {subject} ke liye.
 
-Hum saath mein step-by-step seekhenge - main questions se guide karungi, sirf answers nahi dungi.
+Aap mujhse {subject} mein apne class ya exam se related kuch bhi pooch sakte ho. Hum saath mein step-by-step seekhenge.
 
-Quick check: Kya {topic} pehle padha hai? Jo yaad hai batao?`,
+Aaj kya seekhna chahte ho?`,
       emotion: 'enthusiastic',
       requiresResponse: true
     },
@@ -53,11 +53,11 @@ Quick check: Kya {topic} pehle padha hai? Jo yaad hai batao?`,
     {
       language: 'english',
       context: 'board_prep',
-      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {topic}.
+      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {subject}.
 
-{topic} is important for {examTarget}. We'll build understanding together, step-by-step.
+You can ask me anything about {subject} related to your class or exams. We'll build understanding together, step-by-step.
 
-Quick check: Have you studied {topic} before? What's your goal today - concepts, numericals, or board prep?`,
+What would you like to learn today?`,
       emotion: 'enthusiastic',
       requiresResponse: true
     },
@@ -65,11 +65,11 @@ Quick check: Have you studied {topic} before? What's your goal today - concepts,
     {
       language: 'hinglish',
       context: 'board_prep',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {topic} ke liye.
+      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {subject} ke liye.
 
-{topic} {examTarget} ke liye important hai. Hum saath mein step-by-step samjhenge.
+Aap mujhse {subject} mein apne class ya exam se related kuch bhi pooch sakte ho. Hum saath mein step-by-step samjhenge.
 
-Quick check: Kya {topic} pehle padha hai? Aaj ka goal kya hai - concepts, numericals, ya boards prep?`,
+Aaj kya seekhna chahte ho?`,
       emotion: 'enthusiastic',
       requiresResponse: true
     },
@@ -77,11 +77,11 @@ Quick check: Kya {topic} pehle padha hai? Aaj ka goal kya hai - concepts, numeri
     {
       language: 'english',
       context: 'competitive',
-      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {topic}.
+      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {subject}.
 
-{topic} is crucial for {examTarget} - tests both concepts and speed. We'll master it together.
+You can ask me anything about {subject} for {examTarget} - concepts, problems, or exam prep. We'll master it together.
 
-Quick check: What do you already know about {topic}? And what's your goal - deep concepts, advanced problems, or exam practice?`,
+What would you like to learn today?`,
       emotion: 'enthusiastic',
       requiresResponse: true
     },
@@ -89,11 +89,11 @@ Quick check: What do you already know about {topic}? And what's your goal - deep
     {
       language: 'hinglish',
       context: 'competitive',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {topic} ke liye.
+      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {subject} ke liye.
 
-{topic} {examTarget} ke liye crucial hai - concepts aur speed dono test hoti hai. Saath mein master karenge.
+Aap mujhse {subject} mein {examTarget} ke liye kuch bhi pooch sakte ho - concepts, problems, ya exam prep. Saath mein master karenge.
 
-Quick check: {topic} ke baare mein kya jaante ho? Aur goal kya hai - deep concepts, advanced problems, ya exam practice?`,
+Aaj kya seekhna chahte ho?`,
       emotion: 'enthusiastic',
       requiresResponse: true
     },
@@ -101,11 +101,11 @@ Quick check: {topic} ke baare mein kya jaante ho? Aur goal kya hai - deep concep
     {
       language: 'english',
       context: 'dropper',
-      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor. This is YOUR year for {examTarget}.
+      text: `Hi {studentName}, I'm {teacherName}, your AI Mentor for {subject}. This is YOUR year for {examTarget}.
 
-Let's master {topic} together - I'll help fill gaps and build solid understanding.
+You can ask me anything about {subject} - concepts, tough problems, or exam prep. Let's master it together.
 
-Quick check: What do you remember about {topic}? What's your focus today - concepts, tough problems, or exam simulation?`,
+What would you like to focus on today?`,
       emotion: 'encouraging',
       requiresResponse: true
     },
@@ -113,11 +113,11 @@ Quick check: What do you remember about {topic}? What's your focus today - conce
     {
       language: 'hinglish',
       context: 'dropper',
-      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor. Ye TUMHARA saal hai {examTarget} ke liye.
+      text: `Hi {studentName}, main {teacherName} hoon, tumhari AI Mentor {subject} ke liye. Ye TUMHARA saal hai {examTarget} ke liye.
 
-{topic} saath mein master karenge - gaps fill karke solid understanding banayenge.
+Aap mujhse {subject} mein kuch bhi pooch sakte ho - concepts, tough problems, ya exam prep. Saath mein master karenge.
 
-Quick check: {topic} ke baare mein kya yaad hai? Aaj ka focus kya hai - concepts, tough problems, ya exam simulation?`,
+Aaj kya seekhna chahte ho?`,
       emotion: 'encouraging',
       requiresResponse: true
     }

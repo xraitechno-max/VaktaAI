@@ -134,9 +134,8 @@ optimizedTutorRouter.post('/ask', async (req, res) => {
             type: i.type,
             severity: i.severity,
             issue: i.issue,
-            context: i.context,
-            expected: i.expected,
-            actual: i.actual
+            originalText: i.originalText,
+            suggestion: i.suggestion
           }))
         } : undefined
       }

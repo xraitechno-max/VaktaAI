@@ -785,16 +785,17 @@ export class VoiceStreamService {
       // 🚀 PHASE 2: Send appropriate TTS chunk message
       const finalAudioData = audioBuffer.toString('base64');
 
-      // 🔢 CRITICAL FIX: Use sequential TTS counter instead of sentence index
-      // This prevents gaps when sentences are skipped (e.g., list numbers "1", "2")
-      // Initialize counter if not set
+      // 🔢 CRITICAL FIX: Use sentence sequence number as chunk index
+      // This ensures chunks are played in correct order even if TTS completes out of order
+      // Client buffers and plays chunks by chunkIndex, not by arrival order
+      const ttsChunkIndex = sequenceNumber;
+      
+      // Track actual count of chunks sent (increment after each successful send)
       if (ws.ttsSentCount === undefined) {
         ws.ttsSentCount = 0;
       }
-      const ttsChunkIndex = ws.ttsSentCount;
-      ws.ttsSentCount++; // Increment for next chunk
 
-      console.log(`[TTS INDEX] Mapping sentence ${sequenceNumber} → TTS chunk ${ttsChunkIndex}`);
+      console.log(`[TTS INDEX] Sentence ${sequenceNumber} → TTS chunk ${ttsChunkIndex} (will be chunk #${ws.ttsSentCount + 1})`);
 
       if (voiceOptions.enablePhonemes && phonemes) {
         // 🎤 Send PHONEME_TTS_CHUNK with audio + phoneme data
@@ -804,12 +805,13 @@ export class VoiceStreamService {
           sessionId: ws.sessionId,
           audio: finalAudioData,
           phonemes: phonemes,
-          chunkIndex: ttsChunkIndex,  // 🔢 Use sequential counter, not sentence index
+          chunkIndex: ttsChunkIndex,  // 🔢 Use sentence index for correct order
           totalChunks: undefined,  // Will be sent in TTS_END
           text: sentence
         };
 
         ws.send(JSON.stringify(phonemeMsg));
+        ws.ttsSentCount++; // 🔢 Increment after successful send
       } else {
         // 🔊 Send regular TTS_CHUNK without phonemes
         const ttsMsg: TTSChunkMessage = {
@@ -817,11 +819,12 @@ export class VoiceStreamService {
           timestamp: new Date().toISOString(),
           sessionId: ws.sessionId,
           data: finalAudioData,  // ✅ Direct base64 string (NOT nested!)
-          chunkIndex: ttsChunkIndex,  // 🔢 Use sequential counter, not sentence index
+          chunkIndex: ttsChunkIndex,  // 🔢 Use sentence index for correct order
           totalChunks: undefined  // Will be sent in TTS_END
         };
 
         ws.send(JSON.stringify(ttsMsg));
+        ws.ttsSentCount++; // 🔢 Increment after successful send
       }
 
       // 🚀 PHASE 3: Record metrics
