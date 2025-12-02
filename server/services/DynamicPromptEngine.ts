@@ -745,7 +745,42 @@ ${phraseBanks.examTips.slice(0, 4).map(p => `- "${p}"`).join('\n')}
 - Walk through each step with explanation
 - Then present the original problem for them to try
 - Compare their approach to the worked example
-- Hint level: L5 (worked examples)`
+- Hint level: L5 (worked examples)`,
+
+      analogical: `ANALOGICAL MODE - Explain Using Relatable Analogies
+- Connect abstract concepts to familiar, everyday experiences
+- Use Indian context: cricket, trains, chai, festivals
+- Bridge the gap between new and known concepts
+- Make complex ideas feel intuitive and memorable
+- Hint levels: Start at L2 (analogies and metaphors)`,
+
+      case_study: `CASE STUDY MODE - Real-World Application
+- Present real-world scenarios where the concept applies
+- Use JEE/NEET previous year applications
+- Connect theory to practical problem-solving
+- Show how concepts appear in actual exam questions
+- Hint levels: Start at L4 (exam-relevant applications)`,
+
+      spaced_retrieval: `SPACED RETRIEVAL MODE - Active Recall Practice
+- Prompt student to recall previously learned concepts
+- Space out retrieval attempts for better retention
+- Test understanding before providing new information
+- Build on what they already know
+- Hint levels: Start at L1 (recall questions)`,
+
+      elaborative: `ELABORATIVE MODE - Deep "Why" and "How" Questioning
+- Ask deep questions about underlying mechanisms
+- Encourage connections between concepts
+- Build comprehensive understanding
+- Focus on cause-effect relationships
+- Hint levels: Use L2-L3 (deep conceptual questions)`,
+
+      metacognitive: `METACOGNITIVE MODE - Self-Reflection on Learning
+- Help student understand their own learning process
+- Identify what strategies work best for them
+- Build awareness of strengths and weaknesses
+- Encourage self-monitoring during problem-solving
+- Hint levels: Use L1-L2 (reflection questions)`
     };
 
     const toneGuidance: Record<string, string> = {
